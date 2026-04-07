@@ -80,10 +80,64 @@ public partial class SurahDetailPage : ContentPage
                 LineBreakMode = LineBreakMode.WordWrap
             };
 
+            var playAyahButton = new Button
+            {
+                Text = "▶ استماع لهذه الآية",
+                FontSize = 14,
+                BackgroundColor = Color.FromArgb("#2C6E2C"),
+                TextColor = Colors.White,
+                Margin = new Thickness(0, 5, 0, 0),
+                HorizontalOptions = LayoutOptions.End,
+                CornerRadius = 10,
+                Padding = new Thickness(10, 5)
+            };
+            playAyahButton.Clicked += async (s, e) => await PlayAyahAudio(ayah.Audio);
+
             ayahLayout.Children.Add(numberLabel);
             ayahLayout.Children.Add(textLabel);
+            ayahLayout.Children.Add(playAyahButton);
             ayahFrame.Content = ayahLayout;
             AyahsLayout.Children.Add(ayahFrame);
+        }
+    }
+
+    private async Task PlayAyahAudio(string audioUrl)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(audioUrl)) return;
+
+            // إيقاف أي تلاوة جارية
+            if (_audioPlayer != null && _isPlaying)
+            {
+                _audioPlayer.Stop();
+                _audioPlayer.Dispose();
+            }
+
+            using var client = new HttpClient();
+            var audioBytes = await client.GetByteArrayAsync(audioUrl);
+            var memoryStream = new MemoryStream(audioBytes);
+
+            var audioManager = AudioManager.Current;
+            _audioPlayer = audioManager.CreatePlayer(memoryStream);
+            
+            _audioPlayer.Play();
+            _isPlaying = true;
+
+            StopButton.IsEnabled = true;
+
+            _audioPlayer.PlaybackEnded += (s, args) =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    _isPlaying = false;
+                    StopButton.IsEnabled = false;
+                });
+            };
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("خطأ", $"فشل تشغيل آية: {ex.Message}", "حسناً");
         }
     }
 

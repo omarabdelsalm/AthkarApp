@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace AthkarApp.Models;
 
@@ -57,4 +57,7 @@ public class Ayah
 
     [JsonPropertyName("numberInSurah")]
     public int NumberInSurah { get; set; }
+
+    [JsonPropertyName("audio")]
+    public string Audio { get; set; }
 }
