@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.QuranPage"
+             Title="المصحف الشريف"
+             BackgroundColor="#F5F5F0"
+             FlowDirection="RightToLeft">
+
+    <Grid RowDefinitions="Auto,*">
+        <SearchBar x:Name="SearchBar"
+                   Placeholder="ابحث عن سورة..."
+                   TextChanged="OnSearchTextChanged"
+                   BackgroundColor="White"
+                   Margin="10"/>
+
+        <CollectionView x:Name="SurahsCollectionView"
+                        Grid.Row="1"
+                        ItemsSource="{Binding Surahs}"
+                        SelectionMode="Single"
+                        SelectionChanged="OnSurahSelected">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="15,10"
+                          ColumnDefinitions="Auto,*,Auto"
+                          BackgroundColor="White">
+                        <Frame Grid.Column="0"
+                               WidthRequest="45"
+                               HeightRequest="45"
+                               CornerRadius="22.5"
+                               BackgroundColor="#2C6E2C"
+                               HasShadow="False">
+                            <Label Text="{Binding Number}"
+                                   TextColor="White"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+
+                        <VerticalStackLayout Grid.Column="1"
+                                             Margin="15,0">
+                            <Label Text="{Binding Name}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#2C6E2C"/>
+                            <Label Text="{Binding EnglishNameTranslation}"
+                                   FontSize="14"
+                                   TextColor="#666666"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="2"
+                                             HorizontalOptions="End">
+                            <Label Text="{Binding EnglishName}"
+                                   FontSize="14"
+                                   TextColor="#2C6E2C"
+                                   HorizontalOptions="End"/>
+                            <Label Text="{Binding RevelationType}"
+                                   FontSize="12"
+                                   TextColor="#999999"
+                                   HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

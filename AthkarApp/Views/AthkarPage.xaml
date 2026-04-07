@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.AthkarPage"
+             Title="أذكار المسلم"
+             BackgroundColor="#E8F0F8"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Label Text="أذكار المسلم"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="#2C6E2C"
+                   Margin="0,20"/>
+
+            <Picker x:Name="CategoryPicker"
+                    Title="اختر القسم"
+                    TitleColor="Black"
+                    BackgroundColor="White"
+                    SelectedIndexChanged="OnCategorySelected"/>
+
+            <Frame BackgroundColor="White"
+                   CornerRadius="20"
+                   Padding="20"
+                   HasShadow="True">
+                <Label x:Name="AthkarLabel"
+                       Text="اختر قسماً من القائمة"
+                       FontSize="24"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       TextColor="#333333"
+                       LineBreakMode="WordWrap"/>
+            </Frame>
+
+            <HorizontalStackLayout Spacing="15" HorizontalOptions="Center">
+                <Button Text="-"
+                        BackgroundColor="#D32F2F"
+                        TextColor="White"
+                        FontSize="30"
+                        WidthRequest="60"
+                        HeightRequest="60"
+                        CornerRadius="30"
+                        Clicked="OnDecrementCount"/>
+
+                <Label x:Name="CounterLabel"
+                       Text="0"
+                       FontSize="48"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       WidthRequest="100"
+                       HorizontalTextAlignment="Center"
+                       TextColor="#2C6E2C"/>
+
+                <Button Text="+"
+                        BackgroundColor="#2C6E2C"
+                        TextColor="White"
+                        FontSize="30"
+                        WidthRequest="60"
+                        HeightRequest="60"
+                        CornerRadius="30"
+                        Clicked="OnIncrementCount"/>
+            </HorizontalStackLayout>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Text="إعادة ضبط العداد"
+                        Grid.Column="0"
+                        BackgroundColor="#FF9800"
+                        TextColor="White"
+                        FontSize="18"
+                        CornerRadius="15"
+                        Clicked="OnResetCounter"/>
+
+                <Button Text="الذكر التالي"
+                        Grid.Column="1"
+                        BackgroundColor="#2196F3"
+                        TextColor="White"
+                        FontSize="18"
+                        CornerRadius="15"
+                        Clicked="OnNextAthkar"/>
+            </Grid>
+
+            <Label x:Name="SuccessMessage"
+                   IsVisible="False"
+                   Text="✔ تم تسبيح الذكر"
+                   TextColor="Green"
+                   HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

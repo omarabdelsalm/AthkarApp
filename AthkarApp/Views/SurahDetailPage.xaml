@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.SurahDetailPage"
+             Title="سورة"
+             BackgroundColor="#F5F5F0"
+             FlowDirection="RightToLeft">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <Frame Grid.Row="0"
+               BackgroundColor="#2C6E2C"
+               CornerRadius="0,0,20,20"
+               Padding="20">
+            <VerticalStackLayout>
+                <Label x:Name="SurahNameLabel"
+                       Text=""
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center"/>
+                <Label x:Name="SurahInfoLabel"
+                       Text=""
+                       FontSize="16"
+                       TextColor="#DDDDDD"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,*"
+              Padding="10"
+              BackgroundColor="#F5F5F0">
+            <Button x:Name="PlayButton"
+                    Grid.Column="0"
+                    Text="▶ تشغيل التلاوة"
+                    BackgroundColor="#2196F3"
+                    TextColor="White"
+                    CornerRadius="10"
+                    Clicked="OnPlayTafseer"/>
+            <Button x:Name="StopButton"
+                    Grid.Column="1"
+                    Text="⏹ إيقاف التلاوة"
+                    BackgroundColor="#D32F2F"
+                    TextColor="White"
+                    CornerRadius="10"
+                    IsEnabled="False"
+                    Clicked="OnStopTafseer"/>
+        </Grid>
+
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout x:Name="AyahsLayout"
+                                 Spacing="15"
+                                 Padding="15,10"/>
+        </ScrollView>
+    </Grid>
+</ContentPage>
