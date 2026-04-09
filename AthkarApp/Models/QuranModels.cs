@@ -27,6 +27,15 @@ public class Surah
 
     [JsonPropertyName("revelationType")]
     public string RevelationType { get; set; }
+
+    [JsonIgnore]
+    public bool IsDownloaded { get; set; }
+
+    [JsonIgnore]
+    public double DownloadProgress { get; set; }
+
+    [JsonIgnore]
+    public bool IsDownloading { get; set; }
 }
 
 public class AyahResponse

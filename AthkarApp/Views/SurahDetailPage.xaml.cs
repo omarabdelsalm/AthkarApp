@@ -9,23 +9,37 @@ namespace AthkarApp.Views;
 public partial class SurahDetailPage : ContentPage
 {
     private readonly IQuranApiService _quranApiService;
+    private readonly IQuranDownloadService _quranDownloadService;
     private readonly Surah _surah;
     private IAudioPlayer _audioPlayer;
     private bool _isPlaying;
 
     public ObservableCollection<Ayah> Ayahs { get; set; } = new();
 
-    public SurahDetailPage(IQuranApiService quranApiService, Surah surah)
+    public SurahDetailPage(IQuranApiService quranApiService, IQuranDownloadService quranDownloadService, Surah surah)
     {
         InitializeComponent();
         _quranApiService = quranApiService;
+        _quranDownloadService = quranDownloadService;
         _surah = surah;
         BindingContext = this;
 
         SurahNameLabel.Text = $"{_surah.Name} ({_surah.EnglishName})";
         SurahInfoLabel.Text = $"عدد الآيات: {_surah.NumberOfAyahs} | {_surah.RevelationType}";
 
+        UpdateDownloadStatus();
         LoadAyahs();
+    }
+
+    private void UpdateDownloadStatus()
+    {
+        _surah.IsDownloaded = _quranDownloadService.IsSurahDownloaded(_surah.Number);
+        if (_surah.IsDownloaded)
+        {
+            DownloadButton.Text = "✓ تم التحميل (متاح بدون إنترنت)";
+            DownloadButton.BackgroundColor = Color.FromArgb("#2C6E2C");
+            DownloadButton.IsEnabled = false;
+        }
     }
 
     private async void LoadAyahs()
@@ -41,7 +55,7 @@ public partial class SurahDetailPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("خطأ", $"فشل تحميل الآيات: {ex.Message}", "حسناً");
+            await DisplayAlert("خطأ", $"فشل تحميل الآيات: {ex.Message}\nتأكد من الاتصال بالإنترنت.", "حسناً");
         }
     }
 
@@ -114,6 +128,8 @@ public partial class SurahDetailPage : ContentPage
                 _audioPlayer.Dispose();
             }
 
+            // ملاحظة: تلاوة الآيات المنفردة لا تدعم حالياً التخزين المحلي الكامل لكل آية لتوفير المساحة
+            // ولكن يتم تحميلها عند الحاجة. في حال الرغبة في دعم كامل، يمكن تعديل QuranDownloadService
             using var client = new HttpClient();
             var audioBytes = await client.GetByteArrayAsync(audioUrl);
             var memoryStream = new MemoryStream(audioBytes);
@@ -137,7 +153,7 @@ public partial class SurahDetailPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("خطأ", $"فشل تشغيل آية: {ex.Message}", "حسناً");
+            await DisplayAlert("خطأ", $"فشل تشغيل آية: {ex.Message}\nتأكد من الاتصال بالإنترنت.", "حسناً");
         }
     }
 
@@ -152,25 +168,35 @@ public partial class SurahDetailPage : ContentPage
                 _audioPlayer.Dispose();
             }
 
-            // تحديث واجهة المستخدم لحالة التحميل
-            PlayButton.Text = "⏳ جاري التحميل...";
-            PlayButton.IsEnabled = false;
-
-            var audioUrl = $"https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/{_surah.Number:000}.mp3";
-            using var client = new HttpClient();
+            Stream audioStream;
             
-            // تحميل الملف بالكامل في الذاكرة لضمان استقرار التشغيل
-            var audioBytes = await client.GetByteArrayAsync(audioUrl);
-            var memoryStream = new MemoryStream(audioBytes);
+            if (_quranDownloadService.IsSurahDownloaded(_surah.Number))
+            {
+                // تشغيل من الملف المحلي
+                var path = _quranDownloadService.GetSurahAudioPath(_surah.Number);
+                audioStream = File.OpenRead(path);
+            }
+            else
+            {
+                // تحميل مؤقت وتشغيل من الرابط
+                PlayButton.Text = "⏳ جاري التحميل...";
+                PlayButton.IsEnabled = false;
+
+                var audioUrl = $"https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/{_surah.Number:000}.mp3";
+                using var client = new HttpClient();
+                var audioBytes = await client.GetByteArrayAsync(audioUrl);
+                audioStream = new MemoryStream(audioBytes);
+                
+                PlayButton.Text = "▶ تشغيل التلاوة";
+            }
 
             var audioManager = AudioManager.Current;
-            _audioPlayer = audioManager.CreatePlayer(memoryStream);
+            _audioPlayer = audioManager.CreatePlayer(audioStream);
             
             _audioPlayer.Play();
             _isPlaying = true;
 
-            PlayButton.Text = "▶ تشغيل التلاوة";
-            PlayButton.IsEnabled = false; // معطل أثناء التشغيل
+            PlayButton.IsEnabled = false; 
             StopButton.IsEnabled = true;
 
             _audioPlayer.PlaybackEnded += (s, args) =>
@@ -180,6 +206,7 @@ public partial class SurahDetailPage : ContentPage
                     _isPlaying = false;
                     PlayButton.IsEnabled = true;
                     StopButton.IsEnabled = false;
+                    audioStream.Dispose();
                 });
             };
         }
@@ -187,7 +214,39 @@ public partial class SurahDetailPage : ContentPage
         {
             PlayButton.Text = "▶ تشغيل التلاوة";
             PlayButton.IsEnabled = true;
-            await DisplayAlert("خطأ", $"فشل تشغيل التلاوة: {ex.Message}\nتأكد من اتصال الإنترنت.", "حسناً");
+            await DisplayAlert("خطأ", $"فشل تشغيل التلاوة: {ex.Message}", "حسناً");
+        }
+    }
+
+    private async void OnDownloadClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            DownloadButton.IsVisible = false;
+            DownloadProgressLayout.IsVisible = true;
+            DownloadProgressBar.Progress = 0;
+            DownloadStatusLabel.Text = "بدء التحميل...";
+
+            await _quranDownloadService.DownloadSurahAsync(_surah, (progress) =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    DownloadProgressBar.Progress = progress;
+                    DownloadStatusLabel.Text = $"جاري التحميل... {progress:P0}";
+                });
+            });
+
+            DownloadProgressLayout.IsVisible = false;
+            DownloadButton.IsVisible = true;
+            UpdateDownloadStatus();
+            
+            await DisplayAlert("تم بنجاح", "تم تحميل السورة بنجاح وهي الآن متاحة بدون إنترنت.", "حسناً");
+        }
+        catch (Exception ex)
+        {
+            DownloadProgressLayout.IsVisible = false;
+            DownloadButton.IsVisible = true;
+            await DisplayAlert("خطأ", $"فشل التحميل: {ex.Message}", "حسناً");
         }
     }
 

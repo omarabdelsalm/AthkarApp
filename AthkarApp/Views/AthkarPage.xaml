@@ -6,88 +6,182 @@
              BackgroundColor="#E8F0F8"
              FlowDirection="RightToLeft">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="20">
-
-            <Label Text="أذكار المسلم"
-                   FontSize="32"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center"
-                   TextColor="#2C6E2C"
-                   Margin="0,20"/>
-
-            <Picker x:Name="CategoryPicker"
-                    Title="اختر القسم"
-                    TitleColor="Black"
-                    BackgroundColor="White"
-                    SelectedIndexChanged="OnCategorySelected"/>
-
-            <Frame BackgroundColor="White"
-                   CornerRadius="20"
-                   Padding="20"
-                   HasShadow="True">
-                <Label x:Name="AthkarLabel"
-                       Text="اختر قسماً من القائمة"
-                       FontSize="24"
-                       HorizontalOptions="Center"
-                       HorizontalTextAlignment="Center"
-                       TextColor="#333333"
-                       LineBreakMode="WordWrap"/>
-            </Frame>
-
-            <HorizontalStackLayout Spacing="15" HorizontalOptions="Center">
-                <Button Text="-"
-                        BackgroundColor="#D32F2F"
-                        TextColor="White"
-                        FontSize="30"
-                        WidthRequest="60"
-                        HeightRequest="60"
-                        CornerRadius="30"
-                        Clicked="OnDecrementCount"/>
-
-                <Label x:Name="CounterLabel"
-                       Text="0"
-                       FontSize="48"
+    <Grid FlowDirection="RightToLeft">
+        <!-- 1. واجهة اختيار الأقسام (Dashboard) -->
+        <ScrollView x:Name="SelectionView" IsVisible="True">
+            <VerticalStackLayout Spacing="20" Padding="20">
+                <Label Text="أذكار المسلم"
+                       FontSize="32"
                        FontAttributes="Bold"
                        HorizontalOptions="Center"
+                       TextColor="#2C6E2C"
+                       Margin="0,10,0,20"/>
+
+                <CollectionView x:Name="CategoriesCollectionView"
+                                SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="15"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BackgroundColor="{Binding CardColor}"
+                                   CornerRadius="20"
+                                   Padding="0"
+                                   HasShadow="True"
+                                   HeightRequest="150"
+                                   BorderColor="Transparent">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCategoryTapped" 
+                                                          CommandParameter="{Binding .}"/>
+                                </Frame.GestureRecognizers>
+                                <Grid ColumnDefinitions="*,120">
+                                    <VerticalStackLayout Grid.Column="0"
+                                                         VerticalOptions="Center"
+                                                         Padding="20,0">
+                                        <Label Text="{Binding Name}"
+                                               FontSize="22"
+                                               FontAttributes="Bold"
+                                               TextColor="#333333"/>
+                                        <Label Text="اضغط للبدء"
+                                               FontSize="14"
+                                               TextColor="#666666"/>
+                                    </VerticalStackLayout>
+                                    
+                                    <Image Grid.Column="1"
+                                           Source="{Binding ImagePath}"
+                                           Aspect="AspectFill"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 2. واجهة الذكر النشط (Reading Mode) -->
+        <Grid x:Name="ThikrView" 
+              IsVisible="False"
+              RowDefinitions="Auto,*" 
+              Padding="20">
+            
+            <!-- الهيدر الثابت -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+                <Button Grid.Column="0"
+                        Text="⬅ رجوع"
+                        BackgroundColor="Transparent"
+                        TextColor="#2C6E2C"
+                        FontSize="16"
+                        Clicked="OnBackToSelection"/>
+                <Label Grid.Column="1"
+                       x:Name="CategoryTitleLabel"
+                       Text="القسم"
+                       FontSize="20"
+                       FontAttributes="Bold"
                        VerticalOptions="Center"
-                       WidthRequest="100"
-                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="End"
                        TextColor="#2C6E2C"/>
-
-                <Button Text="+"
-                        BackgroundColor="#2C6E2C"
-                        TextColor="White"
-                        FontSize="30"
-                        WidthRequest="60"
-                        HeightRequest="60"
-                        CornerRadius="30"
-                        Clicked="OnIncrementCount"/>
-            </HorizontalStackLayout>
-
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Button Text="إعادة ضبط العداد"
-                        Grid.Column="0"
-                        BackgroundColor="#FF9800"
-                        TextColor="White"
-                        FontSize="18"
-                        CornerRadius="15"
-                        Clicked="OnResetCounter"/>
-
-                <Button Text="الذكر التالي"
-                        Grid.Column="1"
-                        BackgroundColor="#2196F3"
-                        TextColor="White"
-                        FontSize="18"
-                        CornerRadius="15"
-                        Clicked="OnNextAthkar"/>
             </Grid>
 
-            <Label x:Name="SuccessMessage"
-                   IsVisible="False"
-                   Text="✔ تم تسبيح الذكر"
-                   TextColor="Green"
-                   HorizontalOptions="Center"/>
-        </VerticalStackLayout>
-    </ScrollView>
+            <!-- الجزء القابل للتمرير -->
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Spacing="15" Padding="0,10">
+                    <Frame BackgroundColor="White"
+                           CornerRadius="25"
+                           Padding="25"
+                           HasShadow="True"
+                           MinimumHeightRequest="250">
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label x:Name="AthkarLabel"
+                                   Text="الذكر المحمل هنا..."
+                                   FontSize="26"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="#2C6E2C"
+                                   LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Label x:Name="ProgressLabel"
+                           Text="1 / 10"
+                           FontSize="16"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"/>
+
+                    <!-- منطقة العداد المحسنة -->
+                    <Grid RowDefinitions="Auto,Auto" Margin="0,20">
+                        <Frame BackgroundColor="White"
+                               CornerRadius="75"
+                               WidthRequest="150"
+                               HeightRequest="150"
+                               Padding="0"
+                               HorizontalOptions="Center"
+                               HasShadow="True"
+                               BorderColor="#2C6E2C">
+                            <Grid>
+                                <Label x:Name="CounterLabel"
+                                       Text="0"
+                                       FontSize="54"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       TextColor="#2C6E2C"/>
+                                <Button BackgroundColor="Transparent"
+                                        Clicked="OnIncrementCount"/>
+                            </Grid>
+                        </Frame>
+                        
+                        <HorizontalStackLayout Grid.Row="1" 
+                                               Spacing="20" 
+                                               HorizontalOptions="Center"
+                                               Margin="0,20,0,0">
+                            <Button Text="-"
+                                    BackgroundColor="#D32F2F"
+                                    TextColor="White"
+                                    FontSize="24"
+                                    WidthRequest="50"
+                                    HeightRequest="50"
+                                    CornerRadius="25"
+                                    Clicked="OnDecrementCount"/>
+                            
+                            <Button Text="🔄 ضبط"
+                                    BackgroundColor="#FF9800"
+                                    TextColor="White"
+                                    FontSize="14"
+                                    WidthRequest="80"
+                                    HeightRequest="50"
+                                    CornerRadius="25"
+                                    Clicked="OnResetCounter"/>
+
+                            <Button Text="+"
+                                    BackgroundColor="#2C6E2C"
+                                    TextColor="White"
+                                    FontSize="24"
+                                    WidthRequest="50"
+                                    HeightRequest="50"
+                                    CornerRadius="25"
+                                    Clicked="OnIncrementCount"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <Button Text="الذكر التالي ➔"
+                            x:Name="NextButton"
+                            BackgroundColor="#2196F3"
+                            TextColor="White"
+                            FontSize="20"
+                            FontAttributes="Bold"
+                            HeightRequest="60"
+                            CornerRadius="30"
+                            Clicked="OnNextAthkar"/>
+
+                    <Label x:Name="SuccessMessage"
+                           IsVisible="False"
+                           Text="✔ تم الانتهاء من هذا الذكر"
+                           TextColor="Green"
+                           HorizontalOptions="Center"
+                           FontAttributes="Bold"/>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
 </ContentPage>

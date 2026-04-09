@@ -18,6 +18,35 @@
                         ItemsSource="{Binding Surahs}"
                         SelectionMode="Single"
                         SelectionChanged="OnSurahSelected">
+            <CollectionView.Header>
+                <Frame BackgroundColor="White" 
+                       Margin="10" 
+                       Padding="15" 
+                       CornerRadius="15" 
+                       HasShadow="True">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="المصحف أوفلاين" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="#2C6E2C"/>
+                        <Label Text="يمكنك تحميل نصوص كافة السور لتصفح المصحف بدون إنترنت في أي وقت." 
+                               FontSize="12" 
+                               TextColor="Gray"/>
+                        
+                        <Button x:Name="SyncButton"
+                                Text="مزامنة كافة النصوص (أوفلاين)"
+                                BackgroundColor="#2C6E2C"
+                                TextColor="White"
+                                CornerRadius="10"
+                                Clicked="OnSyncAllClicked"/>
+
+                        <VerticalStackLayout x:Name="SyncProgressLayout" IsVisible="False">
+                            <ProgressBar x:Name="SyncProgressBar" Progress="0" ProgressColor="#2C6E2C"/>
+                            <Label x:Name="SyncStatusLabel" Text="جاري المزامنة... 0%" FontSize="12" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+            </CollectionView.Header>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="15,10"
@@ -39,13 +68,24 @@
 
                         <VerticalStackLayout Grid.Column="1"
                                              Margin="15,0">
-                            <Label Text="{Binding Name}"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="#2C6E2C"/>
+                            <HorizontalStackLayout Spacing="5">
+                                <Label Text="{Binding Name}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#2C6E2C"/>
+                                <Label Text="✓"
+                                       TextColor="#2C6E2C"
+                                       FontSize="14"
+                                       IsVisible="{Binding IsDownloaded}"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
                             <Label Text="{Binding EnglishNameTranslation}"
                                    FontSize="14"
                                    TextColor="#666666"/>
+                            <Label Text="متاح بدون إنترنت"
+                                   FontSize="10"
+                                   TextColor="#2C6E2C"
+                                   IsVisible="{Binding IsDownloaded}"/>
                         </VerticalStackLayout>
 
                         <VerticalStackLayout Grid.Column="2"

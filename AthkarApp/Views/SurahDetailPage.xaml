@@ -27,8 +27,10 @@
         </Frame>
 
         <Grid Grid.Row="1"
+              RowDefinitions="Auto,Auto"
               ColumnDefinitions="*,*"
               Padding="10"
+              RowSpacing="5"
               BackgroundColor="#F5F5F0">
             <Button x:Name="PlayButton"
                     Grid.Column="0"
@@ -45,6 +47,31 @@
                     CornerRadius="10"
                     IsEnabled="False"
                     Clicked="OnStopTafseer"/>
+
+            <Button x:Name="DownloadButton"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Text="⬇ تحميل للاستماع بدون إنترنت"
+                    BackgroundColor="#4CAF50"
+                    TextColor="White"
+                    CornerRadius="10"
+                    Clicked="OnDownloadClicked"/>
+
+            <VerticalStackLayout x:Name="DownloadProgressLayout"
+                                 Grid.Row="1"
+                                 Grid.Column="0"
+                                 Grid.ColumnSpan="2"
+                                 IsVisible="False">
+                <ProgressBar x:Name="DownloadProgressBar"
+                             ProgressColor="#4CAF50"
+                             Margin="0,5"/>
+                <Label x:Name="DownloadStatusLabel"
+                       Text="جاري التحميل..."
+                       FontSize="12"
+                       TextColor="#4CAF50"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
         </Grid>
 
         <ScrollView Grid.Row="2">

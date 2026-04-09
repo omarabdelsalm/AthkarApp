@@ -1,4 +1,4 @@
-﻿using Plugin.Maui.Audio;
+using Plugin.Maui.Audio;
 
 namespace AthkarApp.Services;
 
@@ -21,13 +21,22 @@ public class SoundService : ISoundService
         try
         {
             var fileName = $"{soundName}.mp3";
+            
+            // محاولة فتح الملف، وإذا لم يوجد سيتم تجاهله بهدوء في الـ catch
             using var stream = await FileSystem.OpenAppPackageFileAsync(fileName);
+            if (stream == null) return;
+
             var player = _audioManager.CreatePlayer(stream);
             player.Play();
         }
+        catch (FileNotFoundException)
+        {
+            // تجاهل الخطأ إذا كان الملف غير موجود (لمنع توقف التطبيق)
+            System.Diagnostics.Debug.WriteLine($"ملف الصوت {soundName}.mp3 غير موجود في الموارد.");
+        }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"خطأ في تشغيل الصوت: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"خطأ آخر في تشغيل الصوت: {ex.Message}");
         }
     }
 }
