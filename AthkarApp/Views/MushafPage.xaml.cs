@@ -259,6 +259,9 @@ public partial class MushafPage : ContentPage
         Shell.SetTabBarIsVisible(this, !_isFullscreen);
 
         // تغيير أيقونة الزر العائم
+        FullscreenBtnLabel.Text = _isFullscreen ? "⤡" : "⤢";
+    }
+
     // ===================== زر الرجوع (الهاتف) =====================
 
     protected override bool OnBackButtonPressed()
