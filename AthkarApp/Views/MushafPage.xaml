@@ -11,14 +11,13 @@
     <Grid RowDefinitions="Auto,Auto,*,Auto">
 
         <!-- ===== رأس الصفحة ===== -->
-        <Frame Grid.Row="0"
+        <Frame x:Name="HeaderUI"
+               Grid.Row="0"
                BackgroundColor="#2C6E2C"
                CornerRadius="0"
                Padding="12,10"
                HasShadow="True">
             <Grid ColumnDefinitions="Auto,*,Auto">
-
-                <!-- اسم السورة الحالية -->
                 <Label x:Name="CurrentSurahLabel"
                        Grid.Column="0"
                        Text="..."
@@ -27,7 +26,6 @@
                        FontAttributes="Bold"
                        VerticalOptions="Center"/>
 
-                <!-- رقم الجزء والحزب -->
                 <Label x:Name="JuzLabel"
                        Grid.Column="1"
                        Text=""
@@ -36,7 +34,6 @@
                        HorizontalOptions="Center"
                        VerticalOptions="Center"/>
 
-                <!-- رقم الصفحة -->
                 <HorizontalStackLayout Grid.Column="2"
                                        Spacing="2"
                                        VerticalOptions="Center">
@@ -58,12 +55,13 @@
         </Frame>
 
         <!-- ===== شريط أزرار الأوضاع ===== -->
-        <Grid Grid.Row="1"
+        <Grid x:Name="ModeBarUI"
+              Grid.Row="1"
               ColumnDefinitions="*,*"
               BackgroundColor="#EDE8DC"
               Padding="8,5">
             <Button Grid.Column="0"
-                    x:Name="ScrollModeBtn"
+                    x:Name="ScrollModeBtnCtrl"
                     Text="📜 وضع التمرير"
                     FontSize="12"
                     BackgroundColor="#2C6E2C"
@@ -72,7 +70,7 @@
                     Clicked="OnScrollModeClicked"
                     Margin="2"/>
             <Button Grid.Column="1"
-                    x:Name="SwipeModeBtn"
+                    x:Name="SwipeModeBtnCtrl"
                     Text="📖 وضع التقليب"
                     FontSize="12"
                     BackgroundColor="#A5A58D"
@@ -82,71 +80,68 @@
                     Margin="2"/>
         </Grid>
 
-        <!-- ===== محتوى المصحف (وضع التمرير) ===== -->
-        <RefreshView x:Name="ScrollModeView"
-                     Grid.Row="2"
-                     IsRefreshing="False"
-                     IsVisible="True">
-            <ScrollView>
-                <VerticalStackLayout x:Name="AyahsContainer"
-                                     Padding="15,8"
-                                     Spacing="0">
+        <!-- ===== وضع التمرير ===== -->
+        <ScrollView x:Name="ScrollModeContainer"
+                    Grid.Row="2"
+                    IsVisible="True">
+            <ScrollView.GestureRecognizers>
+                <!-- نقرتين للتبديل بين وضع ملء الشاشة -->
+                <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnDoubleTapScreen"/>
+            </ScrollView.GestureRecognizers>
+            <VerticalStackLayout Padding="12,8" Spacing="2">
+                <Label x:Name="BismillahLabel"
+                       Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                       FontSize="22"
+                       TextColor="#2C6E2C"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,10,0,14"
+                       IsVisible="False"/>
 
-                    <!-- عنوان السورة يُضاف برمجياً هنا -->
-                    <Label x:Name="BismillahLabel"
-                           Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                           FontSize="22"
-                           TextColor="#2C6E2C"
-                           HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center"
-                           Margin="0,10,0,14"
-                           IsVisible="False"/>
+                <CollectionView x:Name="AyahsCollectionView"
+                                SelectionMode="Single"
+                                SelectionChanged="OnAyahSelectionChanged">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Ayah">
+                            <Frame Padding="10,8"
+                                   Margin="2,3"
+                                   CornerRadius="10"
+                                   HasShadow="False"
+                                   BorderColor="#E0DDD5"
+                                   BackgroundColor="White">
+                                <Label HorizontalTextAlignment="Center"
+                                       HorizontalOptions="Center"
+                                       TextColor="#1A3A1A"
+                                       FontSize="22"
+                                       LineBreakMode="WordWrap">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Text}" FontSize="22"/>
+                                            <Span Text=" "/>
+                                            <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
+                                                  TextColor="#2C6E2C"
+                                                  FontSize="15"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
 
-                    <CollectionView x:Name="AyahsCollectionView"
-                                    SelectionMode="Single"
-                                    SelectionChanged="OnAyahSelectionChanged">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:Ayah">
-                                <Frame Padding="10,8"
-                                       Margin="2,3"
-                                       CornerRadius="10"
-                                       HasShadow="False"
-                                       BorderColor="#E0DDD5"
-                                       BackgroundColor="White">
-                                    <Label HorizontalTextAlignment="Center"
-                                           HorizontalOptions="Center"
-                                           TextColor="#1A3A1A"
-                                           FontSize="22"
-                                           LineBreakMode="WordWrap">
-                                        <Label.FormattedText>
-                                            <FormattedString>
-                                                <Span Text="{Binding Text}" FontSize="22"/>
-                                                <Span Text=" "/>
-                                                <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
-                                                      TextColor="#2C6E2C"
-                                                      FontSize="15"/>
-                                            </FormattedString>
-                                        </Label.FormattedText>
-                                    </Label>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </ScrollView>
-        </RefreshView>
-
-        <!-- ===== محتوى المصحف (وضع التقليب) ===== -->
+        <!-- ===== وضع التقليب (CarouselView) ===== -->
         <CarouselView x:Name="SwipeModeView"
                       Grid.Row="2"
                       IsVisible="False"
                       Loop="False"
+                      IsBounceEnabled="False"
                       PositionChanged="OnCarouselPositionChanged">
             <CarouselView.ItemTemplate>
                 <DataTemplate x:DataType="models:PageData">
                     <ScrollView>
-                        <VerticalStackLayout Padding="15,10" Spacing="0">
-
+                        <VerticalStackLayout Padding="12,8" Spacing="2">
                             <Label Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
                                    IsVisible="{Binding HasBismillah}"
                                    FontSize="20"
@@ -156,7 +151,8 @@
                                    Margin="0,8,0,10"/>
 
                             <CollectionView ItemsSource="{Binding Ayahs}"
-                                            SelectionMode="None">
+                                            SelectionMode="Single"
+                                            SelectionChanged="OnSwipeAyahSelectionChanged">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate x:DataType="models:Ayah">
                                         <Frame Padding="10,8"
@@ -165,11 +161,6 @@
                                                HasShadow="False"
                                                BorderColor="#E0DDD5"
                                                BackgroundColor="White">
-                                            <Frame.GestureRecognizers>
-                                                <TapGestureRecognizer
-                                                    Command="{Binding BindingContext.AyahTappedCommand, Source={x:Reference PageRoot}}"
-                                                    CommandParameter="{Binding .}"/>
-                                            </Frame.GestureRecognizers>
                                             <Label HorizontalTextAlignment="Center"
                                                    HorizontalOptions="Center"
                                                    TextColor="#1A3A1A"
@@ -189,7 +180,6 @@
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
-
                         </VerticalStackLayout>
                     </ScrollView>
                 </DataTemplate>
@@ -206,22 +196,29 @@
                 <TapGestureRecognizer Tapped="OnTafsirOverlayTapped"/>
             </Grid.GestureRecognizers>
 
-            <Frame x:Name="TafsirPanel"
-                   BackgroundColor="White"
-                   CornerRadius="24,24,0,0"
-                   Padding="20,16"
-                   HasShadow="True"
-                   VerticalOptions="End"
-                   Margin="0">
+            <!-- Border يدعم CornerRadius رباعي على عكس Frame -->
+            <Border BackgroundColor="White"
+                    VerticalOptions="End"
+                    Margin="0"
+                    Padding="20,16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24,24,0,0"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.3" Radius="20" Offset="0,-4"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <!-- منع إغلاق اللوحة عند النقر عليها -->
+                    <TapGestureRecognizer Tapped="OnTafsirPanelTapped"/>
+                </Border.GestureRecognizers>
+
                 <VerticalStackLayout Spacing="12">
-                    <!-- مقبض -->
                     <BoxView WidthRequest="40"
                              HeightRequest="4"
                              Color="#CCCCCC"
                              CornerRadius="2"
                              HorizontalOptions="Center"/>
 
-                    <!-- عنوان: رقم السورة والآية -->
                     <Label x:Name="TafsirAyahTitle"
                            FontSize="17"
                            FontAttributes="Bold"
@@ -229,7 +226,6 @@
                            HorizontalOptions="Center"
                            HorizontalTextAlignment="Center"/>
 
-                    <!-- نص الآية -->
                     <Frame BackgroundColor="#F0FAF0"
                            CornerRadius="10"
                            Padding="12,8"
@@ -243,14 +239,10 @@
                                HorizontalOptions="Center"/>
                     </Frame>
 
-                    <!-- فاصل -->
                     <BoxView HeightRequest="1" Color="#E0E0E0"/>
 
-                    <!-- عنوان التفسير -->
                     <HorizontalStackLayout Spacing="6">
-                        <Label Text="📖"
-                               FontSize="14"
-                               VerticalOptions="Center"/>
+                        <Label Text="📖" FontSize="14" VerticalOptions="Center"/>
                         <Label Text="تفسير الجلالين"
                                FontAttributes="Bold"
                                TextColor="#555555"
@@ -258,10 +250,9 @@
                                VerticalOptions="Center"/>
                     </HorizontalStackLayout>
 
-                    <!-- نص التفسير -->
                     <ActivityIndicator x:Name="TafsirLoader"
-                                       IsRunning="True"
-                                       IsVisible="True"
+                                       IsRunning="False"
+                                       IsVisible="False"
                                        Color="#2C6E2C"
                                        HorizontalOptions="Center"/>
 
@@ -273,7 +264,6 @@
                                LineBreakMode="WordWrap"/>
                     </ScrollView>
 
-                    <!-- زر الإغلاق -->
                     <Button Text="✕  إغلاق التفسير"
                             BackgroundColor="#2C6E2C"
                             TextColor="White"
@@ -281,7 +271,7 @@
                             HeightRequest="44"
                             Clicked="OnCloseTafsir"/>
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
         </Grid>
 
         <!-- ===== أزرار التنقل ===== -->
@@ -289,7 +279,6 @@
               ColumnDefinitions="*,Auto,*"
               Padding="10,6"
               BackgroundColor="#EDE8DC">
-
             <Button Grid.Column="0"
                     x:Name="PrevButton"
                     Text="▶ السابقة"

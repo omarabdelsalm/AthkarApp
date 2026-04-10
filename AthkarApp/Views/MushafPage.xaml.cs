@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using AthkarApp.Models;
 using AthkarApp.Services;
 
@@ -9,111 +8,98 @@ public partial class MushafPage : ContentPage
 {
     private readonly IQuranApiService _quranApiService;
 
-    // وضع العرض الحالي: true = تمرير، false = تقليب
     private bool _isScrollMode = true;
+    private int  _currentPage  = 1;
 
-    // رقم الصفحة الحالية (1-604)
-    private int _currentPage = 1;
-
-    // كاش الصفحات المحملة في وضع التقليب
     private readonly ObservableCollection<PageData> _carouselPages = new();
-
-    // آخر آية تم تحديدها
-    private Ayah _selectedAyah;
-
-    // Command للآيات داخل CarouselView DataTemplate
-    public ICommand AyahTappedCommand { get; }
 
     public MushafPage(IQuranApiService quranApiService)
     {
         InitializeComponent();
         _quranApiService = quranApiService;
-
-        AyahTappedCommand = new Command<Ayah>(OnAyahTapped);
-        BindingContext = this;
-
-        // تهيئة CarouselView
         SwipeModeView.ItemsSource = _carouselPages;
 
-        // تحميل الصفحة الأولى
         LoadScrollPage(1);
     }
 
-    // ==================== تحميل الصفحات ====================
+    // ===================== تحميل الصفحة (وضع التمرير) =====================
 
     private async void LoadScrollPage(int pageNumber)
     {
         if (pageNumber < 1 || pageNumber > 604) return;
 
         _currentPage = pageNumber;
-        UpdatePageUI();
+        UpdateNavUI();
 
         var pageData = await _quranApiService.GetPageAsync(pageNumber);
-
         if (pageData?.Ayahs == null || !pageData.Ayahs.Any()) return;
 
-        // عرض البسملة إذا كانت الصفحة تبدأ بسورة جديدة (الأولى أو آية 1 من سورة غير التوبة)
         bool showBismillah = pageData.Ayahs.Any(a =>
-            a.NumberInSurah == 1 && a.Surah?.Number != 9 && a.Surah?.Number != 1);
+            a.NumberInSurah == 1 &&
+            a.Surah?.Number != 9 &&
+            a.Surah?.Number != 1);
 
         BismillahLabel.IsVisible = showBismillah;
 
-        // تحديث عنوان السورة والجزء
         var firstAyah = pageData.Ayahs.First();
         CurrentSurahLabel.Text = firstAyah.Surah?.Name ?? "";
-        JuzLabel.Text = "";
 
         AyahsCollectionView.ItemsSource = pageData.Ayahs;
     }
+
+    // ===================== تحميل صفحات CarouselView =====================
 
     private async Task LoadCarouselPagesUpTo(int targetPage)
     {
         while (_carouselPages.Count < targetPage && _carouselPages.Count < 604)
         {
-            int nextPageNum = _carouselPages.Count + 1;
-            var pageData = await _quranApiService.GetPageAsync(nextPageNum);
+            int next = _carouselPages.Count + 1;
+            var data = await _quranApiService.GetPageAsync(next);
 
-            if (pageData != null)
+            if (data != null)
             {
-                // تحديد إذا بدأ الصفحة بسورة جديدة
-                pageData.HasBismillah = pageData.Ayahs?.Any(a =>
-                    a.NumberInSurah == 1 && a.Surah?.Number != 9 && a.Surah?.Number != 1) ?? false;
+                data.HasBismillah = data.Ayahs?.Any(a =>
+                    a.NumberInSurah == 1 &&
+                    a.Surah?.Number != 9 &&
+                    a.Surah?.Number != 1) ?? false;
             }
 
-            _carouselPages.Add(pageData ?? new PageData { Number = nextPageNum, Ayahs = new List<Ayah>() });
+            _carouselPages.Add(data ?? new PageData
+            {
+                Number = next,
+                Ayahs  = new List<Ayah>()
+            });
         }
     }
 
-    // ==================== أوضاع العرض ====================
+    // ===================== تبديل الأوضاع =====================
 
-    private async void OnScrollModeClicked(object sender, EventArgs e)
+    private void OnScrollModeClicked(object sender, EventArgs e)
     {
         _isScrollMode = true;
-        ScrollModeView.IsVisible = true;
-        SwipeModeView.IsVisible = false;
+        ScrollModeContainer.IsVisible = true;
+        SwipeModeView.IsVisible       = false;
 
-        ScrollModeBtn.BackgroundColor = Color.FromArgb("#2C6E2C");
-        SwipeModeBtn.BackgroundColor = Color.FromArgb("#A5A58D");
+        ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#2C6E2C");
+        SwipeModeBtnCtrl.BackgroundColor  = Color.FromArgb("#A5A58D");
 
-        // تزامن الصفحة مع وضع التقليب
         LoadScrollPage(_currentPage);
     }
 
     private async void OnSwipeModeClicked(object sender, EventArgs e)
     {
         _isScrollMode = false;
-        ScrollModeView.IsVisible = false;
-        SwipeModeView.IsVisible = true;
+        ScrollModeContainer.IsVisible = false;
+        SwipeModeView.IsVisible       = true;
 
-        ScrollModeBtn.BackgroundColor = Color.FromArgb("#A5A58D");
-        SwipeModeBtn.BackgroundColor = Color.FromArgb("#2C6E2C");
+        ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#A5A58D");
+        SwipeModeBtnCtrl.BackgroundColor  = Color.FromArgb("#2C6E2C");
 
-        // تحميل الصفحات حتى الصفحة الحالية
         await LoadCarouselPagesUpTo(_currentPage);
         SwipeModeView.Position = _currentPage - 1;
     }
 
-    // ==================== التنقل بين الصفحات ====================
+    // ===================== التنقل =====================
 
     private void OnNextPage(object sender, EventArgs e)
     {
@@ -143,12 +129,12 @@ public partial class MushafPage : ContentPage
 
     private void OnPageEntryCompleted(object sender, EventArgs e)
     {
-        if (int.TryParse(PageEntry.Text, out int pageNum) && pageNum >= 1 && pageNum <= 604)
+        if (int.TryParse(PageEntry.Text, out int p) && p >= 1 && p <= 604)
         {
             if (_isScrollMode)
-                LoadScrollPage(pageNum);
+                LoadScrollPage(p);
             else
-                _ = SwitchCarouselToPage(pageNum);
+                _ = GoToCarouselPage(p);
         }
         else
         {
@@ -156,7 +142,7 @@ public partial class MushafPage : ContentPage
         }
     }
 
-    private async Task SwitchCarouselToPage(int pageNum)
+    private async Task GoToCarouselPage(int pageNum)
     {
         await LoadCarouselPagesUpTo(pageNum);
         SwipeModeView.Position = pageNum - 1;
@@ -165,74 +151,78 @@ public partial class MushafPage : ContentPage
     private async void OnCarouselPositionChanged(object sender, PositionChangedEventArgs e)
     {
         _currentPage = e.CurrentPosition + 1;
-        UpdatePageUI();
+        UpdateNavUI();
 
-        // تحديث اسم السورة
         if (_carouselPages.Count > e.CurrentPosition)
         {
-            var page = _carouselPages[e.CurrentPosition];
-            var firstAyah = page.Ayahs?.FirstOrDefault();
+            var firstAyah = _carouselPages[e.CurrentPosition].Ayahs?.FirstOrDefault();
             if (firstAyah != null)
                 CurrentSurahLabel.Text = firstAyah.Surah?.Name ?? "";
         }
 
-        // تحميل الصفحات التالية مسبقاً (3 صفحات)
+        // تحميل 3 صفحات مقدماً
         if (e.CurrentPosition >= _carouselPages.Count - 2)
             await LoadCarouselPagesUpTo(_carouselPages.Count + 3);
     }
 
-    // ==================== تحديد الآية في وضع التمرير ====================
+    // ===================== تحديد الآية =====================
 
     private void OnAyahSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection.FirstOrDefault() is Ayah ayah)
         {
-            OnAyahTapped(ayah);
-            // إلغاء التحديد البصري بعد لحظة
             ((CollectionView)sender).SelectedItem = null;
+            ShowTafsir(ayah);
         }
     }
 
-    // ==================== التفسير ====================
-
-    private async void OnAyahTapped(Ayah ayah)
+    private void OnSwipeAyahSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (ayah == null) return;
-        _selectedAyah = ayah;
+        if (e.CurrentSelection.FirstOrDefault() is Ayah ayah)
+        {
+            ((CollectionView)sender).SelectedItem = null;
+            ShowTafsir(ayah);
+        }
+    }
 
-        // إظهار اللوحة
-        TafsirOverlay.IsVisible = true;
-        TafsirLoader.IsVisible = true;
-        TafsirBodyLabel.Text = "";
+    // ===================== التفسير =====================
 
-        // تحديث معلومات الآية
-        TafsirAyahTitle.Text = $"سورة {ayah.Surah?.Name ?? ""} - الآية {ayah.NumberInSurah}";
-        TafsirAyahText.Text = ayah.Text;
+    private async void ShowTafsir(Ayah ayah)
+    {
+        TafsirOverlay.IsVisible  = true;
+        TafsirLoader.IsRunning   = true;
+        TafsirLoader.IsVisible   = true;
+        TafsirBodyLabel.Text     = "";
 
-        // جلب التفسير
+        TafsirAyahTitle.Text = $"سورة {ayah.Surah?.Name ?? ""} — الآية {ayah.NumberInSurah}";
+        TafsirAyahText.Text  = ayah.Text;
+
         var tafsir = await _quranApiService.GetTafsirAsync(ayah.Number);
+
+        TafsirLoader.IsRunning = false;
         TafsirLoader.IsVisible = false;
-        TafsirBodyLabel.Text = tafsir;
+        TafsirBodyLabel.Text   = tafsir;
     }
 
     private void OnCloseTafsir(object sender, EventArgs e)
-    {
-        TafsirOverlay.IsVisible = false;
-    }
+        => TafsirOverlay.IsVisible = false;
 
     private void OnTafsirOverlayTapped(object sender, TappedEventArgs e)
+        => TafsirOverlay.IsVisible = false;
+
+    // يمنع إغلاق اللوحة عند النقر على محتواها
+    private void OnTafsirPanelTapped(object sender, TappedEventArgs e)
     {
-        // إغلاق عند النقر خارج اللوحة
-        TafsirOverlay.IsVisible = false;
+        // لا شيء - يمنع الحدث من الوصول إلى TafsirOverlay
     }
 
-    // ==================== تحديث واجهة الصفحة ====================
+    // ===================== تحديث عناصر التنقل =====================
 
-    private void UpdatePageUI()
+    private void UpdateNavUI()
     {
-        PageEntry.Text = _currentPage.ToString();
-        PageCounterLabel.Text = $"{_currentPage} / 604";
-        PrevButton.IsEnabled = _currentPage > 1;
-        NextButton.IsEnabled = _currentPage < 604;
+        PageEntry.Text         = _currentPage.ToString();
+        PageCounterLabel.Text  = $"{_currentPage} / 604";
+        PrevButton.IsEnabled   = _currentPage > 1;
+        NextButton.IsEnabled   = _currentPage < 604;
     }
 }

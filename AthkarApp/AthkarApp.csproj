@@ -61,6 +61,7 @@
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 		<AndroidResource Include="Platforms\Android\Resources\raw\om.wav" />
+		<AndroidResource Include="Platforms\Android\Resources\raw\ah.wav" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">

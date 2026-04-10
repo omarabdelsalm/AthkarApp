@@ -13,10 +13,12 @@ namespace AthkarApp
         protected override void OnStart()
         {
             base.OnStart();
+
+            // جدولة الإشعارات مرة واحدة يومياً فقط
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await _notificationService.RequestPermissionsAsync();
-                await _notificationService.ScheduleHourlyNotificationAsync();
+                await _notificationService.EnsureScheduledTodayAsync();
             });
         }
 
