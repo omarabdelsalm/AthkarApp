@@ -84,10 +84,7 @@
         <ScrollView x:Name="ScrollModeContainer"
                     Grid.Row="2"
                     IsVisible="True">
-            <ScrollView.GestureRecognizers>
-                <!-- نقرتين للتبديل بين وضع ملء الشاشة -->
-                <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnDoubleTapScreen"/>
-            </ScrollView.GestureRecognizers>
+            <!-- تمت إزالة نقرة الخلفية لأنها كانت تمنع ظهور التفسير -->
             <VerticalStackLayout Padding="12,8" Spacing="2">
                 <Label x:Name="BismillahLabel"
                        Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
@@ -99,8 +96,7 @@
                        IsVisible="False"/>
 
                 <CollectionView x:Name="AyahsCollectionView"
-                                SelectionMode="Single"
-                                SelectionChanged="OnAyahSelectionChanged">
+                                SelectionMode="None">
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Ayah">
                             <Frame Padding="10,8"
@@ -109,6 +105,9 @@
                                    HasShadow="False"
                                    BorderColor="#E0DDD5"
                                    BackgroundColor="White">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnAyahTapped" CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
                                 <Label HorizontalTextAlignment="Center"
                                        HorizontalOptions="Center"
                                        TextColor="#1A3A1A"
@@ -138,6 +137,9 @@
                       Loop="False"
                       IsBounceEnabled="False"
                       PositionChanged="OnCarouselPositionChanged">
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
+            </CarouselView.ItemsLayout>
             <CarouselView.ItemTemplate>
                 <DataTemplate x:DataType="models:PageData">
                     <ScrollView>
@@ -151,8 +153,7 @@
                                    Margin="0,8,0,10"/>
 
                             <CollectionView ItemsSource="{Binding Ayahs}"
-                                            SelectionMode="Single"
-                                            SelectionChanged="OnSwipeAyahSelectionChanged">
+                                            SelectionMode="None">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate x:DataType="models:Ayah">
                                         <Frame Padding="10,8"
@@ -161,6 +162,9 @@
                                                HasShadow="False"
                                                BorderColor="#E0DDD5"
                                                BackgroundColor="White">
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnAyahTapped" CommandParameter="{Binding .}" />
+                                            </Frame.GestureRecognizers>
                                             <Label HorizontalTextAlignment="Center"
                                                    HorizontalOptions="Center"
                                                    TextColor="#1A3A1A"
@@ -185,6 +189,29 @@
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
+
+        <!-- زر عائم للتبديل السريع لملء الشاشة بدون التأثير على الضغط على الآيات -->
+        <Frame x:Name="FullscreenToggleBtn"
+               Grid.Row="2"
+               BackgroundColor="#AA2C6E2C"
+               CornerRadius="25"
+               Padding="0"
+               Margin="15"
+               HeightRequest="50"
+               WidthRequest="50"
+               HorizontalOptions="Start"
+               VerticalOptions="End"
+               HasShadow="False">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnTapScreen"/>
+            </Frame.GestureRecognizers>
+            <Label x:Name="FullscreenBtnLabel" 
+                   Text="⤢" 
+                   FontSize="22" 
+                   TextColor="White" 
+                   HorizontalOptions="Center" 
+                   VerticalOptions="Center"/>
+        </Frame>
 
         <!-- ===== لوحة التفسير (Bottom Sheet) ===== -->
         <Grid x:Name="TafsirOverlay"
@@ -275,7 +302,8 @@
         </Grid>
 
         <!-- ===== أزرار التنقل ===== -->
-        <Grid Grid.Row="3"
+        <Grid x:Name="FooterUI"
+              Grid.Row="3"
               ColumnDefinitions="*,Auto,*"
               Padding="10,6"
               BackgroundColor="#EDE8DC">

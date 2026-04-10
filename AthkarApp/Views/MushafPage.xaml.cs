@@ -10,6 +10,7 @@ public partial class MushafPage : ContentPage
 
     private bool _isScrollMode = true;
     private int  _currentPage  = 1;
+    private bool _isFullscreen = false;
 
     private readonly ObservableCollection<PageData> _carouselPages = new();
 
@@ -17,6 +18,13 @@ public partial class MushafPage : ContentPage
     {
         InitializeComponent();
         _quranApiService = quranApiService;
+
+        // تهيئة 604 صفحة فارغة لتسريع الأداء ومنع التعليق
+        for (int i = 1; i <= 604; i++)
+        {
+            _carouselPages.Add(new PageData { Number = i, Ayahs = new List<Ayah>() });
+        }
+
         SwipeModeView.ItemsSource = _carouselPages;
 
         LoadScrollPage(1);
@@ -45,30 +53,40 @@ public partial class MushafPage : ContentPage
         CurrentSurahLabel.Text = firstAyah.Surah?.Name ?? "";
 
         AyahsCollectionView.ItemsSource = pageData.Ayahs;
+
+        // عودة للأعلى بشكل فوري
+        if (ScrollModeContainer != null)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await Task.Delay(50); // انتظار بسيط لضمان تحديث الواجهة
+                await ScrollModeContainer.ScrollToAsync(0, 0, animated: false);
+            });
+        }
     }
 
     // ===================== تحميل صفحات CarouselView =====================
 
-    private async Task LoadCarouselPagesUpTo(int targetPage)
+    // ===================== تحميل صفحات CarouselView (صفحة محددة) =====================
+
+    private async Task LoadCarouselPage(int pageNumber)
     {
-        while (_carouselPages.Count < targetPage && _carouselPages.Count < 604)
+        if (pageNumber < 1 || pageNumber > 604) return;
+        
+        // إذا تم تحميلها مسبقاً، تخطى
+        var existingPage = _carouselPages[pageNumber - 1];
+        if (existingPage.Ayahs != null && existingPage.Ayahs.Any()) return;
+
+        var data = await _quranApiService.GetPageAsync(pageNumber);
+        if (data != null)
         {
-            int next = _carouselPages.Count + 1;
-            var data = await _quranApiService.GetPageAsync(next);
+            data.HasBismillah = data.Ayahs?.Any(a =>
+                a.NumberInSurah == 1 &&
+                a.Surah?.Number != 9 &&
+                a.Surah?.Number != 1) ?? false;
 
-            if (data != null)
-            {
-                data.HasBismillah = data.Ayahs?.Any(a =>
-                    a.NumberInSurah == 1 &&
-                    a.Surah?.Number != 9 &&
-                    a.Surah?.Number != 1) ?? false;
-            }
-
-            _carouselPages.Add(data ?? new PageData
-            {
-                Number = next,
-                Ayahs  = new List<Ayah>()
-            });
+            // تحديث بالصفحة المحملة
+            _carouselPages[pageNumber - 1] = data;
         }
     }
 
@@ -83,6 +101,9 @@ public partial class MushafPage : ContentPage
         ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#2C6E2C");
         SwipeModeBtnCtrl.BackgroundColor  = Color.FromArgb("#A5A58D");
 
+        _isFullscreen = true;
+        UpdateFullscreenState();
+
         LoadScrollPage(_currentPage);
     }
 
@@ -95,7 +116,10 @@ public partial class MushafPage : ContentPage
         ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#A5A58D");
         SwipeModeBtnCtrl.BackgroundColor  = Color.FromArgb("#2C6E2C");
 
-        await LoadCarouselPagesUpTo(_currentPage);
+        _isFullscreen = true;
+        UpdateFullscreenState();
+
+        await LoadCarouselPage(_currentPage);
         SwipeModeView.Position = _currentPage - 1;
     }
 
@@ -144,43 +168,33 @@ public partial class MushafPage : ContentPage
 
     private async Task GoToCarouselPage(int pageNum)
     {
-        await LoadCarouselPagesUpTo(pageNum);
+        await LoadCarouselPage(pageNum);
         SwipeModeView.Position = pageNum - 1;
     }
 
-    private async void OnCarouselPositionChanged(object sender, PositionChangedEventArgs e)
+    private void OnCarouselPositionChanged(object sender, PositionChangedEventArgs e)
     {
         _currentPage = e.CurrentPosition + 1;
         UpdateNavUI();
 
-        if (_carouselPages.Count > e.CurrentPosition)
+        var current = _carouselPages[e.CurrentPosition];
+        if (current.Ayahs != null && current.Ayahs.Any())
         {
-            var firstAyah = _carouselPages[e.CurrentPosition].Ayahs?.FirstOrDefault();
-            if (firstAyah != null)
-                CurrentSurahLabel.Text = firstAyah.Surah?.Name ?? "";
+            CurrentSurahLabel.Text = current.Ayahs.First().Surah?.Name ?? "";
         }
 
-        // تحميل 3 صفحات مقدماً
-        if (e.CurrentPosition >= _carouselPages.Count - 2)
-            await LoadCarouselPagesUpTo(_carouselPages.Count + 3);
+        // تحميل الصفحة الحالية (إذا لم تكن)، والسابقة والتالية
+        _ = LoadCarouselPage(_currentPage);
+        _ = LoadCarouselPage(_currentPage + 1);
+        _ = LoadCarouselPage(_currentPage - 1);
     }
 
     // ===================== تحديد الآية =====================
 
-    private void OnAyahSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnAyahTapped(object sender, TappedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is Ayah ayah)
+        if (e.Parameter is Ayah ayah)
         {
-            ((CollectionView)sender).SelectedItem = null;
-            ShowTafsir(ayah);
-        }
-    }
-
-    private void OnSwipeAyahSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (e.CurrentSelection.FirstOrDefault() is Ayah ayah)
-        {
-            ((CollectionView)sender).SelectedItem = null;
             ShowTafsir(ayah);
         }
     }
@@ -224,5 +238,47 @@ public partial class MushafPage : ContentPage
         PageCounterLabel.Text  = $"{_currentPage} / 604";
         PrevButton.IsEnabled   = _currentPage > 1;
         NextButton.IsEnabled   = _currentPage < 604;
+    }
+
+    // ===================== وضع ملء الشاشة =====================
+
+    private void OnTapScreen(object sender, TappedEventArgs e)
+    {
+        _isFullscreen = !_isFullscreen;
+        UpdateFullscreenState();
+    }
+
+    private void UpdateFullscreenState()
+    {
+        HeaderUI.IsVisible  = !_isFullscreen;
+        ModeBarUI.IsVisible = !_isFullscreen;
+        FooterUI.IsVisible  = !_isFullscreen;
+
+        // إخفاء الـ Navigation Bar و TabBar الخاصين بـ Shell لمزيد من المساحة للآيات
+        Shell.SetNavBarIsVisible(this, !_isFullscreen);
+        Shell.SetTabBarIsVisible(this, !_isFullscreen);
+
+        // تغيير أيقونة الزر العائم
+    // ===================== زر الرجوع (الهاتف) =====================
+
+    protected override bool OnBackButtonPressed()
+    {
+        // 1. إذا كانت لوحة التفسير مفتوحة، نغلقها فقط ولا نغلق التطبيق
+        if (TafsirOverlay.IsVisible)
+        {
+            TafsirOverlay.IsVisible = false;
+            return true;
+        }
+
+        // 2. إذا كان وضع ملء الشاشة مفعلاً، نخرج منه أولاً
+        if (_isFullscreen)
+        {
+            _isFullscreen = false;
+            UpdateFullscreenState();
+            return true;
+        }
+
+        // 3. خلاف ذلك، تنفيذ الرجوع الافتراضي المعتاد
+        return base.OnBackButtonPressed();
     }
 }

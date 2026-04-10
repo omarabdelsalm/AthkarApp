@@ -93,12 +93,30 @@ public class QuranApiService : IQuranApiService
 
     public async Task<PageData> GetPageAsync(int pageNumber)
     {
+        var fileName = $"page_{pageNumber}.json";
+
+        // 1. Check Local Storage (Offline)
+        var localPage = await _fileStorage.LoadJsonAsync<PageData>(fileName);
+        if (localPage != null && localPage.Ayahs != null && localPage.Ayahs.Any())
+        {
+            return localPage;
+        }
+
+        // 2. Fetch from API
         try
         {
             var url = $"https://api.alquran.cloud/v1/page/{pageNumber}/quran-uthmani";
             var response = await _httpClient.GetStringAsync(url);
             var pageResponse = JsonSerializer.Deserialize<PageResponse>(response);
-            return pageResponse?.Data ?? new PageData { Number = pageNumber, Ayahs = new List<Ayah>() };
+            var pageData = pageResponse?.Data ?? new PageData { Number = pageNumber, Ayahs = new List<Ayah>() };
+
+            // Save to Local Storage for offline usage later
+            if (pageData.Ayahs.Any())
+            {
+                await _fileStorage.SaveJsonAsync(fileName, pageData);
+            }
+
+            return pageData;
         }
         catch
         {
@@ -108,17 +126,35 @@ public class QuranApiService : IQuranApiService
 
     public async Task<string> GetTafsirAsync(int ayahNumber)
     {
+        var fileName = $"tafsir_{ayahNumber}.json";
+
+        // 1. Check Local Storage (Offline)
+        var localTafsir = await _fileStorage.LoadJsonAsync<string>(fileName);
+        if (!string.IsNullOrEmpty(localTafsir))
+        {
+            return localTafsir;
+        }
+
+        // 2. Fetch from API
         try
         {
             // Using Jalalayn as default tafsir
             var url = $"https://api.alquran.cloud/v1/ayah/{ayahNumber}/ar.jalalayn";
             var response = await _httpClient.GetStringAsync(url);
             var tafsirResponse = JsonSerializer.Deserialize<TafsirResponse>(response);
-            return tafsirResponse?.Data?.Text ?? "تعذر جلب التفسير حالياً.";
+            var tafsirText = tafsirResponse?.Data?.Text ?? "تعذر جلب التفسير حالياً.";
+
+            // Save to Offline storage
+            if (!tafsirText.Contains("تعذر") && !string.IsNullOrEmpty(tafsirResponse?.Data?.Text))
+            {
+                await _fileStorage.SaveJsonAsync(fileName, tafsirText);
+            }
+
+            return tafsirText;
         }
         catch
         {
-            return "حدث خطأ أثناء جلب التفسير.";
+            return "حدث خطأ أثناء الاتصال بالإنترنت لعرض التفسير.";
         }
     }
 }
