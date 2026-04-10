@@ -11,6 +11,10 @@
         </Tab>
 
         <Tab Title="المصحف" Icon="quran_icon.png">
+            <ShellContent ContentTemplate="{DataTemplate views:MushafPage}"/>
+        </Tab>
+
+        <Tab Title="الفهرس" Icon="quran_icon.png">
             <ShellContent ContentTemplate="{DataTemplate views:QuranPage}"/>
         </Tab>
     </TabBar>

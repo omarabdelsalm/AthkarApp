@@ -7,6 +7,8 @@ public interface IQuranApiService
 {
     Task<List<Surah>> GetSurahsAsync();
     Task<List<Ayah>> GetAyahsAsync(int surahNumber);
+    Task<PageData> GetPageAsync(int pageNumber);
+    Task<string> GetTafsirAsync(int ayahNumber);
 }
 
 public class QuranApiService : IQuranApiService
@@ -86,6 +88,37 @@ public class QuranApiService : IQuranApiService
         catch
         {
             return new List<Ayah>();
+        }
+    }
+
+    public async Task<PageData> GetPageAsync(int pageNumber)
+    {
+        try
+        {
+            var url = $"https://api.alquran.cloud/v1/page/{pageNumber}/quran-uthmani";
+            var response = await _httpClient.GetStringAsync(url);
+            var pageResponse = JsonSerializer.Deserialize<PageResponse>(response);
+            return pageResponse?.Data ?? new PageData { Number = pageNumber, Ayahs = new List<Ayah>() };
+        }
+        catch
+        {
+            return new PageData { Number = pageNumber, Ayahs = new List<Ayah>() };
+        }
+    }
+
+    public async Task<string> GetTafsirAsync(int ayahNumber)
+    {
+        try
+        {
+            // Using Jalalayn as default tafsir
+            var url = $"https://api.alquran.cloud/v1/ayah/{ayahNumber}/ar.jalalayn";
+            var response = await _httpClient.GetStringAsync(url);
+            var tafsirResponse = JsonSerializer.Deserialize<TafsirResponse>(response);
+            return tafsirResponse?.Data?.Text ?? "تعذر جلب التفسير حالياً.";
+        }
+        catch
+        {
+            return "حدث خطأ أثناء جلب التفسير.";
         }
     }
 }

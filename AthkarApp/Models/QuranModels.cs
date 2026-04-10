@@ -69,4 +69,46 @@ public class Ayah
 
     [JsonPropertyName("audio")]
     public string Audio { get; set; }
+
+    [JsonPropertyName("surah")]
+    public Surah? Surah { get; set; }
+
+    [JsonPropertyName("page")]
+    public int Page { get; set; }
+
+    [JsonIgnore]
+    public bool IsSelected { get; set; }
+}
+
+public class PageResponse
+{
+    [JsonPropertyName("data")]
+    public PageData Data { get; set; }
+}
+
+public class PageData
+{
+    [JsonPropertyName("number")]
+    public int Number { get; set; }
+
+    [JsonPropertyName("ayahs")]
+    public List<Ayah> Ayahs { get; set; }
+
+    [JsonIgnore]
+    public bool HasBismillah { get; set; }
+}
+
+public class TafsirResponse
+{
+    [JsonPropertyName("data")]
+    public TafsirData Data { get; set; }
+}
+
+public class TafsirData
+{
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
+
+    [JsonPropertyName("number")]
+    public int Number { get; set; }
 }

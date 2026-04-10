@@ -42,6 +42,7 @@ public static class MauiProgram
         // تسجيل الصفحات
         builder.Services.AddSingleton<AthkarPage>();
         builder.Services.AddSingleton<QuranPage>();
+        builder.Services.AddSingleton<MushafPage>();
         builder.Services.AddTransient<SurahDetailPage>();
 
         return builder.Build();
