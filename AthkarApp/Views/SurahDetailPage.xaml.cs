@@ -13,6 +13,7 @@ public partial class SurahDetailPage : ContentPage
     private readonly Surah _surah;
     private IAudioPlayer _audioPlayer;
     private bool _isPlaying;
+    public System.Windows.Input.ICommand PlayAyahCommand { get; }
 
     public ObservableCollection<Ayah> Ayahs { get; set; } = new();
 
@@ -22,6 +23,7 @@ public partial class SurahDetailPage : ContentPage
         _quranApiService = quranApiService;
         _quranDownloadService = quranDownloadService;
         _surah = surah;
+        PlayAyahCommand = new Command<Ayah>(async (ayah) => await PlayAyahAudio(ayah.Audio));
         BindingContext = this;
 
         SurahNameLabel.Text = $"{_surah.Name} ({_surah.EnglishName})";
@@ -50,8 +52,6 @@ public partial class SurahDetailPage : ContentPage
             Ayahs.Clear();
             foreach (var ayah in ayahs)
                 Ayahs.Add(ayah);
-
-            CreateAyahViews();
         }
         catch (Exception ex)
         {
@@ -59,61 +59,6 @@ public partial class SurahDetailPage : ContentPage
         }
     }
 
-    private void CreateAyahViews()
-    {
-        AyahsLayout.Children.Clear();
-
-        foreach (var ayah in Ayahs)
-        {
-            var ayahFrame = new Frame
-            {
-                BackgroundColor = Colors.White,
-                CornerRadius = 15,
-                Padding = new Thickness(15, 10),
-                HasShadow = true,
-                Margin = new Thickness(0, 5)
-            };
-
-            var ayahLayout = new VerticalStackLayout();
-
-            var numberLabel = new Label
-            {
-                Text = $"﴿{ayah.NumberInSurah}﴾",
-                FontSize = 16,
-                TextColor = Colors.Gray,
-                HorizontalOptions = LayoutOptions.Start
-            };
-
-            var textLabel = new Label
-            {
-                Text = ayah.Text,
-                FontSize = 22,
-                TextColor = Color.FromArgb("#2C6E2C"),
-                HorizontalOptions = LayoutOptions.Center,
-                HorizontalTextAlignment = TextAlignment.Center,
-                LineBreakMode = LineBreakMode.WordWrap
-            };
-
-            var playAyahButton = new Button
-            {
-                Text = "▶ استماع لهذه الآية",
-                FontSize = 14,
-                BackgroundColor = Color.FromArgb("#2C6E2C"),
-                TextColor = Colors.White,
-                Margin = new Thickness(0, 5, 0, 0),
-                HorizontalOptions = LayoutOptions.End,
-                CornerRadius = 10,
-                Padding = new Thickness(10, 5)
-            };
-            playAyahButton.Clicked += async (s, e) => await PlayAyahAudio(ayah.Audio);
-
-            ayahLayout.Children.Add(numberLabel);
-            ayahLayout.Children.Add(textLabel);
-            ayahLayout.Children.Add(playAyahButton);
-            ayahFrame.Content = ayahLayout;
-            AyahsLayout.Children.Add(ayahFrame);
-        }
-    }
 
     private async Task PlayAyahAudio(string audioUrl)
     {

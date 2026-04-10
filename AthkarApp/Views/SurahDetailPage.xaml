@@ -1,83 +1,135 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:AthkarApp.Models"
              x:Class="AthkarApp.Views.SurahDetailPage"
+             x:Name="this"
              Title="سورة"
              BackgroundColor="#F5F5F0"
              FlowDirection="RightToLeft">
 
     <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Compact Header -->
         <Frame Grid.Row="0"
                BackgroundColor="#2C6E2C"
-               CornerRadius="0,0,20,20"
-               Padding="20">
-            <VerticalStackLayout>
+               CornerRadius="0,0,15,15"
+               Padding="10,15"
+               HasShadow="True">
+            <VerticalStackLayout Spacing="2">
                 <Label x:Name="SurahNameLabel"
-                       Text=""
-                       FontSize="28"
+                       FontSize="22"
                        FontAttributes="Bold"
                        TextColor="White"
                        HorizontalOptions="Center"/>
                 <Label x:Name="SurahInfoLabel"
-                       Text=""
-                       FontSize="16"
+                       FontSize="13"
                        TextColor="#DDDDDD"
                        HorizontalOptions="Center"/>
             </VerticalStackLayout>
         </Frame>
 
+        <!-- Compact Buttons -->
         <Grid Grid.Row="1"
-              RowDefinitions="Auto,Auto"
-              ColumnDefinitions="*,*"
-              Padding="10"
-              RowSpacing="5"
+              ColumnDefinitions="*,*,*"
+              Padding="10,5"
+              ColumnSpacing="8"
               BackgroundColor="#F5F5F0">
+            
             <Button x:Name="PlayButton"
                     Grid.Column="0"
-                    Text="▶ تشغيل التلاوة"
+                    Text="▶ تشغيل"
+                    HeightRequest="40"
+                    Padding="5,0"
+                    FontSize="12"
                     BackgroundColor="#2196F3"
                     TextColor="White"
-                    CornerRadius="10"
+                    CornerRadius="8"
                     Clicked="OnPlayTafseer"/>
+            
             <Button x:Name="StopButton"
                     Grid.Column="1"
-                    Text="⏹ إيقاف التلاوة"
+                    Text="⏹ إيقاف"
+                    HeightRequest="40"
+                    Padding="5,0"
+                    FontSize="12"
                     BackgroundColor="#D32F2F"
                     TextColor="White"
-                    CornerRadius="10"
+                    CornerRadius="8"
                     IsEnabled="False"
                     Clicked="OnStopTafseer"/>
 
             <Button x:Name="DownloadButton"
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Text="⬇ تحميل للاستماع بدون إنترنت"
+                    Grid.Column="2"
+                    Text="⬇ تحميل"
+                    HeightRequest="40"
+                    Padding="5,0"
+                    FontSize="12"
                     BackgroundColor="#4CAF50"
                     TextColor="White"
-                    CornerRadius="10"
+                    CornerRadius="8"
                     Clicked="OnDownloadClicked"/>
 
             <VerticalStackLayout x:Name="DownloadProgressLayout"
-                                 Grid.Row="1"
-                                 Grid.Column="0"
-                                 Grid.ColumnSpan="2"
+                                 Grid.Column="2"
+                                 VerticalOptions="Center"
                                  IsVisible="False">
                 <ProgressBar x:Name="DownloadProgressBar"
                              ProgressColor="#4CAF50"
-                             Margin="0,5"/>
+                             HeightRequest="4"/>
                 <Label x:Name="DownloadStatusLabel"
-                       Text="جاري التحميل..."
-                       FontSize="12"
+                       Text="جاري..."
+                       FontSize="10"
                        TextColor="#4CAF50"
                        HorizontalOptions="Center"/>
             </VerticalStackLayout>
         </Grid>
 
-        <ScrollView Grid.Row="2">
-            <VerticalStackLayout x:Name="AyahsLayout"
-                                 Spacing="15"
-                                 Padding="15,10"/>
-        </ScrollView>
+        <!-- Fast CollectionView -->
+        <CollectionView x:Name="AyahsCollectionView"
+                       Grid.Row="2"
+                       ItemsSource="{Binding Ayahs}"
+                       SelectionMode="None"
+                       RemainingItemsThreshold="5">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Ayah">
+                    <Frame BackgroundColor="White"
+                           CornerRadius="12"
+                           Padding="12,8"
+                           HasShadow="True"
+                           Margin="10,2">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
+                                   FontSize="14"
+                                   TextColor="Gray"
+                                   HorizontalOptions="Start"/>
+                            
+                            <Label Text="{Binding Text}"
+                                   FontSize="20"
+                                   TextColor="#2C6E2C"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"
+                                   LineBreakMode="WordWrap"/>
+                            
+                            <Button Text="▶ إستماع"
+                                    FontSize="12"
+                                    HeightRequest="32"
+                                    Padding="10,0"
+                                    BackgroundColor="#2C6E2C"
+                                    TextColor="White"
+                                    HorizontalOptions="End"
+                                    CornerRadius="8"
+                                    Command="{Binding Source={x:Reference this}, Path=PlayAyahCommand}"
+                                    CommandParameter="{Binding .}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <BoxView HeightRequest="20" Color="Transparent"/>
+            </CollectionView.Footer>
+        </CollectionView>
     </Grid>
 </ContentPage>
