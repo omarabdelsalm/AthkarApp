@@ -51,6 +51,26 @@ public class AthkarNotificationService : IAthkarNotificationService
                 activity.StartActivity(intent);
             }
         }
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(23))
+        {
+            var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+            var pm = activity?.GetSystemService(Context.PowerService) as Android.OS.PowerManager;
+            if (pm != null && !pm.IsIgnoringBatteryOptimizations(activity!.PackageName))
+            {
+                try
+                {
+                    var intent = new Intent(Android.Provider.Settings.ActionRequestIgnoreBatteryOptimizations);
+                    intent.SetData(Android.Net.Uri.Parse("package:" + activity.PackageName));
+                    intent.AddFlags(ActivityFlags.NewTask);
+                    activity.StartActivity(intent);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error requesting battery optimization ignore: {ex.Message}");
+                }
+            }
+        }
 #endif
         return allowed;
     }
