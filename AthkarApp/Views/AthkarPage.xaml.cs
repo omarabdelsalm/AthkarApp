@@ -7,17 +7,33 @@ public partial class AthkarPage : ContentPage
 {
     private readonly AthkarService _athkarService;
     private readonly ISoundService _soundService;
+    private readonly IStreakService _streakService;
     private List<AthkarCategory> _categories;
     private List<string> _currentAthkarList;
     private int _currentIndex;
     private int _currentCount;
 
-    public AthkarPage(AthkarService athkarService, ISoundService soundService)
+    public AthkarPage(AthkarService athkarService, ISoundService soundService, IStreakService streakService)
     {
         InitializeComponent();
         _athkarService = athkarService;
         _soundService = soundService;
+        _streakService = streakService;
         LoadCategories();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        
+        // التحقق من السلسلة اليومية
+        var streakInfo = await _streakService.CheckAndUpdateStreakAsync();
+        StreakLabel.Text = streakInfo.Count.ToString();
+
+        if (streakInfo.IsNewDay)
+        {
+            await DisplayAlert("سلسلة الأذكار 🔥", streakInfo.Message, "الحمد لله");
+        }
     }
 
     private void LoadCategories()
@@ -118,5 +134,10 @@ public partial class AthkarPage : ContentPage
         {
             await DisplayAlert("تنبيه", $"حدث خطأ أثناء الانتقال: {ex.Message}", "موافق");
         }
+    }
+
+    private async void OnSettingsClicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(SettingsPage));
     }
 }

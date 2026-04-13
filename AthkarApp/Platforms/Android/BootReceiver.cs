@@ -24,7 +24,7 @@ public class BootReceiver : BroadcastReceiver
             intent?.Action != "android.intent.action.QUICKBOOT_POWERON")
             return;
 
-        System.Diagnostics.Debug.WriteLine("📱 BootReceiver: الجهاز أُعيد تشغيله - إعادة جدولة الإشعارات...");
+       // System.Diagnostics.Debug.WriteLine("📱 BootReceiver: الجهاز أُعيد تشغيله - إعادة جدولة الإشعارات...");
 
         // نستخدم Task.Run لأن OnReceive يجب أن يكون متزامناً
         Task.Run(async () =>

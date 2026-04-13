@@ -31,6 +31,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
         builder.Services.AddSingleton<IQuranDownloadService, QuranDownloadService>();
         builder.Services.AddSingleton<IAthkarNotificationService, AthkarNotificationService>();
+        builder.Services.AddSingleton<IStreakService, StreakService>();
         builder.Services.AddSingleton(AudioManager.Current);
 
         builder.Services.AddHttpClient<IQuranApiService, QuranApiService>(client =>
@@ -44,6 +45,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<QuranPage>();
         builder.Services.AddSingleton<MushafPage>();
         builder.Services.AddTransient<SurahDetailPage>();
+        builder.Services.AddTransient<SettingsPage>();
+        builder.Services.AddSingleton<TasbeehPage>();
 
         return builder.Build();
     }

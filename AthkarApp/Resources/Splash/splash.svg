@@ -1,17 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400">
-    <!-- Dome Base -->
-    <path d="M 50 30 C 65 45 75 60 75 80 L 25 80 C 25 60 35 45 50 30 Z" fill="#FFFFFF" />
-    <rect x="23" y="80" width="54" height="4" fill="#FFFFFF" rx="2" />
-    
-    <!-- Left Minaret -->
-    <rect x="15" y="50" width="6" height="34" fill="#FFFFFF" rx="1" />
-    <polygon points="14,50 18,35 22,50" fill="#FFFFFF" />
-    
-    <!-- Right Minaret -->
-    <rect x="79" y="50" width="6" height="34" fill="#FFFFFF" rx="1" />
-    <polygon points="78,50 82,35 86,50" fill="#FFFFFF" />
-    
-    <!-- Crescent on top of dome -->
-    <path d="M 50 25 A 6 6 0 1 1 54 15 A 5 5 0 1 0 46 22 A 6 6 0 0 1 50 25 Z" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- هلال شاشة البدء (ذهبي) -->
+  <path d="M340 330C260 330 195 265 195 185C195 160 200 137 210 115C150 135 110 195 110 260C110 345 180 415 265 415C325 415 380 380 405 325C385 328 363 330 340 330Z" fill="#D4AF37"/>
+  <!-- نجمة ثمانية صغيرة -->
+  <path d="M265 110L275 125L290 135L275 145L265 160L255 145L240 135L255 125L265 110Z" fill="#F0C850"/>
 </svg>

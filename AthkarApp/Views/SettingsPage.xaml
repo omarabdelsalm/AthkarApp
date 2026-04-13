@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.SettingsPage"
+             Title="إعدادات الأصوات"
+             BackgroundColor="#E8F0F8"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+            
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="تخصيص أصوات التنبيه" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="#2C6E2C" 
+                           HorizontalOptions="Center" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Label Text="اختر الأصوات التي ترغب في سماعها بالتناوب:" 
+                           FontSize="14" 
+                           TextColor="#666666" 
+                           HorizontalOptions="Center"
+                           Margin="0,0,0,20"/>
+
+                    <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,10"/>
+
+                    <!-- صوت 1: أمي -->
+                    <Grid ColumnDefinitions="*, Auto, Auto" Padding="5">
+                        <Label Text="صوت 1 (صل على محمد)" VerticalOptions="Center" FontSize="18" TextColor="#333333"/>
+                        <Button Grid.Column="1" Text="▶" 
+                                BackgroundColor="Transparent" TextColor="#2C6E2C" FontSize="20"
+                                Clicked="OnPreviewOm" Margin="10,0"/>
+                        <Switch Grid.Column="2" x:Name="SwitchOm" IsToggled="True" OnColor="#2C6E2C" Toggled="OnSoundToggled"/>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,10"/>
+
+                    <!-- صوت 2: أبي -->
+                    <Grid ColumnDefinitions="*, Auto, Auto" Padding="5">
+                        <Label Text="صوت 2 (صل على محمد)" VerticalOptions="Center" FontSize="18" TextColor="#333333"/>
+                        <Button Grid.Column="1" Text="▶" 
+                                BackgroundColor="Transparent" TextColor="#2C6E2C" FontSize="20"
+                                Clicked="OnPreviewAh" Margin="10,0"/>
+                        <Switch Grid.Column="2" x:Name="SwitchAh" IsToggled="True" OnColor="#2C6E2C" Toggled="OnSoundToggled"/>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,10"/>
+
+                    <!-- صوت 3: أخي -->
+                    <Grid ColumnDefinitions="*, Auto, Auto" Padding="5">
+                        <Label Text="صوت 3 (ان الله وملائكته يصلون)" VerticalOptions="Center" FontSize="18" TextColor="#333333"/>
+                        <Button Grid.Column="1" Text="▶" 
+                                BackgroundColor="Transparent" TextColor="#2C6E2C" FontSize="20"
+                                Clicked="OnPreviewMa" Margin="10,0"/>
+                        <Switch Grid.Column="2" x:Name="SwitchMa" IsToggled="True" OnColor="#2C6E2C" Toggled="OnSoundToggled"/>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="سيتم تطبيق التغييرات فوراً على التنبيهات القادمة."
+                   FontSize="12"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,10"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
