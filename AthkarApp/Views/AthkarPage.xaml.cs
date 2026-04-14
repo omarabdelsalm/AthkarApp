@@ -170,4 +170,14 @@ public partial class AthkarPage : ContentPage
     {
         await Shell.Current.GoToAsync(nameof(SettingsPage));
     }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (ThikrView.IsVisible)
+        {
+            OnBackToSelection(null, null);
+            return true;
+        }
+        return base.OnBackButtonPressed();
+    }
 }

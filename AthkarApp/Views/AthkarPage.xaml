@@ -32,27 +32,36 @@
                     </Grid>
                 </Frame>
 
-                <!-- Categories Grid -->
                 <CollectionView x:Name="CategoriesCollectionView" SelectionMode="None">
                     <CollectionView.ItemsLayout>
                         <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="15" HorizontalItemSpacing="15"/>
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame BackgroundColor="White" CornerRadius="15" Padding="0" HasShadow="True" HeightRequest="130" BorderColor="#EEEEEE">
+                            <Frame BackgroundColor="White" CornerRadius="20" Padding="0" HasShadow="True" HeightRequest="160" BorderColor="Transparent">
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="{Binding .}"/>
                                 </Frame.GestureRecognizers>
                                 <Grid>
-                                    <BoxView Color="{Binding CardColor}" Opacity="0.1"/>
-                                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                                    <!-- Background Image with Overlay -->
+                                    <Image Source="{Binding ImagePath}" Aspect="AspectFill" Opacity="0.8"/>
+                                    <BoxView Color="Black" Opacity="0.4"/>
+                                    
+                                    <!-- Content -->
+                                    <VerticalStackLayout VerticalOptions="End" Padding="15" Spacing="5">
                                         <Label Text="{Binding Name}" 
-                                               FontSize="16" 
+                                               FontSize="18" 
                                                FontAttributes="Bold" 
-                                               TextColor="#143214" 
+                                               TextColor="White" 
                                                HorizontalOptions="Center"
-                                               HorizontalTextAlignment="Center"/>
-                                        <Label Text="عرض الأذكار ➔" FontSize="11" TextColor="#666666" HorizontalOptions="Center"/>
+                                               HorizontalTextAlignment="Center">
+                                            <Label.Shadow>
+                                                <Shadow Brush="Black" Offset="1,1" Radius="2" Opacity="0.8"/>
+                                            </Label.Shadow>
+                                        </Label>
+                                        <Frame BackgroundColor="#D4AF37" CornerRadius="10" Padding="8,2" HorizontalOptions="Center" HasShadow="False" BorderColor="Transparent">
+                                            <Label Text="ابدأ الآن" FontSize="10" TextColor="#143214" FontAttributes="Bold"/>
+                                        </Frame>
                                     </VerticalStackLayout>
                                 </Grid>
                             </Frame>
