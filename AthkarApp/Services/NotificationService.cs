@@ -14,7 +14,9 @@ namespace AthkarApp.Services;
 public interface IAthkarNotificationService
 {
     Task<bool> RequestPermissionsAsync();
-    Task EnsureScheduledTodayAsync();
+    Task EnsureNotificationsScheduledAsync(bool force = false);
+    Task ShowNotificationPreviewAsync(string soundName);
+    Task<bool> RequestBatteryOptimizationAsync();
 }
 
 public class AthkarNotificationService : IAthkarNotificationService
@@ -90,25 +92,59 @@ public class AthkarNotificationService : IAthkarNotificationService
         return allowed;
     }
 
-    // ==================== جدولة مرة واحدة في اليوم ====================
+    public async Task<bool> RequestBatteryOptimizationAsync()
+    {
+#if ANDROID
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+        if (activity == null) return false;
 
-    public async Task EnsureScheduledTodayAsync()
+        var powerManager = activity.GetSystemService(Context.PowerService) as PowerManager;
+        if (powerManager != null && !powerManager.IsIgnoringBatteryOptimizations(activity.PackageName))
+        {
+            // نطلبها مرة واحدة فقط تلقائياً لتجنب إزعاج المستخدم
+            if (Preferences.Default.Get(BatteryOptimizationRequestedKey, false)) return false;
+
+            try
+            {
+                var intent = new Intent(Android.Provider.Settings.ActionRequestIgnoreBatteryOptimizations);
+                intent.SetData(Android.Net.Uri.Parse("package:" + activity.PackageName));
+                intent.AddFlags(ActivityFlags.NewTask);
+                activity.StartActivity(intent);
+                Preferences.Default.Set(BatteryOptimizationRequestedKey, true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ RequestBatteryOptimizationAsync Error: {ex.Message}");
+            }
+        }
+#endif
+        return false;
+    }
+
+    // ==================== جدولة منتظمة وثابتة ====================
+
+    public async Task EnsureNotificationsScheduledAsync(bool force = false)
     {
         try
         {
+            // التحقق من التاريخ لضمان الجدولة عند التثبيت الأول أو تغيير التاريخ
             string todayStr = DateTime.Today.ToString("yyyy-MM-dd");
-            string lastDate = Preferences.Default.Get(LastScheduledDateKey, string.Empty);
+            string lastScheduled = Preferences.Default.Get(LastScheduledDateKey, "");
 
-            if (lastDate == todayStr) return;
+            if (!force && lastScheduled == todayStr)
+            {
+                // إذا تم الجدولة اليوم بالفعل، نكتفي بالتأكد من وجود الإشعارات
+                var pending = await LocalNotificationCenter.Current.GetPendingNotificationList();
+                if (pending.Count >= 16) return;
+            }
 
             await InternalScheduleBatchAsync();
-
             Preferences.Default.Set(LastScheduledDateKey, todayStr);
-           
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ EnsureScheduledTodayAsync Error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ EnsureNotificationsScheduledAsync Error: {ex.Message}");
         }
     }
 
@@ -122,20 +158,22 @@ public class AthkarNotificationService : IAthkarNotificationService
         int lastIndex = Preferences.Default.Get(LastSoundIndexKey, 0);
         int scheduledCount = 0;
 
-        // 3. جدولة التنبيهات للأربع وعشرين ساعة القادمة
-        for (int i = 0; i < 24; i++)
+        // 3. جدولة التنبيهات لساعات اليوم الثابتة (من 6 صباحاً حتى 10 مساءً)
+        for (int hour = 6; hour <= 22; hour++)
         {
-            DateTime notifyTime = DateTime.Now.AddHours(i + 1);
-            int hour = notifyTime.Hour;
-
-            // استثناء فترة الهدوء (11 م - 6 ص)
-            if (hour >= 23 || hour < 6) continue;
+            // تحديد وقت التنبيه القادم لهذا الوقت
+            DateTime notifyTime = DateTime.Today.AddHours(hour);
+            if (notifyTime < DateTime.Now)
+            {
+                // إذا مر الوقت اليوم، نجعل البداية من غدٍ وتتكرر يومياً بعدها
+                notifyTime = notifyTime.AddDays(1);
+            }
 
             // اختيار الذكر التالي
             int textIndex = (lastIndex + scheduledCount) % AthkarTexts.Length;
             string text = AthkarTexts[textIndex];
 
-            // اختيار الصوت (إذا كانت القائمة فارغة، نرسل إشعاراً صامتاً)
+            // اختيار الصوت
             string sound = null;
             if (enabledSounds.Any())
             {
@@ -143,17 +181,86 @@ public class AthkarNotificationService : IAthkarNotificationService
                 sound = enabledSounds[soundIndex];
             }
             
-            await ScheduleNotificationAsync(sound, text, scheduledCount, notifyTime);
+            // نستخدم معرف مبني على الساعة ليكون فريداً وثابتاً (1000 + الساعة)
+            int notificationId = NotificationBaseId + hour;
+            await ScheduleNotificationAsync(sound, text, notificationId, notifyTime);
             scheduledCount++;
         }
 
-        // 4. حفظ المؤشر القادم للتناسق
+        // 4. إشعار ترحيبي عند التثبيت الأول للتأكد من عمل النظام
+        if (Preferences.Default.Get(LastScheduledDateKey, "") == "")
+        {
+            await ShowWelcomeNotificationAsync();
+        }
+
+        // 5. حفظ المؤشر القادم للتناسق في المرة القادمة التي نعيد فيها الجدولة (تغيير إعدادات مثلاً)
         Preferences.Default.Set(LastSoundIndexKey, (lastIndex + scheduledCount) % 1000);
     }
 
-    private static async Task ScheduleNotificationAsync(string soundName, string description, int sequenceIndex, DateTime notifyTime)
+    private static async Task ShowWelcomeNotificationAsync()
     {
-        string channelId = $"athkar_channel_{soundName}";
+        var request = new NotificationRequest
+        {
+            NotificationId = 8888,
+            Title = "✅ تم تفعيل الأذكار",
+            Description = "ستصلك الأذكار آلياً كل ساعة من 6 صباحاً حتى 10 مساءً بإذن الله.",
+            Sound = GetEnabledSounds().FirstOrDefault() ?? "om",
+#if ANDROID
+            Android = new AndroidOptions
+            {
+                ChannelId = $"athkar_channel_{GetEnabledSounds().FirstOrDefault() ?? "om"}_v2",
+                Priority = AndroidPriority.High
+            }
+#endif
+        };
+        await LocalNotificationCenter.Current.Show(request);
+    }
+
+    public async Task ShowNotificationPreviewAsync(string soundName)
+    {
+        try
+        {
+            string channelId = $"athkar_channel_{soundName}_v2";
+
+#if ANDROID
+            var channelRequest = new NotificationChannelRequest
+            {
+                Id                  = channelId,
+                Name                = $"أذكار — {soundName}",
+                Importance          = AndroidImportance.Max,
+                Sound               = soundName,
+                EnableSound         = true,
+                EnableVibration     = true
+            };
+            LocalNotificationCenter.CreateNotificationChannels(new List<NotificationChannelRequest> { channelRequest });
+#endif
+
+            var request = new NotificationRequest
+            {
+                NotificationId = 9999,
+                Title          = "تجربة صوت الأذكار",
+                Description    = $"هذا هو صوت إشعار {soundName}",
+                Sound          = DeviceInfo.Platform == DevicePlatform.WinUI ? $"{WindowsSoundDir}{soundName}.wav" : soundName,
+#if ANDROID
+                Android = new AndroidOptions
+                {
+                    ChannelId = channelId,
+                    Priority = AndroidPriority.High
+                }
+#endif
+            };
+
+            await LocalNotificationCenter.Current.Show(request);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ ShowNotificationPreviewAsync Error: {ex.Message}");
+        }
+    }
+
+    private static async Task ScheduleNotificationAsync(string soundName, string description, int notificationId, DateTime notifyTime)
+    {
+        string channelId = $"athkar_channel_{soundName}_v2";
 
 #if ANDROID
         var channelRequest = new NotificationChannelRequest
@@ -170,7 +277,7 @@ public class AthkarNotificationService : IAthkarNotificationService
 
         var request = new NotificationRequest
         {
-            NotificationId = NotificationBaseId + sequenceIndex,
+            NotificationId = notificationId,
             Title          = "⭐ ذكر الله",
             Description    = description,
             CategoryType   = NotificationCategoryType.Reminder,
@@ -202,9 +309,8 @@ public class AthkarNotificationService : IAthkarNotificationService
     {
         try
         {
-            // عند الريستارت، نمسح تاريخ اليوم لنجبر النظام على إعادة الجدولة
-            Preferences.Default.Remove(LastScheduledDateKey);
-            await InternalScheduleBatchAsync();
+            // عند الريستارت، نجبر النظام على إعادة الجدولة للتأكد من استعادة كل الأوقات
+            await (new AthkarNotificationService()).EnsureNotificationsScheduledAsync(force: true);
           //  System.Diagnostics.Debug.WriteLine($"✅ BootReceiver: تم إعادة جدولة الأذكار بعد تشغيل الجهاز.");
         }
         catch (Exception ex)

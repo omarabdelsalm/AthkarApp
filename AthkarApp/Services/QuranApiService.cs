@@ -60,7 +60,8 @@ public class QuranApiService : IQuranApiService
 
     public async Task<List<Ayah>> GetAyahsAsync(int surahNumber)
     {
-        var fileName = $"surah_{surahNumber}.json";
+        string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
+        var fileName = $"surah_{surahNumber}_{reciterId}.json";
 
         // 1. Check Local Storage
         var localAyahs = await _fileStorage.LoadJsonAsync<List<Ayah>>(fileName);
@@ -72,7 +73,7 @@ public class QuranApiService : IQuranApiService
         // 2. Fetch from API
         try
         {
-            var url = $"https://api.alquran.cloud/v1/surah/{surahNumber}/ar.alafasy";
+            var url = $"https://api.alquran.cloud/v1/surah/{surahNumber}/{reciterId}";
             var response = await _httpClient.GetStringAsync(url);
             var ayahResponse = JsonSerializer.Deserialize<AyahResponse>(response);
             var ayahs = ayahResponse?.Data?.Ayahs ?? new List<Ayah>();

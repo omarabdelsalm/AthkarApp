@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.PrayerPage"
+             Title="مواقيت الصلاة"
+             BackgroundColor="#0B200B"
+             FlowDirection="RightToLeft">
+
+    <ContentPage.Resources>
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#143214" Offset="0.1" />
+            <GradientStop Color="#1B4D1B" Offset="0.5" />
+            <GradientStop Color="#2C6E2C" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Premium Header Panel -->
+        <Frame Grid.Row="0" Margin="15" Padding="0" CornerRadius="25" BorderColor="#D4AF37" HasShadow="True">
+            <Grid HeightRequest="220" Background="{StaticResource HeaderGradient}">
+                <!-- Pattern Background -->
+                <Image Source="appicon.svg" Aspect="AspectFill" Opacity="0.05" Scale="2"/>
+                
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
+                    <Label x:Name="NextPrayerLabel" Text="الصلاة القادمة: --" TextColor="#D4AF37" FontSize="18" HorizontalOptions="Center" FontAttributes="Bold"/>
+                    <Label x:Name="CountdownLabel" Text="00:00:00" TextColor="White" FontSize="54" FontAttributes="Bold" HorizontalOptions="Center">
+                        <Label.Shadow>
+                            <Shadow Brush="Black" Offset="2,2" Radius="5" Opacity="0.5"/>
+                        </Label.Shadow>
+                    </Label>
+                    <Label x:Name="HijriDateLabel" Text="-- رمضان ----" TextColor="#EEEEEE" FontSize="16" HorizontalOptions="Center" Margin="0,5,0,0"/>
+                    
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="5" Margin="0,10,0,0">
+                        <Label Text="📍" FontSize="12"/>
+                        <Label x:Name="LocationLabel" Text="جاري تحديد الموقع..." TextColor="#CCCCCC" FontSize="12" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Grid>
+        </Frame>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="15" Spacing="20">
+                
+                <!-- Prayer Timings Card -->
+                <Frame BackgroundColor="#F5F5F5" CornerRadius="20" Padding="5" BorderColor="#D4AF37" HasShadow="True">
+                    <VerticalStackLayout x:Name="TimingsList" Spacing="0">
+                        <!-- Populated dynamically -->
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Qibla Finder Card -->
+                <Frame BackgroundColor="#F5F5F5" CornerRadius="20" Padding="20" BorderColor="#D4AF37" HasShadow="True">
+                    <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
+                        <Label Text="البوصلة واتجاه القبلة" FontSize="20" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center"/>
+                        
+                        <Grid HeightRequest="180" WidthRequest="180">
+                            <!-- Outer Ring -->
+                            <Ellipse Stroke="#D4AF37" StrokeThickness="3" Opacity="0.3"/>
+                            <Ellipse Stroke="#143214" StrokeThickness="1" Margin="5"/>
+                            
+                            <!-- Cardinal Points -->
+                            <Label Text="N" VerticalOptions="Start" HorizontalOptions="Center" FontSize="14" FontAttributes="Bold" TextColor="#CC0000" Margin="0,2,0,0"/>
+                            <Label Text="S" VerticalOptions="End" HorizontalOptions="Center" FontSize="12" TextColor="Gray"/>
+                            <Label Text="E" VerticalOptions="Center" HorizontalOptions="End" FontSize="12" TextColor="Gray"/>
+                            <Label Text="W" VerticalOptions="Center" HorizontalOptions="Start" FontSize="12" TextColor="Gray"/>
+
+                            <!-- Needle Container -->
+                            <Grid x:Name="CompassContainer">
+                                <!-- Static Circle -->
+                                <Ellipse Fill="#143214" HeightRequest="10" WidthRequest="10" VerticalOptions="Center" HorizontalOptions="Center"/>
+                                
+                                <!-- Pointer Needle -->
+                                <Image x:Name="QiblaNeedle" Source="appicon.svg" HeightRequest="100" WidthRequest="30" VerticalOptions="Center" HorizontalOptions="Center">
+                                    <Image.Shadow>
+                                        <Shadow Brush="Black" Offset="2,2" Radius="3" Opacity="0.3"/>
+                                    </Image.Shadow>
+                                </Image>
+                            </Grid>
+                        </Grid>
+                        
+                        <Label x:Name="QiblaAngleLabel" Text="الزاوية الحالية: --" FontSize="14" TextColor="#143214" HorizontalOptions="Center" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="تحديث البيانات يدويأ" 
+                        Clicked="OnRefreshClicked" 
+                        BackgroundColor="#D4AF37" 
+                        TextColor="#143214"
+                        FontAttributes="Bold"
+                        CornerRadius="15" 
+                        HeightRequest="50"
+                        Margin="0,0,0,30"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

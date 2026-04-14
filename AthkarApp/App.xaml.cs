@@ -3,11 +3,13 @@ namespace AthkarApp
     public partial class App : Application
     {
         private readonly Services.IAthkarNotificationService _notificationService;
+        private readonly Services.IPrayerService _prayerService;
 
-        public App(Services.IAthkarNotificationService notificationService)
+        public App(Services.IAthkarNotificationService notificationService, Services.IPrayerService prayerService)
         {
             InitializeComponent();
             _notificationService = notificationService;
+            _prayerService = prayerService;
         }
 
         protected override void OnStart()
@@ -18,7 +20,15 @@ namespace AthkarApp
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await _notificationService.RequestPermissionsAsync();
-                await _notificationService.EnsureScheduledTodayAsync();
+                await _notificationService.RequestBatteryOptimizationAsync();
+                await _notificationService.EnsureNotificationsScheduledAsync();
+                
+                // جلب مواقيت الصلاة وجدولتها
+                var timings = await _prayerService.GetPrayerTimingsAsync();
+                if (timings != null)
+                {
+                    await _prayerService.ScheduleAdhanNotificationsAsync(timings);
+                }
             });
         }
 

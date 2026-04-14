@@ -10,6 +10,10 @@
             <ShellContent ContentTemplate="{DataTemplate views:AthkarPage}"/>
         </Tab>
 
+        <Tab Title="مواقييت الصلاة" Icon="quran_icon.png">
+            <ShellContent ContentTemplate="{DataTemplate views:PrayerPage}"/>
+        </Tab>
+
         <Tab Title="المسبحة" Icon="dotnet_bot.svg">
             <ShellContent ContentTemplate="{DataTemplate views:TasbeehPage}"/>
         </Tab>

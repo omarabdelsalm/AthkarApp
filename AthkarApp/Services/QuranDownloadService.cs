@@ -8,6 +8,7 @@ public interface IQuranDownloadService
     bool IsSurahDownloaded(int surahNumber);
     string GetSurahAudioPath(int surahNumber);
     Task SyncAllSurahsTextAsync(Action<double> progressCallback);
+    Task ClearAllDownloadsAsync();
 }
 
 public class QuranDownloadService : IQuranDownloadService
@@ -33,8 +34,11 @@ public class QuranDownloadService : IQuranDownloadService
             progressCallback(0.3);
 
             // 2. Download Full Surah Audio
-            var audioUrl = $"https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/{surah.Number:000}.mp3";
-            var fileName = $"surah_{surah.Number}.mp3";
+            string folderName = Preferences.Default.Get("SelectedReciterFolder", "mishaari_raashid_al_3afaasee");
+            string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
+            
+            var audioUrl = $"https://download.quranicaudio.com/quran/{folderName}/{surah.Number:000}.mp3";
+            var fileName = $"surah_{surah.Number}_{reciterId}.mp3";
 
             using var response = await _httpClient.GetAsync(audioUrl, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
@@ -79,8 +83,9 @@ public class QuranDownloadService : IQuranDownloadService
 
     public bool IsSurahDownloaded(int surahNumber)
     {
-        var audioFile = $"surah_{surahNumber}.mp3";
-        var jsonFile = $"surah_{surahNumber}.json";
+        string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
+        var audioFile = $"surah_{surahNumber}_{reciterId}.mp3";
+        var jsonFile = $"surah_{surahNumber}_{reciterId}.json";
         return _fileStorage.Exists(audioFile) && _fileStorage.Exists(jsonFile);
     }
 
@@ -109,6 +114,22 @@ public class QuranDownloadService : IQuranDownloadService
 
     public string GetSurahAudioPath(int surahNumber)
     {
-        return _fileStorage.GetFilePath($"surah_{surahNumber}.mp3");
+        string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
+        return _fileStorage.GetFilePath($"surah_{surahNumber}_{reciterId}.mp3");
+    }
+
+    public async Task ClearAllDownloadsAsync()
+    {
+        await Task.Run(() =>
+        {
+            var dir = Microsoft.Maui.Storage.FileSystem.AppDataDirectory;
+            var files = Directory.GetFiles(dir, "surah_*.mp3")
+                        .Concat(Directory.GetFiles(dir, "surah_*.json"));
+            
+            foreach (var file in files)
+            {
+                try { File.Delete(file); } catch { }
+            }
+        });
     }
 }

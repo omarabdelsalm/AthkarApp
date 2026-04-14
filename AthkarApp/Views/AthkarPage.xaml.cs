@@ -9,7 +9,7 @@ public partial class AthkarPage : ContentPage
     private readonly ISoundService _soundService;
     private readonly IStreakService _streakService;
     private List<AthkarCategory> _categories;
-    private List<string> _currentAthkarList;
+    private List<ThikrItem> _currentAthkarList;
     private int _currentIndex;
     private int _currentCount;
 
@@ -26,7 +26,6 @@ public partial class AthkarPage : ContentPage
     {
         base.OnAppearing();
         
-        // التحقق من السلسلة اليومية
         var streakInfo = await _streakService.CheckAndUpdateStreakAsync();
         StreakLabel.Text = streakInfo.Count.ToString();
 
@@ -59,16 +58,20 @@ public partial class AthkarPage : ContentPage
     {
         if (_currentAthkarList != null && _currentAthkarList.Any())
         {
-            AthkarLabel.Text = _currentAthkarList[_currentIndex];
+            var item = _currentAthkarList[_currentIndex];
+            AthkarLabel.Text = item.Text;
+            ReferenceLabel.Text = item.Reference;
+            TargetCountLabel.Text = item.Count > 1 ? $"الهدف: {item.Count}" : "";
             CounterLabel.Text = _currentCount.ToString();
             ProgressLabel.Text = $"{_currentIndex + 1} / {_currentAthkarList.Count}";
             
-            // تحديث نص الزر
             NextButton.Text = (_currentIndex == _currentAthkarList.Count - 1) ? "العودة للبداية ↺" : "الذكر التالي ➔";
         }
         else
         {
             AthkarLabel.Text = "لا توجد أذكار في هذا القسم";
+            ReferenceLabel.Text = "";
+            TargetCountLabel.Text = "";
         }
     }
 
@@ -88,15 +91,24 @@ public partial class AthkarPage : ContentPage
 
     private async void OnIncrementCount(object sender, EventArgs e)
     {
-        _currentCount++;
-        CounterLabel.Text = _currentCount.ToString();
-        
-        // تأثير اهتزاز أو تكبير بسيط للعداد
-        await CounterLabel.ScaleTo(1.2, 50);
-        await CounterLabel.ScaleTo(1.0, 50);
+        if (_currentAthkarList == null || !_currentAthkarList.Any()) return;
 
-        // تم تعطيل الصوت مؤقتاً لعدم وجود ملفات الصوت في الموارد
-        // await _soundService.PlaySoundAsync("tap");
+        var currentItem = _currentAthkarList[_currentIndex];
+        
+        if (_currentCount < currentItem.Count)
+        {
+            _currentCount++;
+            CounterLabel.Text = _currentCount.ToString();
+            
+            await CounterLabel.ScaleTo(1.2, 50);
+            await CounterLabel.ScaleTo(1.0, 50);
+
+            if (_currentCount >= currentItem.Count && _currentIndex < _currentAthkarList.Count - 1)
+            {
+                await Task.Delay(300);
+                OnNextAthkar(null, null);
+            }
+        }
     }
 
     private void OnDecrementCount(object sender, EventArgs e)
@@ -125,14 +137,32 @@ public partial class AthkarPage : ContentPage
                 
                 UpdateDisplay();
 
-                // تلاشي بسيط للنص عند التغيير - تم تبسيطه لتجنب أي تعليق
                 AthkarLabel.Opacity = 0;
-                await AthkarLabel.FadeTo(1, 400);
+                ReferenceLabel.Opacity = 0;
+                await Task.WhenAll(
+                    AthkarLabel.FadeTo(1, 400),
+                    ReferenceLabel.FadeTo(1, 400)
+                );
             }
         }
         catch (Exception ex)
         {
             await DisplayAlert("تنبيه", $"حدث خطأ أثناء الانتقال: {ex.Message}", "موافق");
+        }
+    }
+
+    private async void OnShareAthkar(object sender, EventArgs e)
+    {
+        if (_currentAthkarList != null && _currentIndex < _currentAthkarList.Count)
+        {
+            var item = _currentAthkarList[_currentIndex];
+            string shareText = $"🌟 {item.Text}\n\n📖 {item.Reference}\n\nتمت المشاركة من تطبيق \"أذكار\"";
+            
+            await Share.Default.RequestAsync(new ShareTextRequest
+            {
+                Title = "مشاركة ذكر",
+                Text = shareText
+            });
         }
     }
 

@@ -127,7 +127,8 @@ public partial class SurahDetailPage : ContentPage
                 PlayButton.Text = "⏳ جاري التحميل...";
                 PlayButton.IsEnabled = false;
 
-                var audioUrl = $"https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/{_surah.Number:000}.mp3";
+                var folderName = Preferences.Default.Get("SelectedReciterFolder", "mishaari_raashid_al_3afaasee");
+                var audioUrl = $"https://download.quranicaudio.com/quran/{folderName}/{_surah.Number:000}.mp3";
                 using var client = new HttpClient();
                 var audioBytes = await client.GetByteArrayAsync(audioUrl);
                 audioStream = new MemoryStream(audioBytes);

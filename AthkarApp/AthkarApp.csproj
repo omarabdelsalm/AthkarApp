@@ -43,7 +43,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#143214" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#143214" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#143214" BaseSize="128,128" />
@@ -62,6 +62,7 @@
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 		<AndroidResource Include="Platforms\Android\Resources\raw\om.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\ah.wav" />
+		<AndroidResource Include="Platforms\Android\Resources\raw\ma.wav" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
