@@ -43,9 +43,21 @@
                                     <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="{Binding .}"/>
                                 </Frame.GestureRecognizers>
                                 <Grid>
-                                    <!-- Background Image with Overlay -->
-                                    <Image Source="{Binding ImagePath}" Aspect="AspectFill" Opacity="0.8"/>
-                                    <BoxView Color="Black" Opacity="0.4"/>
+                                    <!-- Background Image -->
+                                    <Image Source="{Binding ImagePath}" 
+                                           Aspect="AspectFill" 
+                                           HorizontalOptions="Fill" 
+                                           VerticalOptions="Fill"/>
+                                    
+                                    <!-- Gradient Overlay for Text Readability -->
+                                    <BoxView VerticalOptions="Fill" HorizontalOptions="Fill">
+                                        <BoxView.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="Transparent" Offset="0.0" />
+                                                <GradientStop Color="#CC000000" Offset="1.0" />
+                                            </LinearGradientBrush>
+                                        </BoxView.Background>
+                                    </BoxView>
                                     
                                     <!-- Content -->
                                     <VerticalStackLayout VerticalOptions="End" Padding="15" Spacing="5">
@@ -77,9 +89,9 @@
         <Grid x:Name="ThikrView" IsVisible="False" RowDefinitions="Auto, *, Auto" BackgroundColor="White">
             <!-- Top Bar -->
             <Grid Padding="15" ColumnDefinitions="Auto, *, Auto" BackgroundColor="#143214">
-                <ImageButton Source="athkar_icon.png" Clicked="OnBackToSelection" HeightRequest="24" WidthRequest="24" />
+                <ImageButton Source="athkar_icon.jpg" Clicked="OnBackToSelection" HeightRequest="24" WidthRequest="24" />
                 <Label x:Name="CategoryTitleLabel" Grid.Column="1" Text="القسم" TextColor="White" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
-                <ImageButton Grid.Column="2" Source="quran_icon.png" Clicked="OnShareAthkar" HeightRequest="24" WidthRequest="24" />
+                <ImageButton Grid.Column="2" Source="quran_icon.jpg" Clicked="OnShareAthkar" HeightRequest="24" WidthRequest="24" />
             </Grid>
 
             <!-- Thikr Content Card -->
@@ -90,8 +102,7 @@
                            FontSize="22" 
                            TextColor="#143214" 
                            HorizontalTextAlignment="Center" 
-                           LineHeight="1.5"
-                           FontFamily="Traditional Arabic"/>
+                           LineHeight="1.5"/>
                     
                     <Label x:Name="ReferenceLabel" 
                            Text="" 

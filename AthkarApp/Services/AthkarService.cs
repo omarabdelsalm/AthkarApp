@@ -52,7 +52,7 @@ public class AthkarService
             {
                 Name = "أذكار المسجد",
                 CardColor = "#E1F5FE",
-                ImagePath = "mosque_athkar.png",
+                ImagePath = "mosque_athkar.jpg",
                 AthkarList = new List<ThikrItem>
                 {
                     new() { Text = "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُوراً، وَفِي لِسَانِي نُوراً، وَاجْعَلْ فِي سَمْعِي نُوراً، وَاجْعَلْ فِي بَصَرِي نُوراً", Reference = "مسلم", Count = 1 },
@@ -75,7 +75,7 @@ public class AthkarService
             {
                 Name = "أذكار السفر",
                 CardColor = "#FAFAFA",
-                ImagePath = "travel_athkar.png",
+                ImagePath = "travel_athkar.jpg",
                 AthkarList = new List<ThikrItem>
                 {
                     new() { Text = "اللهُ أَكْبَرُ، اللهُ أَكْبَرُ، اللهُ أَكْبَرُ، سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", Reference = "مسلم", Count = 1 },
@@ -86,7 +86,7 @@ public class AthkarService
             {
                 Name = "أدعية الهم والحزن",
                 CardColor = "#FFEBEE",
-                ImagePath = "sadness_athkar.png",
+                ImagePath = "sadness_athkar.jpg",
                 AthkarList = new List<ThikrItem>
                 {
                     new() { Text = "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ، وَغَلَبَةِ الرِّجَالِ", Reference = "البخاري", Count = 1 },

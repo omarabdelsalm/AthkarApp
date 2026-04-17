@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using AthkarApp.Services;
 using AthkarApp.Views;
 using Plugin.Maui.Audio;
-using Plugin.LocalNotification;
 
 
 namespace AthkarApp;
@@ -14,7 +13,6 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-            .UseLocalNotification()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -26,6 +24,7 @@ public static class MauiProgram
 #endif
 
         // تسجيل الخدمات
+        builder.Services.AddSingleton<QuranDatabase>();
         builder.Services.AddSingleton<AthkarService>();
         builder.Services.AddSingleton<ISoundService, SoundService>();
         builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
@@ -38,7 +37,7 @@ public static class MauiProgram
         builder.Services.AddHttpClient<IQuranApiService, QuranApiService>(client =>
         {
             client.DefaultRequestHeaders.Add("Accept", "application/json");
-            client.Timeout = TimeSpan.FromSeconds(30);
+            client.Timeout = TimeSpan.FromMinutes(5); // زيادة الوقت للمزامنة الكاملة
         });
 
         // تسجيل الصفحات

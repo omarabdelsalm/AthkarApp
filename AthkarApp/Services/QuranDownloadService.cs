@@ -85,31 +85,12 @@ public class QuranDownloadService : IQuranDownloadService
     {
         string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
         var audioFile = $"surah_{surahNumber}_{reciterId}.mp3";
-        var jsonFile = $"surah_{surahNumber}_{reciterId}.json";
-        return _fileStorage.Exists(audioFile) && _fileStorage.Exists(jsonFile);
+        return _fileStorage.Exists(audioFile);
     }
 
     public async Task SyncAllSurahsTextAsync(Action<double> progressCallback)
     {
-        try
-        {
-            var surahs = await _quranApiService.GetSurahsAsync();
-            int total = surahs.Count;
-            int current = 0;
-
-            // نستخدم 114 سورة كمرجع
-            for (int i = 1; i <= 114; i++)
-            {
-                await _quranApiService.GetAyahsAsync(i);
-                current++;
-                progressCallback((double)current / total);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error syncing all surahs: {ex.Message}");
-            throw;
-        }
+        await _quranApiService.SyncFullQuranAsync(progressCallback);
     }
 
     public string GetSurahAudioPath(int surahNumber)

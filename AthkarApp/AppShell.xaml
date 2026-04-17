@@ -6,23 +6,23 @@
        FlowDirection="RightToLeft">
 
     <TabBar>
-        <Tab Title="الأذكار" Icon="athkar_icon.png">
+        <Tab Title="الأذكار" Icon="athkar_icon.jpg">
             <ShellContent ContentTemplate="{DataTemplate views:AthkarPage}"/>
         </Tab>
 
-        <Tab Title="مواقييت الصلاة" Icon="quran_icon.png">
+        <Tab Title="مواقييت الصلاة" Icon="quran_icon.jpg">
             <ShellContent ContentTemplate="{DataTemplate views:PrayerPage}"/>
         </Tab>
 
-        <Tab Title="المسبحة" Icon="dotnet_bot.svg">
+        <Tab Title="المسبحة" Icon="dotnet_bot.png">
             <ShellContent ContentTemplate="{DataTemplate views:TasbeehPage}"/>
         </Tab>
 
-        <Tab Title="المصحف" Icon="quran_icon.png">
+        <Tab Title="المصحف" Icon="quran_icon.jpg">
             <ShellContent ContentTemplate="{DataTemplate views:MushafPage}"/>
         </Tab>
 
-        <Tab Title="الفهرس" Icon="quran_icon.png">
+        <Tab Title="الفهرس" Icon="quran_icon.jpg">
             <ShellContent ContentTemplate="{DataTemplate views:QuranPage}"/>
         </Tab>
     </TabBar>

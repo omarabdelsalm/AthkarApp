@@ -35,12 +35,16 @@ public partial class PrayerPage : ContentPage
         StopCompass();
     }
 
-    private async Task LoadPrayerData()
+    private async Task LoadPrayerData(bool forceRefresh = false)
     {
         try
         {
-            LocationLabel.Text = "جاري تفعيل الموقع...";
-            var data = await _prayerService.GetPrayerTimingsAsync();
+            if (_currentData == null)
+            {
+                LocationLabel.Text = "جاري جلب البيانات...";
+            }
+
+            var data = await _prayerService.GetPrayerTimingsAsync(forceRefresh);
             if (data != null)
             {
                 _currentData = data;
@@ -50,15 +54,24 @@ public partial class PrayerPage : ContentPage
                 
                 // جدولة الإشعارات آلياً
                 await _prayerService.ScheduleAdhanNotificationsAsync(data);
+
+                // تنبيه المستخدم إذا كانت البيانات من الكاش (Offline)
+                if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+                {
+                    LocationLabel.Text = "تعمل الآن في وضع عدم الاتصال";
+                }
             }
-            else
+            else if (_currentData == null)
             {
-                LocationLabel.Text = "تعذر تحديد الموقع الجغرافي";
+                LocationLabel.Text = "تعذر جلب البيانات. يرجى الاتصال بالإنترنت";
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("خطأ", "فشل جلب مواقيت الصلاة: " + ex.Message, "حسناً");
+            if (_currentData == null)
+            {
+                await DisplayAlert("خطأ", "فشل جلب مواقيت الصلاة: " + ex.Message, "حسناً");
+            }
         }
     }
 
@@ -206,6 +219,6 @@ public partial class PrayerPage : ContentPage
 
     private async void OnRefreshClicked(object sender, EventArgs e)
     {
-        await LoadPrayerData();
+        await LoadPrayerData(true);
     }
 }

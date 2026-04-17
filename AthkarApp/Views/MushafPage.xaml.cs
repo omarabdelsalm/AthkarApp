@@ -55,13 +55,9 @@ public partial class MushafPage : ContentPage
         AyahsCollectionView.ItemsSource = pageData.Ayahs;
 
         // عودة للأعلى بشكل فوري
-        if (ScrollModeContainer != null)
+        if (AyahsCollectionView != null && pageData.Ayahs.Any())
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await Task.Delay(50); // انتظار بسيط لضمان تحديث الواجهة
-                await ScrollModeContainer.ScrollToAsync(0, 0, animated: false);
-            });
+            AyahsCollectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
         }
     }
 
@@ -85,8 +81,9 @@ public partial class MushafPage : ContentPage
                 a.Surah?.Number != 9 &&
                 a.Surah?.Number != 1) ?? false;
 
-            // تحديث بالصفحة المحملة
-            _carouselPages[pageNumber - 1] = data;
+            // تحديث بالصفحة المحملة بلا استبدال الكائن لتجنب إعادة تعيين 위치
+            existingPage.Ayahs = data.Ayahs;
+            existingPage.HasBismillah = data.HasBismillah;
         }
     }
 
@@ -95,7 +92,7 @@ public partial class MushafPage : ContentPage
     private void OnScrollModeClicked(object sender, EventArgs e)
     {
         _isScrollMode = true;
-        ScrollModeContainer.IsVisible = true;
+        AyahsCollectionView.IsVisible = true;
         SwipeModeView.IsVisible       = false;
 
         ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#2C6E2C");
@@ -110,7 +107,7 @@ public partial class MushafPage : ContentPage
     private async void OnSwipeModeClicked(object sender, EventArgs e)
     {
         _isScrollMode = false;
-        ScrollModeContainer.IsVisible = false;
+        AyahsCollectionView.IsVisible = false;
         SwipeModeView.IsVisible       = true;
 
         ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#A5A58D");

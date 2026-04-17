@@ -50,6 +50,16 @@
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\morning_athkar.jpg" />
+		<MauiImage Update="Resources\Images\evening_athkar.jpg" />
+		<MauiImage Update="Resources\Images\mosque_athkar.jpg" />
+		<MauiImage Update="Resources\Images\travel_athkar.jpg" />
+		<MauiImage Update="Resources\Images\sadness_athkar.jpg" />
+		<MauiImage Update="Resources\Images\sleep_athkar.jpg" />
+		<MauiImage Update="Resources\Images\tasbeeh_athkar.jpg" />
+		<MauiImage Update="Resources\Images\compass_dial_premium.jpg" />
+		<MauiImage Update="Resources\Images\qibla_needle_gold.jpg" />
+		
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 		
 		<!-- Custom Fonts -->
@@ -63,6 +73,10 @@
 		<AndroidResource Include="Platforms\Android\Resources\raw\om.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\ah.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\ma.wav" />
+		<AndroidResource Include="Platforms\Android\Resources\raw\adhan.mp3" />
+		<AndroidResource Include="Platforms\Android\Resources\raw\adhan_makkah.mp3" />
+		<AndroidResource Include="Platforms\Android\Resources\raw\adhan_madina.mp3" />
+		<AndroidResource Include="Platforms\Android\Resources\raw\adhan_egypt.mp3" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -72,11 +86,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <AndroidResource Remove="Platforms\Android\Resources\raw\adhan_egypt.wav" />
+	  <AndroidResource Remove="Platforms\Android\Resources\raw\adhan_madina.wav" />
+	  <AndroidResource Remove="Platforms\Android\Resources\raw\adhan_makkah.wav" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
-		<PackageReference Include="Plugin.LocalNotification" Version="11.1.3" />
+		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
 		<PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
 	</ItemGroup>
 
 	<ItemGroup>

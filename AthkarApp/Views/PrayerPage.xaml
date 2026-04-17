@@ -55,19 +55,19 @@
                         
                         <Grid HeightRequest="220" WidthRequest="220">
                             <!-- Premium Dial -->
-                            <Image Source="compass_dial_premium.png" Aspect="AspectFit"/>
+                            <Image Source="compass_dial_premium.jpg" Aspect="AspectFit"/>
                             
                             <!-- Needle Container -->
                             <Grid x:Name="CompassContainer">
                                 <!-- Golden Needle -->
                                 <Image x:Name="QiblaNeedle" 
-                                       Source="qibla_needle_gold.png" 
+                                       Source="qibla_needle_gold.jpg" 
                                        HeightRequest="140" 
                                        WidthRequest="40" 
                                        VerticalOptions="Center" 
                                        HorizontalOptions="Center">
                                     <Image.Shadow>
-                                        <Shadow Brush="Black" Offset="3,3" Radius="5" Opacity="0.4"/>
+                                        <Shadow Brush="Black" Offset="3,3" Radius="5" Opacity="0.3"/>
                                     </Image.Shadow>
                                 </Image>
                             </Grid>

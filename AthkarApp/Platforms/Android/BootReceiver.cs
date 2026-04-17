@@ -29,7 +29,22 @@ public class BootReceiver : BroadcastReceiver
         // نستخدم Task.Run لأن OnReceive يجب أن يكون متزامناً
         Task.Run(async () =>
         {
+            var service = new AthkarNotificationService();
+            service.StartForegroundService();
             await AthkarNotificationService.RescheduleAfterBootAsync();
+
+            try
+            {
+                var fileStorage = new FileStorageService();
+                using var httpClient = new HttpClient();
+                var prayerService = new PrayerService(httpClient, fileStorage);
+                var data = await prayerService.GetPrayerTimingsAsync(false);
+                if (data != null)
+                {
+                    await prayerService.ScheduleAdhanNotificationsAsync(data);
+                }
+            }
+            catch { }
         });
     }
 }

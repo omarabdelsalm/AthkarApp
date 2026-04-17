@@ -81,54 +81,52 @@
         </Grid>
 
         <!-- ===== وضع التمرير ===== -->
-        <ScrollView x:Name="ScrollModeContainer"
-                    Grid.Row="2"
-                    IsVisible="True">
-            <!-- تمت إزالة نقرة الخلفية لأنها كانت تمنع ظهور التفسير -->
-            <VerticalStackLayout Padding="12,8" Spacing="2">
-                <Label x:Name="BismillahLabel"
-                       Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                       FontSize="22"
-                       TextColor="#2C6E2C"
-                       HorizontalOptions="Center"
-                       HorizontalTextAlignment="Center"
-                       Margin="0,10,0,14"
-                       IsVisible="False"/>
-
-                <CollectionView x:Name="AyahsCollectionView"
-                                SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Ayah">
-                            <Frame Padding="10,8"
-                                   Margin="2,3"
-                                   CornerRadius="10"
-                                   HasShadow="False"
-                                   BorderColor="#E0DDD5"
-                                   BackgroundColor="White">
-                                <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnAyahTapped" CommandParameter="{Binding .}" />
-                                </Frame.GestureRecognizers>
-                                <Label HorizontalTextAlignment="Center"
-                                       HorizontalOptions="Center"
-                                       TextColor="#1A3A1A"
-                                       FontSize="22"
-                                       LineBreakMode="WordWrap">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span Text="{Binding Text}" FontSize="22"/>
-                                            <Span Text=" "/>
-                                            <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
-                                                  TextColor="#2C6E2C"
-                                                  FontSize="15"/>
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
-        </ScrollView>
+        <CollectionView x:Name="AyahsCollectionView"
+                        Grid.Row="2"
+                        IsVisible="True"
+                        SelectionMode="None">
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="12,8">
+                    <Label x:Name="BismillahLabel"
+                           Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                           FontSize="22"
+                           TextColor="#2C6E2C"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,10,0,14"
+                           IsVisible="False"/>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Ayah">
+                    <Frame Padding="10,8"
+                           Margin="14,3"
+                           CornerRadius="10"
+                           HasShadow="False"
+                           BorderColor="#E0DDD5"
+                           BackgroundColor="White">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAyahTapped" CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+                        <Label HorizontalTextAlignment="Center"
+                               HorizontalOptions="Center"
+                               TextColor="#1A3A1A"
+                               FontSize="22"
+                               LineBreakMode="WordWrap">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding Text}" FontSize="22"/>
+                                    <Span Text=" "/>
+                                    <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
+                                          TextColor="#2C6E2C"
+                                          FontSize="15"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
         <!-- ===== وضع التقليب (CarouselView) ===== -->
         <CarouselView x:Name="SwipeModeView"

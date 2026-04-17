@@ -1,6 +1,5 @@
 using AthkarApp.Models;
 using AthkarApp.Services;
-using Plugin.LocalNotification;
 
 namespace AthkarApp.Views;
 
@@ -137,22 +136,7 @@ public partial class SettingsPage : ContentPage
     private async void OnPreviewAdhan(object sender, EventArgs e)
     {
         string sound = Preferences.Default.Get("SelectedAdhanSound", "adhan");
-        
-        var request = new NotificationRequest
-        {
-            NotificationId = 7777,
-            Title = "تجربة صوت الأذان",
-            Description = "الله أكبر، الله أكبر.. حي على الصلاة",
-            Sound = sound,
-#if ANDROID
-            Android = new Plugin.LocalNotification.AndroidOption.AndroidOptions
-            {
-                ChannelId = $"adhan_channel_{sound}",
-                Priority = Plugin.LocalNotification.AndroidOption.AndroidPriority.High
-            }
-#endif
-        };
-        await LocalNotificationCenter.Current.Show(request);
+        await _notificationService.ShowAdhanPreviewAsync(sound);
     }
 
     private async void OnSoundToggled(object sender, ToggledEventArgs e)

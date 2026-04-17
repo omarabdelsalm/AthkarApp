@@ -92,7 +92,7 @@ public partial class QuranPage : ContentPage
             SyncProgressBar.Progress = 0;
             SyncStatusLabel.Text = "بدء مزامنة المصحف... 0%";
 
-            await _quranDownloadService.SyncAllSurahsTextAsync((progress) =>
+            await _quranApiService.SyncFullQuranAsync((progress) =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {

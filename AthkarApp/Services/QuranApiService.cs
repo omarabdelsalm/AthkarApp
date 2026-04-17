@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using AthkarApp.Models;
 
 namespace AthkarApp.Services;
@@ -9,18 +10,21 @@ public interface IQuranApiService
     Task<List<Ayah>> GetAyahsAsync(int surahNumber);
     Task<PageData> GetPageAsync(int pageNumber);
     Task<string> GetTafsirAsync(int ayahNumber);
+    Task SyncFullQuranAsync(Action<double> progressCallback);
 }
 
 public class QuranApiService : IQuranApiService
 {
     private readonly HttpClient _httpClient;
     private readonly IFileStorageService _fileStorage;
+    private readonly QuranDatabase _database;
     private List<Surah> _surahsCache;
 
-    public QuranApiService(HttpClient httpClient, IFileStorageService fileStorage)
+    public QuranApiService(HttpClient httpClient, IFileStorageService fileStorage, QuranDatabase database)
     {
         _httpClient = httpClient;
         _fileStorage = fileStorage;
+        _database = database;
     }
 
     public async Task<List<Surah>> GetSurahsAsync()
@@ -29,8 +33,8 @@ public class QuranApiService : IQuranApiService
         if (_surahsCache != null && _surahsCache.Any())
             return _surahsCache;
 
-        // 2. Check Local Storage
-        var localSurahs = await _fileStorage.LoadJsonAsync<List<Surah>>("surahs.json");
+        // 2. Check Database
+        var localSurahs = await _database.GetSurahsAsync();
         if (localSurahs != null && localSurahs.Any())
         {
             _surahsCache = localSurahs;
@@ -44,10 +48,10 @@ public class QuranApiService : IQuranApiService
             var surahResponse = JsonSerializer.Deserialize<SurahResponse>(response);
             _surahsCache = surahResponse?.Data ?? new List<Surah>();
 
-            // Save to Local Storage for next time
+            // Save to Database
             if (_surahsCache.Any())
             {
-                await _fileStorage.SaveJsonAsync("surahs.json", _surahsCache);
+                await _database.SaveSurahsAsync(_surahsCache);
             }
 
             return _surahsCache;
@@ -60,31 +64,30 @@ public class QuranApiService : IQuranApiService
 
     public async Task<List<Ayah>> GetAyahsAsync(int surahNumber)
     {
-        string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
-        var fileName = $"surah_{surahNumber}_{reciterId}.json";
-
-        // 1. Check Local Storage
-        var localAyahs = await _fileStorage.LoadJsonAsync<List<Ayah>>(fileName);
-        if (localAyahs != null && localAyahs.Any())
+        // 1. Check Database
+        var ayahs = await _database.GetAyahsBySurahAsync(surahNumber);
+        if (ayahs != null && ayahs.Any())
         {
-            return localAyahs;
+            return ayahs;
         }
 
         // 2. Fetch from API
         try
         {
+            string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
             var url = $"https://api.alquran.cloud/v1/surah/{surahNumber}/{reciterId}";
             var response = await _httpClient.GetStringAsync(url);
             var ayahResponse = JsonSerializer.Deserialize<AyahResponse>(response);
-            var ayahs = ayahResponse?.Data?.Ayahs ?? new List<Ayah>();
+            var apiAyahs = ayahResponse?.Data?.Ayahs ?? new List<Ayah>();
 
-            // Save to Local Storage
-            if (ayahs.Any())
+            // Save to Database
+            if (apiAyahs.Any())
             {
-                await _fileStorage.SaveJsonAsync(fileName, ayahs);
+                foreach (var a in apiAyahs) a.SurahNumber = surahNumber;
+                await _database.SaveAyahsAsync(apiAyahs);
             }
 
-            return ayahs;
+            return apiAyahs;
         }
         catch
         {
@@ -94,13 +97,11 @@ public class QuranApiService : IQuranApiService
 
     public async Task<PageData> GetPageAsync(int pageNumber)
     {
-        var fileName = $"page_{pageNumber}.json";
-
-        // 1. Check Local Storage (Offline)
-        var localPage = await _fileStorage.LoadJsonAsync<PageData>(fileName);
-        if (localPage != null && localPage.Ayahs != null && localPage.Ayahs.Any())
+        // 1. Check Database (Offline)
+        var ayahs = await _database.GetPageAsync(pageNumber);
+        if (ayahs != null && ayahs.Any())
         {
-            return localPage;
+            return new PageData { Number = pageNumber, Ayahs = ayahs };
         }
 
         // 2. Fetch from API
@@ -111,10 +112,11 @@ public class QuranApiService : IQuranApiService
             var pageResponse = JsonSerializer.Deserialize<PageResponse>(response);
             var pageData = pageResponse?.Data ?? new PageData { Number = pageNumber, Ayahs = new List<Ayah>() };
 
-            // Save to Local Storage for offline usage later
+            // Save to Database
             if (pageData.Ayahs.Any())
             {
-                await _fileStorage.SaveJsonAsync(fileName, pageData);
+                foreach (var a in pageData.Ayahs) a.SurahNumber = a.Surah?.Number ?? 0;
+                await _database.SaveAyahsAsync(pageData.Ayahs);
             }
 
             return pageData;
@@ -127,13 +129,11 @@ public class QuranApiService : IQuranApiService
 
     public async Task<string> GetTafsirAsync(int ayahNumber)
     {
-        var fileName = $"tafsir_{ayahNumber}.json";
-
-        // 1. Check Local Storage (Offline)
-        var localTafsir = await _fileStorage.LoadJsonAsync<string>(fileName);
-        if (!string.IsNullOrEmpty(localTafsir))
+        // 1. Check Database (Offline)
+        var ayah = await _database.GetAyahAsync(ayahNumber);
+        if (ayah != null && !string.IsNullOrEmpty(ayah.TafsirText))
         {
-            return localTafsir;
+            return ayah.TafsirText;
         }
 
         // 2. Fetch from API
@@ -145,10 +145,11 @@ public class QuranApiService : IQuranApiService
             var tafsirResponse = JsonSerializer.Deserialize<TafsirResponse>(response);
             var tafsirText = tafsirResponse?.Data?.Text ?? "تعذر جلب التفسير حالياً.";
 
-            // Save to Offline storage
-            if (!tafsirText.Contains("تعذر") && !string.IsNullOrEmpty(tafsirResponse?.Data?.Text))
+            // Save to Database
+            if (ayah != null && !tafsirText.Contains("تعذر") && !string.IsNullOrEmpty(tafsirResponse?.Data?.Text))
             {
-                await _fileStorage.SaveJsonAsync(fileName, tafsirText);
+                ayah.TafsirText = tafsirText;
+                await _database.UpdateAyahAsync(ayah);
             }
 
             return tafsirText;
@@ -158,4 +159,103 @@ public class QuranApiService : IQuranApiService
             return "حدث خطأ أثناء الاتصال بالإنترنت لعرض التفسير.";
         }
     }
+
+    public async Task SyncFullQuranAsync(Action<double> progressCallback)
+    {
+        try
+        {
+            // 1. Sync Suras
+            var surahs = await GetSurahsAsync();
+            progressCallback(0.05);
+
+            // 2. Sync Ayahs Page by Page (604 pages) to be efficient
+            // One call to get all ayahs is better if possible, but the API is paged.
+            // We'll use the complete quran-uthmani edition to get all text.
+            
+            var url = "https://api.alquran.cloud/v1/quran/quran-uthmani";
+            var response = await _httpClient.GetStringAsync(url);
+            var fullQuran = JsonSerializer.Deserialize<FullQuranResponse>(response);
+            
+            if (fullQuran?.Data?.Surahs == null) return;
+
+            int totalAyahs = 6236;
+            int currentAyahCount = 0;
+            
+            foreach (var surah in fullQuran.Data.Surahs)
+            {
+                foreach (var ayah in surah.Ayahs)
+                {
+                    ayah.SurahNumber = surah.Number;
+                    currentAyahCount++;
+                }
+                await _database.SaveAyahsAsync(surah.Ayahs);
+                progressCallback(0.05 + (0.45 * (double)currentAyahCount / totalAyahs));
+            }
+
+            // 3. Sync Tafsir (Jalalayn)
+            var tafsirUrl = "https://api.alquran.cloud/v1/quran/ar.jalalayn";
+            var tafsirResponseStr = await _httpClient.GetStringAsync(tafsirUrl);
+            var fullTafsir = JsonSerializer.Deserialize<FullQuranResponse>(tafsirResponseStr);
+
+            if (fullTafsir?.Data?.Surahs != null)
+            {
+                var allAyahsInDb = new List<Ayah>();
+                var surahNumbers = fullTafsir.Data.Surahs.Select(s => s.Number).ToList();
+                
+                // جلب كافة الآيات الموجودة دفعة واحدة لتقليل مكالمات قاعدة البيانات
+                foreach (var sNum in surahNumbers)
+                {
+                    allAyahsInDb.AddRange(await _database.GetAyahsBySurahAsync(sNum));
+                }
+
+                var ayahsToUpdate = new List<Ayah>();
+                currentAyahCount = 0;
+
+                foreach (var surah in fullTafsir.Data.Surahs)
+                {
+                    foreach (var tafsirAyah in surah.Ayahs)
+                    {
+                        var dbAyah = allAyahsInDb.FirstOrDefault(a => a.SurahNumber == surah.Number && a.NumberInSurah == tafsirAyah.NumberInSurah);
+                        if (dbAyah != null)
+                        {
+                            dbAyah.TafsirText = tafsirAyah.Text;
+                            ayahsToUpdate.Add(dbAyah);
+                        }
+                        currentAyahCount++;
+                    }
+                }
+
+                // تحديث كافة التفسيرات في عملية واحدة (Transaction)
+                if (ayahsToUpdate.Any())
+                {
+                    await _database.UpdateAyahsInTransactionAsync(ayahsToUpdate);
+                }
+                
+                progressCallback(1.0);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error Syncing Quran: {ex.Message}");
+            throw;
+        }
+    }
+}
+
+public class FullQuranResponse
+{
+    [JsonPropertyName("data")]
+    public FullQuranData Data { get; set; }
+}
+
+public class FullQuranData
+{
+    [JsonPropertyName("surahs")]
+    public List<SurahWithAyahs> Surahs { get; set; }
+}
+
+public class SurahWithAyahs : Surah
+{
+    [JsonPropertyName("ayahs")]
+    public List<Ayah> Ayahs { get; set; }
 }
