@@ -12,6 +12,9 @@ public partial class MushafPage : ContentPage
     private int  _currentPage  = 1;
     private bool _isFullscreen = false;
 
+    private const string LastReadPageKey = "Mushaf_LastReadPage";
+    private const string BookmarkPageKey = "Mushaf_BookmarkPage";
+
     private readonly ObservableCollection<PageData> _carouselPages = new();
 
     public MushafPage(IQuranApiService quranApiService)
@@ -27,7 +30,8 @@ public partial class MushafPage : ContentPage
 
         SwipeModeView.ItemsSource = _carouselPages;
 
-        LoadScrollPage(1);
+        int startPage = Preferences.Default.Get(LastReadPageKey, 1);
+        LoadScrollPage(startPage);
     }
 
     // ===================== تحميل الصفحة (وضع التمرير) =====================
@@ -235,6 +239,77 @@ public partial class MushafPage : ContentPage
         PageCounterLabel.Text  = $"{_currentPage} / 604";
         PrevButton.IsEnabled   = _currentPage > 1;
         NextButton.IsEnabled   = _currentPage < 604;
+        
+        int savedBookmark = Preferences.Default.Get(BookmarkPageKey, 0);
+        BookmarkIconLabel.Opacity = (savedBookmark == _currentPage) ? 1.0 : 0.5;
+
+        // حفظ مكان التوقف تلقائياً
+        Preferences.Default.Set(LastReadPageKey, _currentPage);
+
+        // التحقق من إنجاز الورد اليومي للختمة
+        CheckKhatmahProgress();
+    }
+
+    private async void CheckKhatmahProgress()
+    {
+        bool isKhatmahActive = Preferences.Default.Get("Khatmah_PlanActive", false);
+        if (isKhatmahActive)
+        {
+            int durationDays = Preferences.Default.Get("Khatmah_PlanDuration", 30);
+            DateTime startDate = Preferences.Default.Get("Khatmah_PlanStartDate", DateTime.Now);
+            
+            int totalPagesPerDay = (int)Math.Ceiling(604.0 / durationDays);
+            int daysPassed = (DateTime.Now.Date - startDate.Date).Days;
+            int expectedPageToBeAt = Math.Min(604, (daysPassed + 1) * totalPagesPerDay);
+
+            if (_currentPage >= expectedPageToBeAt)
+            {
+                string lastGoalDate = Preferences.Default.Get("Khatmah_LastGoalReachedDate", "");
+                string todayStr = DateTime.Now.Date.ToString("yyyyMMdd");
+                
+                if (lastGoalDate != todayStr)
+                {
+                    Preferences.Default.Set("Khatmah_LastGoalReachedDate", todayStr);
+                    await DisplayAlert("تهانينا 🌟", "لقد أتممت وردك اليومي من الختمة بنجاح! تقبل الله طاعتك.", "الحمد لله");
+                }
+            }
+        }
+    }
+
+    private async void OnBookmarkTapped(object sender, EventArgs e)
+    {
+        int savedBookmark = Preferences.Default.Get(BookmarkPageKey, 0);
+
+        if (savedBookmark == _currentPage)
+        {
+            Preferences.Default.Remove(BookmarkPageKey);
+            BookmarkIconLabel.Opacity = 0.5;
+            await DisplayAlert("العلامة المرجعية", "تم إزالة العلامة المرجعية من هذه الصفحة.", "حسناً");
+        }
+        else if (savedBookmark > 0)
+        {
+            string action = await DisplayActionSheet("العلامة المرجعية", "إلغاء", null, 
+                $"الذهاب للعلامة السابقة (صفحة {savedBookmark})", 
+                "حفظ هذه الصفحة كعلامة جديدة");
+
+            if (action == $"الذهاب للعلامة السابقة (صفحة {savedBookmark})")
+            {
+                if (_isScrollMode) LoadScrollPage(savedBookmark);
+                else await GoToCarouselPage(savedBookmark);
+            }
+            else if (action == "حفظ هذه الصفحة كعلامة جديدة")
+            {
+                Preferences.Default.Set(BookmarkPageKey, _currentPage);
+                BookmarkIconLabel.Opacity = 1.0;
+                await DisplayAlert("تم", $"تم حفظ صفحة {_currentPage} كعلامة مرجعية جديدة.", "حسناً");
+            }
+        }
+        else
+        {
+            Preferences.Default.Set(BookmarkPageKey, _currentPage);
+            BookmarkIconLabel.Opacity = 1.0;
+            await DisplayAlert("تم", $"تم حفظ صفحة {_currentPage} كعلامة مرجعية.", "حسناً");
+        }
     }
 
     // ===================== وضع ملء الشاشة =====================

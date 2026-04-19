@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using AthkarApp.Services;
 using AthkarApp.Views;
 using Plugin.Maui.Audio;
+using Camera.MAUI;
+using CommunityToolkit.Maui;
 
 
 namespace AthkarApp;
@@ -13,6 +15,8 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCameraView()
+            .UseMauiCommunityToolkitMediaElement()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -48,6 +52,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddSingleton<TasbeehPage>();
         builder.Services.AddSingleton<PrayerPage>();
+        builder.Services.AddSingleton<KhatmahPage>();
 
         return builder.Build();
     }

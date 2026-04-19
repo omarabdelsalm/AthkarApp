@@ -26,15 +26,17 @@ public class BootReceiver : BroadcastReceiver
 
        // System.Diagnostics.Debug.WriteLine("📱 BootReceiver: الجهاز أُعيد تشغيله - إعادة جدولة الإشعارات...");
 
+        var pendingResult = GoAsync();
+        
         // نستخدم Task.Run لأن OnReceive يجب أن يكون متزامناً
         Task.Run(async () =>
         {
-            var service = new AthkarNotificationService();
-            service.StartForegroundService();
-            await AthkarNotificationService.RescheduleAfterBootAsync();
-
-            try
+            try 
             {
+                var service = new AthkarNotificationService();
+                service.StartForegroundService();
+                await AthkarNotificationService.RescheduleAfterBootAsync();
+
                 var fileStorage = new FileStorageService();
                 using var httpClient = new HttpClient();
                 var prayerService = new PrayerService(httpClient, fileStorage);
@@ -44,7 +46,14 @@ public class BootReceiver : BroadcastReceiver
                     await prayerService.ScheduleAdhanNotificationsAsync(data);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ BootReceiver Error: {ex.Message}");
+            }
+            finally
+            {
+                pendingResult.Finish();
+            }
         });
     }
 }

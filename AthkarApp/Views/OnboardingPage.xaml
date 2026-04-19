@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.OnboardingPage"
+             BackgroundColor="#0B200B"
+             FlowDirection="RightToLeft">
+
+    <Grid RowDefinitions="*, Auto">
+        
+        <!-- خلفية زخرفية ناعمة -->
+        <Image Source="appicon.svg" Aspect="AspectFill" Opacity="0.05" Scale="2" Grid.RowSpan="2"/>
+
+        <CarouselView x:Name="OnboardingCarousel" Grid.Row="0" IndicatorView="IndicatorUI">
+            <!-- ItemsSource is set in code-behind -->
+            
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <ContentView>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="25" Padding="30">
+                            
+                            <!-- سيتم استبدال المحتوى برمجياً أو باستخدام خصائص المحول المتعدد، لكن الأسهل هو الاعتماد على XAML Triggers لعرض الشاشات -->
+                            
+                            <Grid HeightRequest="250" WidthRequest="250">
+                                <Image Source="{Binding Image}" Aspect="AspectFit" Margin="20"/>
+                            </Grid>
+
+                            <Label Text="{Binding Title}" 
+                                   FontSize="26" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#D4AF37" 
+                                   HorizontalTextAlignment="Center"/>
+                                   
+                            <Label Text="{Binding Description}" 
+                                   FontSize="16" 
+                                   TextColor="#EEEEEE" 
+                                   HorizontalTextAlignment="Center"
+                                   LineBreakMode="WordWrap"/>
+                                   
+                        </VerticalStackLayout>
+                    </ContentView>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+
+        <!-- الدوائر في الأسفل وزر الانطلاق -->
+        <VerticalStackLayout Grid.Row="1" Spacing="20" Padding="30, 20, 30, 40" BackgroundColor="#143214">
+            
+            <IndicatorView x:Name="IndicatorUI" 
+                           IndicatorColor="#A0A0A0"
+                           SelectedIndicatorColor="#D4AF37"
+                           HorizontalOptions="Center"
+                           IndicatorsShape="Circle"
+                           IndicatorSize="10" />
+
+            <Button x:Name="NextStartBtn"
+                    Text="التالي"
+                    BackgroundColor="#D4AF37"
+                    TextColor="#143214"
+                    FontAttributes="Bold"
+                    FontSize="18"
+                    CornerRadius="25"
+                    HeightRequest="55"
+                    Clicked="OnNextClicked"/>
+                    
+        </VerticalStackLayout>
+
+    </Grid>
+
+</ContentPage>

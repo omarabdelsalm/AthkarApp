@@ -1,5 +1,6 @@
 using AthkarApp.Models;
 using Microsoft.Maui.Devices;
+// أضف هذا السطر
 
 namespace AthkarApp.Services;
 
@@ -104,7 +105,7 @@ public class AthkarNotificationService : IAthkarNotificationService
         try
         {
             var context = Android.App.Application.Context;
-            var intent = new Android.Content.Intent(context, typeof(AthkarApp.Platforms.Android.AthkarForegroundService));
+            var intent = new Android.Content.Intent(context, typeof(AthkarApp.Services.AthkarForegroundService));
             if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
                 context.StartForegroundService(intent);
             else

@@ -41,12 +41,18 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<!-- Fix for deployment errors with Media3 and ADB issues -->
+	<PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<AndroidEnableFastDeployment>false</AndroidEnableFastDeployment>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#143214" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#143214" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#143214" BaseSize="512,512" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -59,6 +65,8 @@
 		<MauiImage Update="Resources\Images\tasbeeh_athkar.jpg" />
 		<MauiImage Update="Resources\Images\compass_dial_premium.jpg" />
 		<MauiImage Update="Resources\Images\qibla_needle_gold.jpg" />
+		<MauiImage Update="Resources\Images\athkar_icon.jpg" Resize="True" BaseSize="48,48" />
+		<MauiImage Update="Resources\Images\quran_icon.jpg" Resize="True" BaseSize="48,48" />
 		
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 		
@@ -74,9 +82,6 @@
 		<AndroidResource Include="Platforms\Android\Resources\raw\ah.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\ma.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\adhan.mp3" />
-		<AndroidResource Include="Platforms\Android\Resources\raw\adhan_makkah.mp3" />
-		<AndroidResource Include="Platforms\Android\Resources\raw\adhan_madina.mp3" />
-		<AndroidResource Include="Platforms\Android\Resources\raw\adhan_egypt.mp3" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -97,6 +102,12 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
 		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
 		<PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
+        <PackageReference Include="Camera.MAUI" Version="1.4.4" />
+        <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="5.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.4.1.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.4.1.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.Ui" Version="1.4.1.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.4.1.1" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
 	</ItemGroup>

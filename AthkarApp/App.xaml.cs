@@ -50,9 +50,14 @@ namespace AthkarApp
                 });
             });
         }
-
+       
         protected override Window CreateWindow(IActivationState? activationState)
         {
+            var isFirstLaunch = Preferences.Default.Get("IsFirstLaunch", true);
+            if (isFirstLaunch)
+            {
+                return new Window(new NavigationPage(new Views.OnboardingPage()));
+            }
             return new Window(new AppShell());
         }
     }

@@ -85,6 +85,7 @@ public partial class AthkarPage : ContentPage
 
     private void OnBackToSelection(object sender, EventArgs e)
     {
+        StopSpeech();
         ThikrView.IsVisible = false;
         SelectionView.IsVisible = true;
     }
@@ -128,6 +129,7 @@ public partial class AthkarPage : ContentPage
 
     private async void OnNextAthkar(object sender, EventArgs e)
     {
+        StopSpeech();
         try 
         {
             if (_currentAthkarList != null && _currentAthkarList.Any())
@@ -166,8 +168,57 @@ public partial class AthkarPage : ContentPage
         }
     }
 
+    private CancellationTokenSource _cts;
+
+    private async void OnListenClicked(object sender, EventArgs e)
+    {
+        if (_currentAthkarList == null || _currentIndex >= _currentAthkarList.Count) return;
+
+        var textToSpeak = _currentAthkarList[_currentIndex].Text;
+
+        if (_cts != null && !_cts.IsCancellationRequested)
+        {
+            _cts.Cancel();
+            ListenIconLabel.Text = "🔊";
+            return;
+        }
+
+        try
+        {
+            _cts = new CancellationTokenSource();
+            ListenIconLabel.Text = "🛑"; // تغيير الأيقونة أثناء القراءة
+            
+            await TextToSpeech.Default.SpeakAsync(textToSpeak, new SpeechOptions
+            {
+                Locale = (await TextToSpeech.Default.GetLocalesAsync()).FirstOrDefault(l => l.Language == "ar"),
+                Pitch = 1.0f,
+                Volume = 1.0f
+            }, _cts.Token);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in TextToSpeech: {ex.Message}");
+        }
+        finally
+        {
+            ListenIconLabel.Text = "🔊";
+            _cts = null;
+        }
+    }
+
+    private void StopSpeech()
+    {
+        if (_cts != null)
+        {
+            _cts.Cancel();
+            _cts = null;
+            ListenIconLabel.Text = "🔊";
+        }
+    }
+
     private async void OnSettingsClicked(object sender, EventArgs e)
     {
+        StopSpeech();
         await Shell.Current.GoToAsync(nameof(SettingsPage));
     }
 

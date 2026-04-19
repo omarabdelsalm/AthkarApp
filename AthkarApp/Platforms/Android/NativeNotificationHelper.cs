@@ -91,7 +91,7 @@ public static class NativeNotificationHelper
         string channelId = $"{AthkarChannelIdPrefix}{soundName}_v5";
 
         var builder = new NotificationCompat.Builder(context, channelId)
-            .SetSmallIcon(context.ApplicationInfo!.Icon)
+            .SetSmallIcon(GetSafeIcon(context))
             .SetContentTitle("⭐ ذكر الله")
             .SetContentText(text)
             .SetPriority(NotificationCompat.PriorityMax)
@@ -123,7 +123,7 @@ public static class NativeNotificationHelper
         string channelId = $"{AthkarChannelIdPrefix}{soundName}_v5";
 
         var builder = new NotificationCompat.Builder(context, channelId)
-            .SetSmallIcon(context.ApplicationInfo!.Icon)
+            .SetSmallIcon(GetSafeIcon(context))
             .SetContentTitle("🕌 اقتربت الصلاة")
             .SetContentText($"بقي دقيقتان على أذان {prayerName}")
             .SetPriority(NotificationCompat.PriorityHigh)
@@ -135,6 +135,15 @@ public static class NativeNotificationHelper
 
         var manager = NotificationManagerCompat.From(context);
         manager.Notify(id, builder.Build());
+    }
+
+    private static int GetSafeIcon(Context context)
+    {
+        int resId = context.Resources!.GetIdentifier("appicon_round", "mipmap", context.PackageName);
+        if (resId == 0) resId = context.Resources!.GetIdentifier("appicon", "mipmap", context.PackageName);
+        if (resId == 0 && context.ApplicationInfo != null) resId = context.ApplicationInfo.Icon;
+        if (resId == 0) resId = global::Android.Resource.Drawable.IcDialogInfo;
+        return resId;
     }
 }
 #endif

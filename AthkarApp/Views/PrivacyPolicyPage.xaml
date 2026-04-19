@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.PrivacyPolicyPage"
+             Title="سياسة الخصوصية"
+             BackgroundColor="#E8F0F8"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <Image Source="appicon.svg" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" Margin="0,0,0,10"/>
+            
+            <Label Text="سياسة الخصوصية والاستخدام" 
+                   FontSize="22" 
+                   FontAttributes="Bold" 
+                   TextColor="#143214" 
+                   HorizontalOptions="Center"/>
+
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="15">
+                    
+                    <Label Text="يولي تطبيق &quot;أذكار&quot; اهتماماً كبيراً لخصوصيتك. نحن لا نقوم بجمع، تخزين، أو مشاركة أي من بياناتك الشخصية مع أي أطراف خارجية." 
+                           FontSize="15" 
+                           TextColor="#333333" 
+                           LineBreakMode="WordWrap"/>
+
+                    <BoxView HeightRequest="1" Color="#EEEEEE"/>
+
+                    <Label Text="الأذونات التي نستخدمها:" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#2C6E2C"/>
+
+                    <Label Text="📍 الموقع الجغرافي (Location):" FontAttributes="Bold" TextColor="#143214" FontSize="15"/>
+                    <Label Text="نحتاج إذن الموقع لحساب أوقات الصلاة بدقة بناءً على مدينتك واتجاه القبلة. تتم هذه العملية محلياً على جهازك ولا نقوم برفع أو تتبع موقعك." 
+                           FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+
+                    <Label Text="📷 الكاميرا (Camera):" FontAttributes="Bold" TextColor="#143214" FontSize="15"/>
+                    <Label Text="نحتاج إذن الكاميرا فقط لتشغيل ميزة الواقع المعزز (AR Qibla) لمساعدتك في تحديد القبلة. لا نقوم بالتقاط صور ولا نرسل أي بيانات بصرية خارج جهازك." 
+                           FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+
+                    <Label Text="🔔 الإشعارات والعمل بالخلفية (Notifications &amp; Background):" FontAttributes="Bold" TextColor="#143214" FontSize="15"/>
+                    <Label Text="تُستخدم هذه الصلاحيات لتنبيهك عبر الأذان والأذكار في أوقاتها الصحيحة حتى وإن كان التطبيق مغلقاً. العمليات تتم بأمان واستهلاك مثالي للبطارية." 
+                           FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+
+                    <Label Text="🌐 الاتصال بالإنترنت (Internet):" FontAttributes="Bold" TextColor="#143214" FontSize="15"/>
+                    <Label Text="لتحميل بيانات الآيات (التفسير والملفات الصوتية) عند الطلب، ولا تُستخدم في إرسال أي بيانات شخصية." 
+                           FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <Button Text="حسناً، فهمت ذلك" 
+                    BackgroundColor="#D4AF37" 
+                    TextColor="#143214" 
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    CornerRadius="15"
+                    HeightRequest="50"
+                    Margin="0,10,0,30"
+                    Clicked="OnOkClicked"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -35,9 +35,22 @@
                        VerticalOptions="Center"/>
 
                 <HorizontalStackLayout Grid.Column="2"
-                                       Spacing="2"
+                                       Spacing="10"
                                        VerticalOptions="Center">
-                    <Entry x:Name="PageEntry"
+                    
+                    <Label x:Name="BookmarkIconLabel" 
+                           Text="🔖" 
+                           FontSize="22" 
+                           VerticalOptions="Center" 
+                           Opacity="0.5"
+                           ToolTipProperties.Text="تحديد كعلامة مرجعية">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBookmarkTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <HorizontalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Entry x:Name="PageEntry"
                            Text="1"
                            TextColor="White"
                            Keyboard="Numeric"
@@ -50,6 +63,7 @@
                            TextColor="#AAAAAA"
                            FontSize="12"
                            VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
                 </HorizontalStackLayout>
             </Grid>
         </Frame>

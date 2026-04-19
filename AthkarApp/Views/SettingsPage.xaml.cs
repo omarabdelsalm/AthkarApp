@@ -157,4 +157,9 @@ public partial class SettingsPage : ContentPage
     {
         await _notificationService.ShowNotificationPreviewAsync(soundName);
     }
+
+    private async void OnPrivacyPolicyClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new PrivacyPolicyPage());
+    }
 }

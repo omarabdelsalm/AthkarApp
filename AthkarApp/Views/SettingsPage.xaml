@@ -130,6 +130,26 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="عن التطبيق" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="#2C6E2C" 
+                           HorizontalOptions="Center" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Button Text="📄 قراءة سياسة الخصوصية" 
+                            BackgroundColor="#F9F9F9" 
+                            TextColor="#333333" 
+                            CornerRadius="10"
+                            FontSize="15"
+                            BorderColor="#CCCCCC"
+                            BorderWidth="1"
+                            Clicked="OnPrivacyPolicyClicked" />
+                </VerticalStackLayout>
+            </Frame>
+
             <Label Text="سيتم تطبيق التغييرات فوراً على التنبيهات القادمة."
                    FontSize="12"
                    TextColor="Gray"

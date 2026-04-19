@@ -22,8 +22,16 @@
             <ShellContent ContentTemplate="{DataTemplate views:MushafPage}"/>
         </Tab>
 
+        <Tab Title="الختمة" Icon="athkar_icon.jpg">
+            <ShellContent ContentTemplate="{DataTemplate views:KhatmahPage}"/>
+        </Tab>
+
         <Tab Title="الفهرس" Icon="quran_icon.jpg">
             <ShellContent ContentTemplate="{DataTemplate views:QuranPage}"/>
+        </Tab>
+
+        <Tab Title="راديو مباشر" Icon="athkar_icon.jpg">
+            <ShellContent ContentTemplate="{DataTemplate views:LiveRadioPage}"/>
         </Tab>
     </TabBar>
 
