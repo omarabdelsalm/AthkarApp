@@ -10,7 +10,6 @@ public interface IAthkarNotificationService
     Task EnsureNotificationsScheduledAsync(bool force = false);
     Task ShowNotificationPreviewAsync(string soundName);
     Task ShowAdhanPreviewAsync(string soundName);
-    Task<bool> RequestBatteryOptimizationAsync();
     void StartForegroundService();
 }
 
@@ -76,28 +75,6 @@ public class AthkarNotificationService : IAthkarNotificationService
         return true;
     }
 
-    public Task<bool> RequestBatteryOptimizationAsync()
-    {
-#if ANDROID
-        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-        if (activity == null) return Task.FromResult(false);
-
-        var powerManager = activity.GetSystemService(Android.Content.Context.PowerService) as Android.OS.PowerManager;
-        if (powerManager != null && !powerManager.IsIgnoringBatteryOptimizations(activity.PackageName))
-        {
-            try
-            {
-                var intent = new Android.Content.Intent(Android.Provider.Settings.ActionRequestIgnoreBatteryOptimizations);
-                intent.SetData(Android.Net.Uri.Parse("package:" + activity.PackageName));
-                intent.AddFlags(Android.Content.ActivityFlags.NewTask);
-                activity.StartActivity(intent);
-                return Task.FromResult(true);
-            }
-            catch { }
-        }
-#endif
-        return Task.FromResult(false);
-    }
 
     public void StartForegroundService()
     {
@@ -117,35 +94,58 @@ public class AthkarNotificationService : IAthkarNotificationService
 
     public async Task EnsureNotificationsScheduledAsync(bool force = false)
     {
-        string todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+        string currentHourStr = DateTime.Now.ToString("yyyy-MM-dd-HH");
         string lastScheduled = Preferences.Default.Get(LastScheduledDateKey, "");
 
-        if (!force && lastScheduled == todayStr) return;
+        // إذا كان المنبه قد تم جدولته لهذه الساعة بالفعل ولا يوجد طلب إجباري، نتخطى
+        if (!force && lastScheduled == currentHourStr) return;
 
 #if ANDROID
         StartForegroundService();
 #endif
 
-        _nativeService.CancelAll();
-
+        // --- 1. جدولة الأذكار (الوضع الحالي) ---
         var enabledSounds = GetEnabledSounds();
         int lastIndex = Preferences.Default.Get(LastSoundIndexKey, 0);
-        int count = 0;
+        int athkarCount = 0;
 
-        for (int hour = 6; hour <= 22; hour++)
+        DateTime now = DateTime.Now;
+        for (int i = 1; i <= 24; i++)
         {
-            DateTime notifyTime = DateTime.Today.AddHours(hour);
-            if (notifyTime < DateTime.Now) notifyTime = notifyTime.AddDays(1);
+            DateTime notifyTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0).AddHours(i);
+            int hour = notifyTime.Hour;
 
-            string text = AthkarTexts[(lastIndex + count) % AthkarTexts.Length];
-            string sound = enabledSounds.Any() ? enabledSounds[(lastIndex + count) % enabledSounds.Count] : "om";
+            if (hour >= 1 && hour <= 4) continue;
+
+            string text = AthkarTexts[(lastIndex + athkarCount) % AthkarTexts.Length];
+            string sound = enabledSounds.Any() ? enabledSounds[(lastIndex + athkarCount) % enabledSounds.Count] : "om";
 
             _nativeService.ScheduleAthkarAlarm(NotificationBaseId + hour, text, sound, notifyTime);
-            count++;
+            athkarCount++;
         }
 
-        Preferences.Default.Set(LastScheduledDateKey, todayStr);
-        Preferences.Default.Set(LastSoundIndexKey, (lastIndex + count) % 1000);
+        // --- 2. جدولة مواقيت الصلاة (الإصلاح الجديد) ---
+        try
+        {
+            var prayerService = Microsoft.Maui.Controls.Application.Current?.Handler?.MauiContext?.Services.GetService<IPrayerService>();
+            if (prayerService == null)
+            {
+                prayerService = IPlatformApplication.Current?.Services.GetService<IPrayerService>();
+            }
+
+            if (prayerService != null)
+            {
+                var timings = await prayerService.GetPrayerTimingsAsync();
+                if (timings != null)
+                {
+                    await prayerService.ScheduleAdhanNotificationsAsync(timings);
+                }
+            }
+        }
+        catch { }
+
+        Preferences.Default.Set(LastScheduledDateKey, currentHourStr);
+        Preferences.Default.Set(LastSoundIndexKey, (lastIndex + athkarCount) % 1000);
         await Task.CompletedTask;
     }
 

@@ -236,7 +236,6 @@ public class QuranApiService : IQuranApiService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error Syncing Quran: {ex.Message}");
             throw;
         }
     }

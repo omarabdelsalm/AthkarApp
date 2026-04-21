@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:AthkarApp.Models"
+             x:Class="AthkarApp.Views.ProphetsPage"
+             Title="قصص الأنبياء"
+             FlowDirection="RightToLeft">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Decoration -->
+        <Image Grid.RowSpan="2" Source="athkar_icon.jpg" Aspect="AspectFill" Opacity="0.05"/>
+
+        <VerticalStackLayout Grid.Row="0" Padding="25,30,25,10" Spacing="8">
+            <Label Text="موسوعة قصص الأنبياء" 
+                   FontSize="32" 
+                   FontAttributes="Bold" 
+                   TextColor="#1B5E20" 
+                   HorizontalOptions="Center"/>
+            <Label Text="رحلة إيمانية عميقة مع صفوة الخلق عليهم السلام" 
+                   FontSize="15" 
+                   TextColor="#757575" 
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+            <BoxView HeightRequest="2" Color="#C5A059" WidthRequest="150" HorizontalOptions="Center" Margin="0,10,0,0"/>
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" x:Name="ProphetsList" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="15" VerticalItemSpacing="15"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:ProphetStory">
+                    <Frame CornerRadius="20" 
+                           HasShadow="True" 
+                           Padding="18" 
+                           BackgroundColor="White"
+                           BorderColor="#F0F0F0">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProphetTapped" CommandParameter="{Binding .}"/>
+                        </Frame.GestureRecognizers>
+                        
+                        <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <Frame BackgroundColor="{Binding ColorHex}" 
+                                   WidthRequest="70" 
+                                   HeightRequest="70" 
+                                   CornerRadius="35" 
+                                   Padding="0" 
+                                   HasShadow="False"
+                                   HorizontalOptions="Center">
+                                <Label Text="{Binding Icon}" 
+                                       FontSize="34" 
+                                       HorizontalOptions="Center" 
+                                       VerticalOptions="Center"/>
+                            </Frame>
+                            
+                            <Label Text="{Binding Name}" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#212121" 
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"/>
+                            
+                            <Label Text="{Binding Title}" 
+                                   FontSize="11" 
+                                   TextColor="#8D6E63" 
+                                   LineBreakMode="TailTruncation"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

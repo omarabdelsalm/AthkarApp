@@ -31,12 +31,9 @@ public class SoundService : ISoundService
         }
         catch (FileNotFoundException)
         {
-            // تجاهل الخطأ إذا كان الملف غير موجود (لمنع توقف التطبيق)
-            System.Diagnostics.Debug.WriteLine($"ملف الصوت {soundName}.mp3 غير موجود في الموارد.");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"خطأ آخر في تشغيل الصوت: {ex.Message}");
         }
     }
 }

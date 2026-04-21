@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:AthkarApp.Models"
+             x:Class="AthkarApp.Views.SiraPage"
+             Title="سيرة النبي ﷺ"
+             FlowDirection="RightToLeft">
+
+    <Grid>
+        <!-- Background Image -->
+        <Image Source="athkar_icon.jpg" 
+               Aspect="AspectFill" 
+               Opacity="0.15" />
+
+        <CollectionView x:Name="SiraList" ItemsSource="{Binding Sections}">
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="20" Spacing="10">
+                    <Label Text="السيرة النبوية الشريفة" 
+                           FontSize="28" 
+                           FontAttributes="Bold" 
+                           HorizontalOptions="Center" 
+                           TextColor="{StaticResource Primary}"/>
+                    
+                    <Label Text="مختصر شامل وموثق من أحداث حياة خير الأنام ﷺ" 
+                           FontSize="14" 
+                           HorizontalOptions="Center" 
+                           TextColor="Gray"/>
+
+                    <BoxView HeightRequest="1" 
+                             Color="{StaticResource Primary}" 
+                             HorizontalOptions="Fill" 
+                             Margin="0,10" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:SiraSection">
+                    <Grid Padding="15,12">
+                        <Frame BackgroundColor="#FDFDFD"
+                               BorderColor="#E0E0E0"
+                               HasShadow="True"
+                               CornerRadius="20"
+                               Padding="25">
+                            <Frame.Shadow>
+                                <Shadow Brush="Black" Offset="5,5" Radius="15" Opacity="0.06"/>
+                            </Frame.Shadow>
+
+                            <VerticalStackLayout Spacing="20">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <Label Grid.Column="0" 
+                                           Text="{Binding Icon}" 
+                                           FontSize="36" 
+                                           VerticalOptions="Center" 
+                                           Margin="0,0,18,0"/>
+                                    
+                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                        <Label Text="{Binding Title}" 
+                                               FontSize="22" 
+                                               LineBreakMode="WordWrap"
+                                               FontAttributes="Bold" 
+                                               TextColor="#1B5E20"/>
+                                        <Label Text="{Binding Period}" 
+                                               FontSize="13" 
+                                               TextColor="#A67C00" 
+                                               FontAttributes="Italic"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <BoxView HeightRequest="1.5" Color="#F0F0F0" HorizontalOptions="Fill"/>
+
+                                <Label Text="{Binding Content}" 
+                                       FontSize="17" 
+                                       LineHeight="1.7" 
+                                       TextColor="#333333" 
+                                       HorizontalTextAlignment="Start"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <VerticalStackLayout Padding="30" HorizontalOptions="Center">
+                    <Label Text="تم بحمد الله" TextColor="Gray" FontSize="12"/>
+                    <Label Text="« لَقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ »" 
+                           TextColor="{StaticResource Primary}" 
+                           FontSize="14" 
+                           FontAttributes="Italic"
+                           Margin="0,10"/>
+                </VerticalStackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -35,7 +35,7 @@
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
@@ -45,6 +45,9 @@
 	<PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
 		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
 		<AndroidEnableFastDeployment>false</AndroidEnableFastDeployment>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -82,6 +85,12 @@
 		<AndroidResource Include="Platforms\Android\Resources\raw\ah.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\ma.wav" />
 		<AndroidResource Include="Platforms\Android\Resources\raw\adhan.mp3" />
+
+		<!-- Use stable Media3 version compatible with MediaElement 6.0.0 on .NET 9 -->
+		<PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.5.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.5.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.Ui" Version="1.5.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.5.0.1" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -103,11 +112,7 @@
 		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
 		<PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
         <PackageReference Include="Camera.MAUI" Version="1.4.4" />
-        <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="5.0.1" />
-		<PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.4.1.1" />
-		<PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.4.1.1" />
-		<PackageReference Include="Xamarin.AndroidX.Media3.Ui" Version="1.4.1.1" />
-		<PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.4.1.1" />
+        <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="6.0.0" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
 	</ItemGroup>

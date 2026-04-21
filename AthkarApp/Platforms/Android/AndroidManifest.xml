@@ -6,20 +6,13 @@
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-	<uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 	<uses-feature android:name="android.hardware.sensor.compass" android:required="true" />
-	<!-- ✅ هام جداً لـ Android 8-12 -->
-	
-	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-
 	<!-- ✅ لتفعيل الإشعارات على الشاشة المقفلة -->
 	<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:usesCleartextTraffic="true">
@@ -43,6 +36,11 @@
 		<receiver android:name="com.Almanar.athkarapp.AlarmReceiver"
                   android:enabled="true"
                   android:exported="true" />
+
+		<!-- ✅ مستقبل التفاعلات مع الإشعارات -->
+		<receiver android:name="AthkarApp.Platforms.Android.NotificationActionReceiver"
+                  android:enabled="true"
+                  android:exported="false" />
 
 		<receiver android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
                   android:enabled="true"

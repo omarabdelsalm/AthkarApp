@@ -20,6 +20,23 @@ public partial class QuranPage : ContentPage
         BindingContext = this;
     }
 
+    protected override bool OnBackButtonPressed()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchBar.Text))
+        {
+            SearchBar.Text = string.Empty;
+            return true;
+        }
+
+        if (Navigation.NavigationStack.Count > 1)
+        {
+            return base.OnBackButtonPressed();
+        }
+
+        Shell.Current.GoToAsync("//AthkarPage");
+        return true;
+    }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();

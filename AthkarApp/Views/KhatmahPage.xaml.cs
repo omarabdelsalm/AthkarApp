@@ -17,6 +17,17 @@ public partial class KhatmahPage : ContentPage
         _quranApiService = quranApiService;
     }
 
+    protected override bool OnBackButtonPressed()
+    {
+        if (Navigation.NavigationStack.Count > 1)
+        {
+            return base.OnBackButtonPressed();
+        }
+
+        Shell.Current.GoToAsync("//AthkarPage");
+        return true;
+    }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();

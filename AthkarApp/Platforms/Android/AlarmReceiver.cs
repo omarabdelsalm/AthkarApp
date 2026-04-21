@@ -55,6 +55,28 @@ public class AlarmReceiver : BroadcastReceiver
             // للأذكار: إشعار عادي مع صوت
             NativeNotificationHelper.ShowAthkarNotification(context, id, text, soundName);
         }
+
+        // الحل الجذري: إعادة جدولة الإشعارات لليوم التالي لضمان الاستمرارية
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // نستخدم IPlatformApplication للحصول على الخدمة من DI
+                var notificationService = Microsoft.Maui.Controls.Application.Current?.Handler?.MauiContext?.Services.GetService<IAthkarNotificationService>();
+                
+                if (notificationService == null)
+                {
+                    notificationService = IPlatformApplication.Current?.Services.GetService<IAthkarNotificationService>();
+                }
+
+                if (notificationService != null)
+                {
+                    // إعادة الجدولة للتأكد من وجود مواعيد لـ 24 ساعة القادمة
+                    await notificationService.EnsureNotificationsScheduledAsync(true);
+                }
+            }
+            catch { }
+        });
     }
 }
 #endif

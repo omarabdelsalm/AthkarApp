@@ -21,9 +21,8 @@ public class WindowsNotificationService : IAppNotificationService
                     toast.Group = "Athkar";
                 });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Windows Schedule Error: {ex.Message}");
         }
     }
 
@@ -41,9 +40,8 @@ public class WindowsNotificationService : IAppNotificationService
                     toast.Group = "Adhan";
                 });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Windows Adhan Schedule Error: {ex.Message}");
         }
     }
 

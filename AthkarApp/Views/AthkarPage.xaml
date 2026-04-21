@@ -30,9 +30,6 @@
                                      HorizontalOptions="Start"
                                      VerticalOptions="Center"
                                      Clicked="OnSettingsClicked">
-                            <ImageButton.Shadow>
-                                <Shadow Brush="Black" Offset="1,1" Radius="2" Opacity="0.5"/>
-                            </ImageButton.Shadow>
                         </ImageButton>
 
                         <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" HorizontalOptions="Center">
@@ -129,10 +126,18 @@
                     
                     <Label x:Name="ReferenceLabel" 
                            Text="" 
-                           FontSize="12" 
-                           TextColor="#666666" 
-                           HorizontalTextAlignment="Center" 
-                           />
+                           FontSize="14" 
+                           TextColor="#2C6E2C" 
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center"/>
+
+                    <Label x:Name="HadithSourceLabel" 
+                           Text="" 
+                           FontSize="11" 
+                           TextColor="#888888" 
+                           FontAttributes="Italic"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,-15,0,0"/>
 
                     <Frame BackgroundColor="#F0F9F0" CornerRadius="40" HeightRequest="120" WidthRequest="120" HorizontalOptions="Center" Padding="0">
                         <Frame.GestureRecognizers>

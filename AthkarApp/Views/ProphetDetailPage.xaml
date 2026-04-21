@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:AthkarApp.Models"
+             x:Class="AthkarApp.Views.ProphetDetailPage"
+             x:DataType="models:ProphetStory"
+             Title="{Binding Name}"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto, Auto, Auto">
+            <!-- Header Header -->
+            <BoxView Grid.Row="0" HeightRequest="150" Color="{Binding ColorHex}"/>
+            
+            <VerticalStackLayout Grid.Row="0" VerticalOptions="Center" HorizontalOptions="Center" Spacing="5">
+                <Label Text="{Binding Icon}" FontSize="60" HorizontalOptions="Center"/>
+                <Label Text="{Binding Name}" FontSize="28" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                <Label Text="{Binding Title}" FontSize="16" TextColor="#E0E0E0" HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Story Body -->
+            <Frame Grid.Row="1" 
+                   Margin="15,-20,15,15" 
+                   Padding="25" 
+                   CornerRadius="20" 
+                   HasShadow="True" 
+                   BackgroundColor="White">
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="القصة" FontSize="20" FontAttributes="Bold" TextColor="{Binding ColorHex}"/>
+                    <BoxView HeightRequest="1" Color="#F0F0F0"/>
+                    <Label Text="{Binding Story}" 
+                           FontSize="17" 
+                           LineHeight="1.6" 
+                           TextColor="#333333"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Lessons Body -->
+            <Frame Grid.Row="2" 
+                   Margin="15,0,15,30" 
+                   Padding="25" 
+                   CornerRadius="20" 
+                   HasShadow="True" 
+                   BackgroundColor="#F9F9F9"
+                   BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="دروس وعبر" FontSize="20" FontAttributes="Bold" TextColor="#2E7D32"/>
+                    <Label Text="{Binding Lessons}" 
+                           FontSize="15" 
+                           LineHeight="1.5" 
+                           TextColor="#555555"/>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </ScrollView>
+</ContentPage>

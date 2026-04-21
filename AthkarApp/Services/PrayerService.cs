@@ -1,8 +1,8 @@
 using AthkarApp.Models;
 using Microsoft.Maui.Devices.Sensors;
 using System.Globalization;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json;
+using Microsoft.Maui.Networking;
 
 namespace AthkarApp.Services;
 
@@ -17,14 +17,14 @@ public interface IPrayerService
 
 public class PrayerService : IPrayerService
 {
-    private readonly HttpClient _httpClient;
     private readonly IFileStorageService _fileStorage;
+    private readonly HttpClient _httpClient;
     private const string PrayerCacheKey = "prayer_timings_cache.json";
 
-    public PrayerService(HttpClient httpClient, IFileStorageService fileStorage)
+    public PrayerService(IFileStorageService fileStorage, HttpClient httpClient)
     {
-        _httpClient = httpClient;
         _fileStorage = fileStorage;
+        _httpClient = httpClient;
     }
 
     private string AdhanSoundName => Preferences.Default.Get("SelectedAdhanSound", "adhan");
@@ -33,70 +33,92 @@ public class PrayerService : IPrayerService
     {
         try
         {
-            // 1. التحقق من الكاش أولاً لتسريع الفتح
-            var cached = await _fileStorage.LoadJsonAsync<PrayerApiResponse>(PrayerCacheKey);
-            bool isCacheToday = cached != null && cached.Data.Date.Readable == DateTime.Today.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
-
-            if (isCacheToday && !forceRefresh)
-            {
-                return cached.Data;
-            }
-
-            // 2. محاولة الحصول على الموقع الحالي
-            Location location = null;
+            // 1. محاولة الحصول على الموقع الحالي
+            Location? location = null;
             try {
                 location = await Geolocation.Default.GetLastKnownLocationAsync();
                 if (location == null)
                 {
                     location = await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(5)));
                 }
-            } catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Geolocation Error: {ex.Message}");
-            }
+            } catch (Exception) { }
 
-            if (isCacheToday)
+            // 2. إذا لم يتوفر الموقع ولا يوجد إنترنت، نستعيد الكاش
+            if (location == null && Connectivity.Current.NetworkAccess != NetworkAccess.Internet && !forceRefresh)
             {
-                if (location != null)
-                {
-                    // نتحقق من المسافة إذا كان الموقع متاحاً
-                    double distance = location.CalculateDistance(cached.Data.Meta.Latitude, cached.Data.Meta.Longitude, DistanceUnits.Kilometers);
-                    if (distance < 10) return cached.Data;
-                }
-                else
-                {
-                    // إذا لم نتمكن من تحديد الموقع ولكن لدينا كاش لليوم، نستخدمه كحل أخير (Offline Mode)
-                    return cached.Data;
-                }
+                var cached = await _fileStorage.LoadJsonAsync<PrayerData>(PrayerCacheKey);
+                if (cached != null) ApplyManualDstIfEnabled(cached.Timings);
+                return cached;
             }
 
-            // 3. جلب من API (نحتاج للموقع هنا)
-            if (location == null) return cached?.Data; // إذا فشل كل شيء، نرجع الكاش القديم حتى لو لم يكن لليوم
-
-            int method = Preferences.Default.Get("SelectedCalculationMethod", 5);
-            int school = Preferences.Default.Get("SelectedMadhab", 0);
-            
-            var timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-            var url = string.Format(CultureInfo.InvariantCulture, "https://api.aladhan.com/v1/timings/{0}?latitude={1}&longitude={2}&method={3}&school={4}", 
-                timestamp, location.Latitude, location.Longitude, method, school);
-            var response = await _httpClient.GetFromJsonAsync<PrayerApiResponse>(url);
-
-            if (response != null && response.Code == 200)
+            // 3. الجلب من Aladhan API
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
-                await _fileStorage.SaveJsonAsync(PrayerCacheKey, response);
-                return response.Data;
+                try
+                {
+                    int method = Preferences.Default.Get("SelectedCalculationMethod", 5);
+                    string url;
+                    
+                    if (location != null)
+                    {
+                        url = $"https://api.aladhan.com/v1/timings?latitude={location.Latitude}&longitude={location.Longitude}&method={method}";
+                    }
+                    else
+                    {
+                        url = $"https://api.aladhan.com/v1/timingsByCity?city=Cairo&country=Egypt&method={method}";
+                    }
+
+                    var response = await _httpClient.GetStringAsync(url);
+                    var apiResponse = JsonSerializer.Deserialize<PrayerApiResponse>(response);
+                    
+                    if (apiResponse != null && apiResponse.Code == 200)
+                    {
+                        var data = apiResponse.Data;
+                        await _fileStorage.SaveJsonAsync(PrayerCacheKey, data);
+                        ApplyManualDstIfEnabled(data.Timings);
+                        return data;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"API Error: {ex.Message}");
+                }
             }
+
+            // 4. Fallback to cache
+            var finalCached = await _fileStorage.LoadJsonAsync<PrayerData>(PrayerCacheKey);
+            if (finalCached != null) ApplyManualDstIfEnabled(finalCached.Timings);
+            return finalCached;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ GetPrayerTimingsAsync Error: {ex.Message}");
-            // محاولة أخيرة: إرجاع أي كاش متاح
-            try {
-                var fallback = await _fileStorage.LoadJsonAsync<PrayerApiResponse>(PrayerCacheKey);
-                return fallback?.Data;
-            } catch { }
+            return await _fileStorage.LoadJsonAsync<PrayerData>(PrayerCacheKey);
         }
+    }
 
-        return null;
+    private void ApplyManualDstIfEnabled(PrayerTimings timings)
+    {
+        if (Preferences.Default.Get("ManualDstEnabled", false))
+        {
+            timings.Fajr = AddHour(timings.Fajr);
+            timings.Sunrise = AddHour(timings.Sunrise);
+            timings.Dhuhr = AddHour(timings.Dhuhr);
+            timings.Asr = AddHour(timings.Asr);
+            timings.Maghrib = AddHour(timings.Maghrib);
+            timings.Isha = AddHour(timings.Isha);
+        }
+    }
+
+    private string AddHour(string timeStr)
+    {
+        if (string.IsNullOrEmpty(timeStr)) return timeStr;
+        // تنظيف الوقت من أي لاحقة مثل (EEST)
+        string cleanTime = timeStr.Split(' ')[0];
+        if (DateTime.TryParseExact(cleanTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+        {
+            return time.AddHours(1).ToString("HH:mm");
+        }
+        return timeStr;
     }
 
     public async Task<double> GetQiblaAngleAsync()
@@ -105,12 +127,16 @@ public class PrayerService : IPrayerService
         {
             var location = await Geolocation.Default.GetLastKnownLocationAsync();
             if (location == null) return 0;
+            
+            double m_lat = 21.4225 * Math.PI / 180.0;
+            double m_lng = 39.8262 * Math.PI / 180.0;
+            double u_lat = location.Latitude * Math.PI / 180.0;
+            double u_lng = location.Longitude * Math.PI / 180.0;
 
-            // رابط مباشر لجلب زاوية القبلة من الإحداثيات
-            var url = string.Format(CultureInfo.InvariantCulture, "https://api.aladhan.com/v1/qibla/{0}/{1}", 
-                location.Latitude, location.Longitude);
-            var response = await _httpClient.GetFromJsonAsync<QiblaResponse>(url);
-            return response?.Data?.Direction ?? 0;
+            double angle = Math.Atan2(Math.Sin(m_lng - u_lng), 
+                                      Math.Cos(u_lat) * Math.Tan(m_lat) - Math.Sin(u_lat) * Math.Cos(m_lng - u_lng));
+            
+            return (angle * 180.0 / Math.PI + 360) % 360;
         }
         catch { return 0; }
     }
@@ -128,7 +154,6 @@ public class PrayerService : IPrayerService
         return;
 #endif
 
-        // إلغاء أي تنبيهات صلاة قديمة (نستخدم IDs من 2000 إلى 2105 لخدمة الأذان وتنبيهات القرب)
         for (int i = 2000; i <= 2105; i++)
         {
             nativeService.CancelNotification(i);
@@ -147,16 +172,17 @@ public class PrayerService : IPrayerService
         {
             if (!IsPrayerEnabled(p.Name)) continue;
 
-            if (DateTime.TryParseExact(p.Time, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+            string cleanTime = p.Time.Split(' ')[0];
+            if (DateTime.TryParseExact(cleanTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
             {
                 DateTime notifyTime = DateTime.Today.AddHours(time.Hour).AddMinutes(time.Minute);
                 if (notifyTime < DateTime.Now) notifyTime = notifyTime.AddDays(1);
 
-                // 1. تنبيه بقرب الأذان (قبل دقيقتين)
-                DateTime preNotifyTime = notifyTime.AddMinutes(-2);
+                // 1. تنبيه بقرب الأذان (قبل أربع دقائق)
+                DateTime preNotifyTime = notifyTime.AddMinutes(-4);
                 if (preNotifyTime > DateTime.Now)
                 {
-                    nativeService.ScheduleAdhanAlarm(p.Id + 100, $"قرب أذان {p.Ar}", "silent", preNotifyTime);
+                    nativeService.ScheduleAdhanAlarm(p.Id + 100, p.Ar, "silent", preNotifyTime);
                 }
 
                 // 2. أذان الصلاة الفعلي
@@ -168,16 +194,4 @@ public class PrayerService : IPrayerService
 
     public bool IsPrayerEnabled(string prayerName) => Preferences.Default.Get($"Prayer_{prayerName}_Enabled", true);
     public void SetPrayerEnabled(string prayerName, bool enabled) => Preferences.Default.Set($"Prayer_{prayerName}_Enabled", enabled);
-}
-
-public class QiblaResponse
-{
-    [JsonPropertyName("data")]
-    public QiblaData Data { get; set; } = new();
-}
-
-public class QiblaData
-{
-    [JsonPropertyName("direction")]
-    public double Direction { get; set; }
 }

@@ -76,7 +76,6 @@ public class QuranDownloadService : IQuranDownloadService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error downloading surah: {ex.Message}");
             throw;
         }
     }

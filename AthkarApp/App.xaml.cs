@@ -20,13 +20,6 @@ namespace AthkarApp
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await _notificationService.RequestPermissionsAsync();
-                
-                bool batteryAsked = Preferences.Default.Get("battery_optimization_asked", false);
-                if (!batteryAsked)
-                {
-                    await _notificationService.RequestBatteryOptimizationAsync();
-                    Preferences.Default.Set("battery_optimization_asked", true);
-                }
 
                 // نقل العمليات الثقيلة (جدولة + جلب مواقع + حفظ) إلى مسار خلفي
                 // لتجنب تعليق الواجهة وخروج التطبيق (Skipped 264 frames/Crash)
@@ -43,9 +36,8 @@ namespace AthkarApp
                             await _prayerService.ScheduleAdhanNotificationsAsync(timings);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Background Init Error: {ex.Message}");
                     }
                 });
             });

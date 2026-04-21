@@ -78,7 +78,6 @@ public partial class PrayerPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"CheckLocation Error: {ex.Message}");
             LocationLabel.Text = "حدث خطأ في التحقق من صلاحية الموقع";
         }
     }
@@ -142,7 +141,6 @@ public partial class PrayerPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"GPS Check Error: {ex.Message}");
             LocationLabel.Text = "الموقع: حدث خطأ في التحقق من GPS";
             await LoadPrayerData();
         }
@@ -157,7 +155,6 @@ public partial class PrayerPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"OpenSettings Error: {ex.Message}");
             await DisplayAlert("تنبيه", "الرجاء تشغيل خدمات الموقع يدوياً من إعدادات الجهاز.", "حسناً");
         }
     }
@@ -184,7 +181,6 @@ public partial class PrayerPage : ContentPage
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Qibla Error: {ex.Message}");
                     QiblaAngleLabel.Text = "الزاوية: غير متاحة";
                 }
 
@@ -192,7 +188,11 @@ public partial class PrayerPage : ContentPage
 
                 if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
                 {
-                    LocationLabel.Text = "تعمل الآن في وضع عدم الاتصال (بيانات مخزنة مؤقتاً)";
+                    LocationLabel.Text = "⚡ تم تفعيل الحساب المحلي الدقيق (بدون إنترنت)";
+                }
+                else 
+                {
+                    LocationLabel.Text = "✅ تم تحديث المواقيت بناءً على موقعك";
                 }
             }
             else if (_currentData == null)
@@ -322,10 +322,15 @@ public partial class PrayerPage : ContentPage
             ("Isha", "العشاء", GetTime(_currentData.Timings.Isha))
         };
 
-        var next = timings.OrderBy(t => t.Time).FirstOrDefault(t => t.Time > now);
+        // ترتيب الأوقات لضمان المقارنة السليمة
+        var sortedTimings = timings.OrderBy(t => t.Time).ToList();
+        
+        var next = sortedTimings.FirstOrDefault(t => t.Time > now);
+        
         if (next.Name == null)
         {
-            next = timings.OrderBy(t => t.Time).First();
+            // إذا انتهت كل صلوات اليوم، فالصلاة القادمة هي فجر الغد
+            next = sortedTimings.First();
             next.Time = next.Time.AddDays(1);
         }
 
@@ -335,10 +340,9 @@ public partial class PrayerPage : ContentPage
 
         // تحديث بيانات الودجت في الخلفية
         Preferences.Default.Set("Widget_NextPrayerName", next.Ar);
-        Preferences.Default.Set("Widget_NextPrayerTime", next.Time.ToString("hh:mm tt"));
+        Preferences.Default.Set("Widget_NextPrayerTime", next.Time.ToString("HH:mm"));
         Preferences.Default.Set("Widget_Countdown", $"متبقي: {diff.ToString(@"hh\:mm\:ss")}");
 
-        // من باب توفير الأداء، سنحدث الودجت كل دقيقة فقط (أو عند تغير الصلاة)
         if (now.Second == 0)
         {
             UpdateAndroidWidget();
@@ -363,10 +367,17 @@ public partial class PrayerPage : ContentPage
 
     private DateTime GetTime(string timeStr)
     {
-        if (DateTime.TryParseExact(timeStr, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+        if (string.IsNullOrEmpty(timeStr)) return DateTime.Now;
+
+        // تنظيف الوقت من أي لاحقة مثل (EEST) أو مسافات زائدة
+        string cleanTime = timeStr.Split(' ')[0].Trim();
+
+        if (DateTime.TryParseExact(cleanTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
         {
             return DateTime.Today.AddHours(time.Hour).AddMinutes(time.Minute);
         }
+        
+        System.Diagnostics.Debug.WriteLine($"Failed to parse time: {timeStr}");
         return DateTime.Now;
     }
 
@@ -383,7 +394,6 @@ public partial class PrayerPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"StartCompass Error: {ex.Message}");
             QiblaAngleLabel.Text = "البوصلة: غير متاحة";
         }
     }
@@ -401,7 +411,6 @@ public partial class PrayerPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"StopCompass Error: {ex.Message}");
         }
     }
 

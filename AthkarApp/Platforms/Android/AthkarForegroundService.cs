@@ -12,6 +12,7 @@ using Debug = System.Diagnostics.Debug;
 
 namespace AthkarApp.Services
 {
+    using AthkarApp.Platforms.Android;
     [Service(Name = "com.Almanar.athkarapp.AthkarForegroundService",
              Enabled = true,
              Exported = false,
@@ -24,7 +25,8 @@ namespace AthkarApp.Services
 
         private const string ServiceChannelId = "athkar_foreground_channel";
         private const string AdhanChannelId = "athkar_adhan_channel";
-        private const int NotificationId = 999;
+        private const int ServiceNotificationId = 999;
+        private const int AdhanNotificationId = 888;
 
         // Guard so we call StartForeground exactly once quickly
         private volatile bool _foregroundStarted;
@@ -37,26 +39,28 @@ namespace AthkarApp.Services
 
         public override void OnCreate()
         {
-            base.OnCreate();
-
-            _startupWatch.Restart();
-          //  Debug.WriteLine("AthkarForegroundService: OnCreate start");
-
-            // Best-effort: create channels first so the notification builder does not fail on Android 8+
+            // Call CreateNotificationChannels first thing!
             try
             {
                 CreateNotificationChannels();
-                Debug.WriteLine("AthkarForegroundService: Channels created");
             }
-            catch 
+            catch { }
+
+            // MUST call StartForeground IMMEDIATELY after startForegroundService is called by the system.
+            try
             {
-             // Debug.WriteLine($"AthkarForegroundService: CreateNotificationChannels error (ignored): {ex}");
+                var notif = GetSimpleNotification();
+                StartForegroundSafe(ServiceNotificationId, notif);
+                _foregroundStarted = true;
+            }
+            catch (Exception ex)
+            {
+                // If it fails here, we are about to crash anyway, but let's try to continue
             }
 
-            // Call StartForeground immediately — MUST happen quickly after startForegroundService
-            var notif = GetSimpleNotification();
-            StartForegroundSafe(NotificationId, notif);
-            _foregroundStarted = true;
+            base.OnCreate();
+
+            _startupWatch.Restart();
 
             // If StartForeground didn't happen extremely quickly, log a structured warning shortly after
             Task.Run(async () =>
@@ -84,8 +88,6 @@ namespace AthkarApp.Services
                     
                 }
             });
-
-           // Debug.WriteLine("AthkarForegroundService: OnCreate end");
         }
 
         // Simple notification used immediately
@@ -117,24 +119,25 @@ namespace AthkarApp.Services
                 {
                     try
                     {
+                        // On Android 14 (API 34), we MUST provide a valid type that is declared in the manifest.
                         StartForeground(id, notification, global::Android.Content.PM.ForegroundService.TypeMediaPlayback);
                     }
                     catch
                     {
-                        // Fallback for devices/OS versions where the type fails
+                        // Fallback
                         StartForeground(id, notification);
                     }
                 }
                 else
                 {
+                    // Android 8.0 - 9.0
                     StartForeground(id, notification);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AthkarForegroundService: CRITICAL StartForeground Error: {ex}");
-                // We must surface this instead of failing silently 5 seconds later
-                throw; 
+                // On some devices, calling StartForeground can throw if the notification is invalid or permissions are missing.
+                System.Diagnostics.Debug.WriteLine($"Failed to start foreground: {ex.Message}");
             }
         }
 
@@ -154,7 +157,6 @@ namespace AthkarApp.Services
             }
             catch 
             {
-          //      Debug.WriteLine($"AthkarForegroundService: Initialize Error: {ex}");
             }
         }
 
@@ -178,8 +180,6 @@ namespace AthkarApp.Services
 
         public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
         {
-            System.Diagnostics.Debug.WriteLine($"AthkarForegroundService: OnStartCommand action={intent?.Action} _foregroundStarted={_foregroundStarted} (elapsedMs={_startupWatch.ElapsedMilliseconds})");
-
             try
             {
                 // If OnCreate didn't get to StartForeground, attempt quickly here
@@ -188,13 +188,11 @@ namespace AthkarApp.Services
                     try
                     {
                         CreateNotificationChannels();
-                        StartForegroundSafe(NotificationId, GetSimpleNotification());
+                        StartForegroundSafe(ServiceNotificationId, GetSimpleNotification());
                         _foregroundStarted = true;
-                        //Debug.WriteLine($"AthkarForegroundService: StartForeground called from OnStartCommand (elapsedMs={_startupWatch.ElapsedMilliseconds})");
                     }
                     catch 
                     {
-                      //  Debug.WriteLine($"AthkarForegroundService: StartForeground in OnStartCommand failed: {ex}");
                     }
                 }
 
@@ -217,6 +215,10 @@ namespace AthkarApp.Services
                 {
                     StopAdhanSound();
                     ReleaseWakeLock();
+                    
+                    // إزالة إشعار الأذان المنفصل والعودة لإشعار الخدمة العادي
+                    var manager = (NotificationManager)GetSystemService(Context.NotificationService)!;
+                    manager.Cancel(AdhanNotificationId);
                     UpdateDefaultNotification();
                 }
                 else
@@ -226,7 +228,6 @@ namespace AthkarApp.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AthkarForegroundService: OnStartCommand Error: {ex}");
             }
 
             return StartCommandResult.Sticky;
@@ -243,7 +244,6 @@ namespace AthkarApp.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AthkarForegroundService: WakeLock Acquire Error: {ex}");
             }
         }
 
@@ -271,7 +271,6 @@ namespace AthkarApp.Services
                         var result = _audioManager.RequestAudioFocus(null, Android.Media.Stream.Alarm, AudioFocus.Gain);
                         if (result != AudioFocusRequest.Granted)
                         {
-                            Debug.WriteLine("AthkarForegroundService: Audio focus not granted");
                             ReleaseWakeLock();
                             UpdateDefaultNotification();
                             return;
@@ -309,11 +308,9 @@ namespace AthkarApp.Services
                         try
                         {
                             _mediaPlayer?.Start();
-                            Debug.WriteLine($"AthkarForegroundService: MediaPlayer started (elapsedMs={_startupWatch.ElapsedMilliseconds})");
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"AthkarForegroundService: Error starting MediaPlayer: {ex}");
                             ReleaseWakeLock();
                             UpdateDefaultNotification();
                         }
@@ -330,7 +327,6 @@ namespace AthkarApp.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"AthkarForegroundService: PlayAdhan Error: {ex}");
                     ReleaseWakeLock();
                     UpdateDefaultNotification();
                 }
@@ -373,61 +369,89 @@ namespace AthkarApp.Services
             {
                 var flags = PendingIntentFlags.UpdateCurrent;
                 if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
-                {
                     flags |= PendingIntentFlags.Immutable;
-                }
 
+                // --- زر «إيقاف» ---
                 var stopIntent = new Intent(this, typeof(AthkarForegroundService));
                 stopIntent.SetAction("STOP_ADHAN");
                 var stopPendingIntent = PendingIntent.GetService(this, id, stopIntent, flags);
 
-                var notification = new NotificationCompat.Builder(this, AdhanChannelId)
-                    .SetContentTitle($"🕌 أذان {prayerName}")
-                    .SetContentText("حي على الصلاة.. حي على الفلاح")
+                // --- زر «تأجيل» ---
+                var snoozeIntent = new Intent(this, typeof(AthkarApp.Platforms.Android.NotificationActionReceiver));
+                snoozeIntent.SetAction("SNOOZE_ATHKAR");
+                snoozeIntent.PutExtra("notification_id", id);
+                snoozeIntent.PutExtra("type", "adhan");
+                var snoozePendingIntent = PendingIntent.GetBroadcast(this, id + 600, snoozeIntent, flags);
+
+                // --- Big Text Style مع الآية الكريمة ---
+                var bigTextStyle = new NotificationCompat.BigTextStyle()
+                    .BigText($"حَيَّ عَلَى الصَّلاةِ ✦ حَيَّ عَلَى الفَلاحِ\n\n« إِنَّ الصَّلاةَ كَانَتْ عَلَى المُؤْمِنِينَ كِتَابًا مَّوقُوتًا »")
+                    .SetBigContentTitle($"🕌  نداء الصلاة — {prayerName}")
+                    .SetSummaryText("⏰ حان الآن موقت الأذان");
+
+                var builder = new NotificationCompat.Builder(this, AdhanChannelId)
+                    .SetContentTitle($"🕌  أذان {prayerName}")
+                    .SetContentText("حي على الصلاة ✦ حي على الفلاح")
+                    .SetStyle(bigTextStyle)
                     .SetSmallIcon(GetSafeIcon())
+                    .SetColor(unchecked((int)0xFF1A3A6B))   // أزرق داكن فخم
+                    .SetColorized(true)
                     .SetPriority(NotificationCompat.PriorityMax)
                     .SetCategory(NotificationCompat.CategoryAlarm)
+                    .SetVisibility(NotificationCompat.VisibilityPublic)
                     .SetOngoing(true)
-                    .AddAction(global::Android.Resource.Drawable.IcMenuCloseClearCancel, "إيقاف", stopPendingIntent)
-                    .Build();
+                    .SetShowWhen(true)
+                    .SetWhen(Java.Lang.JavaSystem.CurrentTimeMillis())
+                    .AddAction(global::Android.Resource.Drawable.IcMenuCloseClearCancel, "🔇  إيقاف الصوت", stopPendingIntent)
+                    .AddAction(global::Android.Resource.Drawable.IcMenuRecentHistory, "⏰  تأجيل 5 دقائق", snoozePendingIntent);
 
-                StartForegroundSafe(NotificationId, notification);
-                _foregroundStarted = true;
-                Debug.WriteLine($"AthkarForegroundService: UpdateForegroundNotificationForAdhan called (elapsedMs={_startupWatch.ElapsedMilliseconds})");
+                var manager = (NotificationManager)GetSystemService(Context.NotificationService)!;
+                manager.Notify(AdhanNotificationId, builder.Build());
+                
+                // نبقي الخدمة في المقدمة بالإشعار البسيط لضمان الاستمرارية
+                UpdateDefaultNotification();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AthkarForegroundService: UpdateForeground Error: {ex}");
             }
         }
+// Brennan
 
         private void UpdateDefaultNotification()
         {
             try
             {
+                // اختر تسبيحة عشوائية كـ subtext للإشعار الدائم
+                var tasbeehList = new[]
+                {
+                    "سبحان الله وبحمده",
+                    "الحمد لله على كل حال",
+                    "لا إله إلا الله الحليم الكريم",
+                    "سبحان الله العظيم وبحمده",
+                    "استغفر الله وأتوب إليه"
+                };
+                string tasbeeh = tasbeehList[new Random().Next(tasbeehList.Length)];
+
                 var notification = new NotificationCompat.Builder(this, ServiceChannelId)
-                    .SetContentTitle("🕌 تطبيق أذكار المسلم")
-                    .SetContentText("الخدمة تعمل في الخلفية")
+                    .SetContentTitle("📿  أذكار المسلم")
+                    .SetContentText(tasbeeh)
+                    .SetSubText("جاري المتابعة في الخلفية")
                     .SetSmallIcon(GetSafeIcon())
+                    .SetColor(unchecked((int)0xFF0B5E1B))  // أخضر إسلامي
                     .SetPriority(NotificationCompat.PriorityLow)
                     .SetOngoing(true)
                     .Build();
 
-                StartForegroundSafe(NotificationId, notification);
+                StartForegroundSafe(ServiceNotificationId, notification);
                 _foregroundStarted = true;
-                Debug.WriteLine($"AthkarForegroundService: UpdateDefaultNotification called (elapsedMs={_startupWatch.ElapsedMilliseconds})");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AthkarForegroundService: UpdateDefault Error: {ex}");
             }
         }
 
         public override void OnDestroy()
         {
-            System.Diagnostics.Debug.WriteLine("AthkarForegroundService: OnDestroy");
-           // StopAdhanSound();
-           // ReleaseWakeLock();
             base.OnDestroy();
         }
     }

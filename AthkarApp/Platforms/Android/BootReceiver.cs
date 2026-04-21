@@ -24,7 +24,6 @@ public class BootReceiver : BroadcastReceiver
             intent?.Action != "android.intent.action.QUICKBOOT_POWERON")
             return;
 
-       // System.Diagnostics.Debug.WriteLine("📱 BootReceiver: الجهاز أُعيد تشغيله - إعادة جدولة الإشعارات...");
 
         var pendingResult = GoAsync();
         
@@ -37,18 +36,26 @@ public class BootReceiver : BroadcastReceiver
                 service.StartForegroundService();
                 await AthkarNotificationService.RescheduleAfterBootAsync();
 
-                var fileStorage = new FileStorageService();
-                using var httpClient = new HttpClient();
-                var prayerService = new PrayerService(httpClient, fileStorage);
-                var data = await prayerService.GetPrayerTimingsAsync(false);
-                if (data != null)
+                // استخدم Dependency Injection للحصول على الخدمة بدلاً من إنشائها يدوياً
+                var prayerService = Microsoft.Maui.Controls.Application.Current?.Handler?.MauiContext?.Services.GetService<IPrayerService>();
+                
+                // بديل آخر في حال لم تكن الواجهة الرسومية قد بدأت بعد (وهو الأفضل للـ BootReceiver)
+                if (prayerService == null)
                 {
-                    await prayerService.ScheduleAdhanNotificationsAsync(data);
+                    prayerService = IPlatformApplication.Current?.Services.GetService<IPrayerService>();
+                }
+
+                if (prayerService != null)
+                {
+                    var data = await prayerService.GetPrayerTimingsAsync(false);
+                    if (data != null)
+                    {
+                        await prayerService.ScheduleAdhanNotificationsAsync(data);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ BootReceiver Error: {ex.Message}");
             }
             finally
             {

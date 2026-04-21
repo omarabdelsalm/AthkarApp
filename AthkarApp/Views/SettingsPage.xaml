@@ -80,6 +80,15 @@
                             SelectedIndexChanged="OnCalculationSettingChanged"
                             BackgroundColor="#F9F9F9"
                             TextColor="#333333" />
+
+                    <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,5"/>
+                    <Grid ColumnDefinitions="*, Auto" Padding="0,5">
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="تفعيل التوقيت الصيفي (+1 ساعة)" FontSize="16" TextColor="#333333" FontAttributes="Bold"/>
+                            <Label Text="أضف ساعة يدوياً للمواقيت (لمصر 2026)" FontSize="12" TextColor="#666666"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" x:Name="DstSwitch" OnColor="#2C6E2C" Toggled="OnDstToggled"/>
+                    </Grid>
                 </VerticalStackLayout>
             </Frame>
 

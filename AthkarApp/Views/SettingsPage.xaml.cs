@@ -59,6 +59,7 @@ public partial class SettingsPage : ContentPage
         SwitchOm.IsToggled = Preferences.Default.Get("Sound_om_Enabled", true);
         SwitchAh.IsToggled = Preferences.Default.Get("Sound_ah_Enabled", true);
         SwitchMa.IsToggled = Preferences.Default.Get("Sound_ma_Enabled", true);
+        DstSwitch.IsToggled = Preferences.Default.Get("ManualDstEnabled", false);
 
         // تحميل قائمة القراء
         var reciters = QuranReciter.GetPopularReciters();
@@ -161,5 +162,17 @@ public partial class SettingsPage : ContentPage
     private async void OnPrivacyPolicyClicked(object sender, EventArgs e)
     {
         await Navigation.PushAsync(new PrivacyPolicyPage());
+    }
+
+    private async void OnDstToggled(object sender, ToggledEventArgs e)
+    {
+        Preferences.Default.Set("ManualDstEnabled", e.Value);
+        
+        // إعادة جدولة الإشعارات والبيانات فوراً
+        var data = await _prayerService.GetPrayerTimingsAsync(forceRefresh: true);
+        if (data != null)
+        {
+            await _prayerService.ScheduleAdhanNotificationsAsync(data);
+        }
     }
 }

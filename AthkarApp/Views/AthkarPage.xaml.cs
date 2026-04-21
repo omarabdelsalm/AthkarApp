@@ -19,13 +19,14 @@ public partial class AthkarPage : ContentPage
         _athkarService = athkarService;
         _soundService = soundService;
         _streakService = streakService;
-        LoadCategories();
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         
+        await LoadCategoriesAsync();
+
         var streakInfo = await _streakService.CheckAndUpdateStreakAsync();
         StreakLabel.Text = streakInfo.Count.ToString();
 
@@ -35,11 +36,12 @@ public partial class AthkarPage : ContentPage
         }
     }
 
-    private void LoadCategories()
+    private async Task LoadCategoriesAsync()
     {
-        _categories = _athkarService.GetAllCategories();
+        _categories = await _athkarService.GetAllCategoriesAsync();
         CategoriesCollectionView.ItemsSource = _categories;
     }
+
 
     private void SetCurrentCategory(AthkarCategory category)
     {
@@ -60,7 +62,12 @@ public partial class AthkarPage : ContentPage
         {
             var item = _currentAthkarList[_currentIndex];
             AthkarLabel.Text = item.Text;
+            
+            // عرض المرجع والمصدر بشكل منفصل واحترافي
             ReferenceLabel.Text = item.Reference;
+            HadithSourceLabel.Text = item.HadithSource;
+            HadithSourceLabel.IsVisible = !string.IsNullOrEmpty(item.HadithSource);
+
             TargetCountLabel.Text = item.Count > 1 ? $"الهدف: {item.Count}" : "";
             CounterLabel.Text = _currentCount.ToString();
             ProgressLabel.Text = $"{_currentIndex + 1} / {_currentAthkarList.Count}";
@@ -197,7 +204,6 @@ public partial class AthkarPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error in TextToSpeech: {ex.Message}");
         }
         finally
         {
@@ -218,8 +224,24 @@ public partial class AthkarPage : ContentPage
 
     private async void OnSettingsClicked(object sender, EventArgs e)
     {
-        StopSpeech();
-        await Shell.Current.GoToAsync(nameof(SettingsPage));
+        try 
+        {
+            StopSpeech();
+            await MainThread.InvokeOnMainThreadAsync(async () => {
+                await Shell.Current.GoToAsync(nameof(SettingsPage));
+            });
+        }
+        catch (Exception ex)
+        {
+            // Fallback for potential shell navigation issues on Android 15
+            await MainThread.InvokeOnMainThreadAsync(async () => {
+                await Navigation.PushAsync(new SettingsPage(
+                    App.Current.Handler.MauiContext.Services.GetService<IAthkarNotificationService>(),
+                    App.Current.Handler.MauiContext.Services.GetService<IQuranDownloadService>(),
+                    App.Current.Handler.MauiContext.Services.GetService<IPrayerService>()
+                ));
+            });
+        }
     }
 
     protected override bool OnBackButtonPressed()
