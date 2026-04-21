@@ -15,6 +15,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .UseMauiCameraView()
             .UseMauiCommunityToolkitMediaElement()
             .ConfigureFonts(fonts =>
@@ -39,6 +40,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IFiqhService, FiqhService>();
         builder.Services.AddSingleton<IProphetService, ProphetService>();
         builder.Services.AddSingleton<IStreakService, StreakService>();
+        builder.Services.AddSingleton<IQuranNormalizationService, QuranNormalizationService>();
+        builder.Services.AddSingleton<IHifzAssessmentService, HifzAssessmentService>();
         builder.Services.AddSingleton(AudioManager.Current);
 
         builder.Services.AddHttpClient<IQuranApiService, QuranApiService>(client =>
@@ -64,6 +67,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<SiraPage>();
         builder.Services.AddSingleton<FiqhPage>();
         builder.Services.AddSingleton<ProphetsPage>();
+        builder.Services.AddSingleton<MushafTeacherPage>();
         builder.Services.AddTransient<ProphetDetailPage>();
 
         return builder.Build();

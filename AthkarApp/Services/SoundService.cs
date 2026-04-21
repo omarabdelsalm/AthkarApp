@@ -5,6 +5,7 @@ namespace AthkarApp.Services;
 public interface ISoundService
 {
     Task PlaySoundAsync(string soundName);
+    Task PlaySuccessAsync();
 }
 
 public class SoundService : ISoundService
@@ -16,21 +17,32 @@ public class SoundService : ISoundService
         _audioManager = audioManager;
     }
 
+    public async Task PlaySuccessAsync()
+    {
+        await PlaySoundAsync("success");
+    }
+
     public async Task PlaySoundAsync(string soundName)
     {
         try
         {
-            var fileName = $"{soundName}.mp3";
+            string[] extensions = { ".mp3", ".wav" };
+            Stream? stream = null;
             
-            // محاولة فتح الملف، وإذا لم يوجد سيتم تجاهله بهدوء في الـ catch
-            using var stream = await FileSystem.OpenAppPackageFileAsync(fileName);
+            foreach (var ext in extensions)
+            {
+                try 
+                {
+                    stream = await FileSystem.OpenAppPackageFileAsync($"{soundName}{ext}");
+                    if (stream != null) break;
+                }
+                catch { }
+            }
+
             if (stream == null) return;
 
             var player = _audioManager.CreatePlayer(stream);
             player.Play();
-        }
-        catch (FileNotFoundException)
-        {
         }
         catch (Exception ex)
         {

@@ -40,6 +40,13 @@
                                 CornerRadius="10"
                                 Clicked="OnSyncAllClicked"/>
 
+                        <Button Text="🎓 المصحف المعلم (رفيق الحفظ)"
+                                BackgroundColor="#D4AF37"
+                                TextColor="#0B1A0B"
+                                FontAttributes="Bold"
+                                CornerRadius="10"
+                                Clicked="OnTeacherClicked"/>
+
                         <VerticalStackLayout x:Name="SyncProgressLayout" IsVisible="False">
                             <ProgressBar x:Name="SyncProgressBar" Progress="0" ProgressColor="#2C6E2C"/>
                             <Label x:Name="SyncStatusLabel" Text="جاري المزامنة... 0%" FontSize="12" HorizontalOptions="Center"/>

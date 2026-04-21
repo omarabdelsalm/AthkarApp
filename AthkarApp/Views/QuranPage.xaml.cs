@@ -85,6 +85,11 @@ public partial class QuranPage : ContentPage
             Surahs.Add(surah);
     }
 
+    private async void OnTeacherClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(Handler.MauiContext.Services.GetService<MushafTeacherPage>());
+    }
+
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
         RefreshList();

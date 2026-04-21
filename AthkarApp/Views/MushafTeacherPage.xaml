@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:AthkarApp.Models"
+             x:Class="AthkarApp.Views.MushafTeacherPage"
+             Title="المصحف المعلم الذكي"
+             BackgroundColor="#0B1A0B"
+             FlowDirection="RightToLeft">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="PrimaryGold">#D4AF37</Color>
+            <Color x:Key="DeepGreen">#0B5E1B</Color>
+            <Style x:Key="ControlCircleButton" TargetType="Button">
+                <Setter Property="CornerRadius" Value="35" />
+                <Setter Property="HeightRequest" Value="70" />
+                <Setter Property="WidthRequest" Value="70" />
+                <Setter Property="FontSize" Value="24" />
+                <Setter Property="Padding" Value="0" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
+        
+        <!-- Settings Bar -->
+        <Frame Grid.Row="0" Margin="0,0,0,20" Padding="10" BackgroundColor="#1A331A" CornerRadius="15" BorderColor="#2A4B2A" HasShadow="False">
+            <HorizontalStackLayout Spacing="15" HorizontalOptions="Center">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="🔁 التكرار" FontSize="10" TextColor="#AAAAAA" HorizontalOptions="Center" />
+                    <Picker x:Name="RepeatPicker" 
+                            Title="المرات" 
+                            TextColor="{StaticResource PrimaryGold}" 
+                            FontSize="14"
+                            WidthRequest="80">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>مرة واحدة</x:String>
+                                <x:String>3 مرات</x:String>
+                                <x:String>5 مرات</x:String>
+                                <x:String>10 مرات</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                        <Picker.SelectedIndex>0</Picker.SelectedIndex>
+                    </Picker>
+                </VerticalStackLayout>
+
+                <BoxView WidthRequest="1" BackgroundColor="#2A4B2A" Margin="0,5" />
+
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="🙈 إخفاء" FontSize="10" TextColor="#AAAAAA" HorizontalOptions="Center" />
+                    <Switch x:Name="HiddenModeSwitch" 
+                            OnColor="{StaticResource DeepGreen}" 
+                            ThumbColor="{StaticResource PrimaryGold}"
+                            Toggled="OnHiddenModeToggled"/>
+                </VerticalStackLayout>
+
+                <BoxView WidthRequest="1" BackgroundColor="#2A4B2A" Margin="0,5" />
+
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="📖 السورة" FontSize="10" TextColor="#AAAAAA" HorizontalOptions="Center" />
+                    <Picker x:Name="SurahPicker" 
+                            Title="اختر السورة" 
+                            ItemDisplayBinding="{Binding Name}"
+                            TextColor="White" 
+                            FontSize="14"
+                            WidthRequest="100"
+                            SelectedIndexChanged="OnSurahSelected"/>
+                </VerticalStackLayout>
+
+                <BoxView WidthRequest="1" BackgroundColor="#2A4B2A" Margin="0,5" />
+
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="🎙 القارئ" FontSize="10" TextColor="#AAAAAA" HorizontalOptions="Center" />
+                    <Picker x:Name="ReciterPicker" 
+                            Title="القارئ" 
+                            TextColor="{StaticResource PrimaryGold}" 
+                            FontSize="14"
+                            WidthRequest="100"
+                            SelectedIndexChanged="OnReciterChanged">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>الحصري (المعلم)</x:String>
+                                <x:String>المنشاوي (المعلم)</x:String>
+                                <x:String>العفاسي</x:String>
+                                <x:String>علي الحذيفي</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                        <Picker.SelectedIndex>0</Picker.SelectedIndex>
+                    </Picker>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+        </Frame>
+
+        <!-- Main Area: The Verse Card -->
+        <ScrollView Grid.Row="1" x:Name="MainScrollView">
+            <VerticalStackLayout Spacing="20">
+                
+                <Frame BackgroundColor="#142B14" 
+                       CornerRadius="20" 
+                       Padding="25" 
+                       HasShadow="True" 
+                       BorderColor="{StaticResource PrimaryGold}"
+                       MinimumHeightRequest="250">
+                    <VerticalStackLayout Spacing="20">
+                        <FlexLayout x:Name="AyaFlexLayout"
+                                    Wrap="Wrap"
+                                    Direction="Row"
+                                    JustifyContent="Center"
+                                    AlignItems="Center"
+                                    Margin="0,10" />
+                        
+                        <Label x:Name="SurahAyaInfoLabel"
+                               Text=""
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               TextColor="#AAAAAA"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Feedback Area -->
+                <Frame BackgroundColor="#0D1F0D" 
+                       CornerRadius="15" 
+                       Padding="15" 
+                       IsVisible="False" 
+                       x:Name="FeedbackFrame">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="📊 نتيجة التسميع:" 
+                               TextColor="{StaticResource PrimaryGold}" 
+                               FontAttributes="Bold" />
+                        <FlexLayout x:Name="AssessmentResultLayout"
+                                    Wrap="Wrap"
+                                    Direction="Row"
+                                    JustifyContent="Center"
+                                    AlignItems="Center"
+                                    Margin="0,10" />
+                        <Label x:Name="AssessmentSummaryLabel" 
+                               TextColor="White" 
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <ActivityIndicator x:Name="LoadingIndicator" 
+                                   IsRunning="False" 
+                                   Color="{StaticResource PrimaryGold}" />
+                
+                <Label x:Name="RecognitionStatusLabel" 
+                       Text="" 
+                       TextColor="{StaticResource PrimaryGold}" 
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Footer: Controls -->
+        <Frame Grid.Row="2" BackgroundColor="#1A331A" CornerRadius="30" Padding="15" Margin="0,10,0,0">
+            <HorizontalStackLayout Spacing="30" HorizontalOptions="Center">
+                
+                <!-- Listen Button -->
+                <VerticalStackLayout Spacing="5">
+                    <Button x:Name="PlayButton"
+                            Text="🔊"
+                            Style="{StaticResource ControlCircleButton}"
+                            BackgroundColor="#2A4B2A"
+                            TextColor="White"
+                            Clicked="OnPlayAyahClicked"/>
+                    <Label Text="الشيخ" HorizontalOptions="Center" TextColor="White" FontSize="12"/>
+                </VerticalStackLayout>
+
+                <!-- My Recitation Button -->
+                <VerticalStackLayout Spacing="5" x:Name="MyRecitationPanel" IsVisible="False">
+                    <Button x:Name="PlayMyButton"
+                            Text="👤"
+                            Style="{StaticResource ControlCircleButton}"
+                            BackgroundColor="#1A3A6B"
+                            TextColor="White"
+                            Clicked="OnPlayMyRecitationClicked"/>
+                    <Label Text="تسجيلي" HorizontalOptions="Center" TextColor="White" FontSize="12"/>
+                </VerticalStackLayout>
+
+                <!-- Recite Button (Main Action) -->
+                <VerticalStackLayout Spacing="5" Margin="0,-20,0,0">
+                    <Button x:Name="ReciteButton"
+                            Text="🎤"
+                            CornerRadius="45"
+                            HeightRequest="90"
+                            WidthRequest="90"
+                            FontSize="32"
+                            BackgroundColor="{StaticResource DeepGreen}"
+                            TextColor="White"
+                            BorderColor="{StaticResource PrimaryGold}"
+                            BorderWidth="2"
+                            Clicked="OnReciteClicked"/>
+                    <Label Text="تسميع" HorizontalOptions="Center" TextColor="{StaticResource PrimaryGold}" FontAttributes="Bold"/>
+                </VerticalStackLayout>
+
+                <!-- Next Button -->
+                <VerticalStackLayout Spacing="5">
+                    <Button x:Name="NextButton"
+                            Text="⏭"
+                            Style="{StaticResource ControlCircleButton}"
+                            BackgroundColor="#2A4B2A"
+                            TextColor="White"
+                            Clicked="OnNextAyahClicked"/>
+                    <Label Text="التالي" HorizontalOptions="Center" TextColor="White" FontSize="12"/>
+                </VerticalStackLayout>
+
+            </HorizontalStackLayout>
+        </Frame>
+
+    </Grid>
+</ContentPage>

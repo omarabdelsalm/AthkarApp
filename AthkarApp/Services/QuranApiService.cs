@@ -7,7 +7,7 @@ namespace AthkarApp.Services;
 public interface IQuranApiService
 {
     Task<List<Surah>> GetSurahsAsync();
-    Task<List<Ayah>> GetAyahsAsync(int surahNumber);
+    Task<List<Ayah>> GetAyahsAsync(int surahNumber, bool forceRefresh = false);
     Task<PageData> GetPageAsync(int pageNumber);
     Task<string> GetTafsirAsync(int ayahNumber);
     Task SyncFullQuranAsync(Action<double> progressCallback);
@@ -62,13 +62,16 @@ public class QuranApiService : IQuranApiService
         }
     }
 
-    public async Task<List<Ayah>> GetAyahsAsync(int surahNumber)
+    public async Task<List<Ayah>> GetAyahsAsync(int surahNumber, bool forceRefresh = false)
     {
         // 1. Check Database
-        var ayahs = await _database.GetAyahsBySurahAsync(surahNumber);
-        if (ayahs != null && ayahs.Any())
+        if (!forceRefresh)
         {
-            return ayahs;
+            var ayahs = await _database.GetAyahsBySurahAsync(surahNumber);
+            if (ayahs != null && ayahs.Any() && !string.IsNullOrEmpty(ayahs.First().Audio))
+            {
+                return ayahs;
+            }
         }
 
         // 2. Fetch from API
