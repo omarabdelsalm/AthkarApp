@@ -86,7 +86,6 @@
                                 <x:String>علي الحذيفي</x:String>
                             </x:Array>
                         </Picker.ItemsSource>
-                        <Picker.SelectedIndex>0</Picker.SelectedIndex>
                     </Picker>
                 </VerticalStackLayout>
             </HorizontalStackLayout>

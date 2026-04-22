@@ -39,6 +39,18 @@ public partial class MushafTeacherPage : ContentPage
         LoadSurahs();
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        
+        // استعادة الإعدادات المحفوظة
+        if (ReciterPicker != null)
+            ReciterPicker.SelectedIndex = Preferences.Default.Get("MushafTeacher_ReciterIndex", 0);
+            
+        if (RepeatPicker != null)
+            RepeatPicker.SelectedIndex = Preferences.Default.Get("MushafTeacher_RepeatIndex", 0);
+    }
+
     private async void LoadSurahs()
     {
         try
@@ -137,7 +149,7 @@ public partial class MushafTeacherPage : ContentPage
 
         if (ayah == null || string.IsNullOrEmpty(ayah.Audio))
         {
-            await DisplayAlert("تنبيه", "تلاوة هذه الآية غير متوفرة حالياً.", "حسناً");
+            await DisplayAlert("تنبيه", "تلاوة هذه الآية غير متوفرة حالياً للقارئ المختار. جرب قارئاً آخر.", "حسناً");
             return;
         }
 
@@ -145,6 +157,7 @@ public partial class MushafTeacherPage : ContentPage
         {
             _isStopRequested = true;
             _audioPlayer.Stop();
+            PlayButton.Text = "🔊";
             return;
         }
 
@@ -154,19 +167,26 @@ public partial class MushafTeacherPage : ContentPage
             PlayButton.Text = "⏳";
             
             int repeats = 1;
+            int repeatIndex = 0;
             if (RepeatPicker != null)
             {
-                repeats = RepeatPicker.SelectedIndex switch
+                repeatIndex = RepeatPicker.SelectedIndex;
+                repeats = repeatIndex switch
                 {
                     1 => 3,
                     2 => 5,
                     3 => 10,
                     _ => 1
                 };
+                Preferences.Default.Set("MushafTeacher_RepeatIndex", repeatIndex);
             }
 
+            // التأكد من أن الرابط كامل
+            string audioUrl = ayah.Audio;
+            if (!audioUrl.StartsWith("http")) audioUrl = "https:" + audioUrl;
+
             using var client = new HttpClient();
-            var audioBytes = await client.GetByteArrayAsync(ayah.Audio);
+            var audioBytes = await client.GetByteArrayAsync(audioUrl);
             
             for (int i = 0; i < repeats && !_isStopRequested; i++)
             {
@@ -181,10 +201,13 @@ public partial class MushafTeacherPage : ContentPage
                 _audioPlayer = AudioManager.Current.CreatePlayer(memoryStream);
                 
                 var tcs = new TaskCompletionSource<bool>();
-                _audioPlayer.PlaybackEnded += (s, args) => tcs.TrySetResult(true);
+                void OnPlaybackEnded(object? s, EventArgs args) => tcs.TrySetResult(true);
                 
+                _audioPlayer.PlaybackEnded += OnPlaybackEnded;
                 _audioPlayer.Play();
+                
                 await tcs.Task;
+                _audioPlayer.PlaybackEnded -= OnPlaybackEnded;
                 
                 if (repeats > 1 && i < repeats - 1 && !_isStopRequested)
                     await Task.Delay(1000); 
@@ -192,7 +215,7 @@ public partial class MushafTeacherPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("خطأ", "فشل تشغيل الصوت. تأكد من الاتصال بالإنترنت.", "حسناً");
+            await DisplayAlert("خطأ", "فشل تشغيل الصوت. تأكد من جودة الاتصال بالإنترنت.", "حسناً");
         }
         finally
         {
@@ -324,6 +347,10 @@ public partial class MushafTeacherPage : ContentPage
 
     private async void OnReciterChanged(object sender, EventArgs e)
     {
+        if (ReciterPicker == null || ReciterPicker.SelectedIndex < 0) return;
+        
+        Preferences.Default.Set("MushafTeacher_ReciterIndex", ReciterPicker.SelectedIndex);
+        
         if (LoadingIndicator != null) LoadingIndicator.IsRunning = true;
         try {
             await UpdateAyahAudioUrls();
@@ -334,30 +361,28 @@ public partial class MushafTeacherPage : ContentPage
 
     private async Task UpdateAyahAudioUrls()
     {
-        if (_currentSurahAyahs == null || !_currentSurahAyahs.Any() || ReciterPicker == null) return;
+        if (ReciterPicker == null) return;
 
-        string reciterId = "ar.husarymuallim";
+        string reciterId = "ar.husary";
         if (ReciterPicker.SelectedIndex >= 0)
         {
             reciterId = ReciterPicker.SelectedIndex switch
             {
-                0 => "ar.husarymuallim",
-                1 => "ar.minshawimuallim",
+                0 => "ar.husary",
+                1 => "ar.minshawi",
                 2 => "ar.alafasy",
                 3 => "ar.hudhaify",
-                _ => "ar.husarymuallim"
+                _ => "ar.husary"
             };
         }
 
-        // ملاحظة: روابط API الخاصة بكل آية تعتمد على القارئ المختار
-        // سنقوم بتحديث الروابط في القائمة الحالية (هذا يتطلب اتصال بالإنترنت في المرة الأولى لكل قارئ)
-        int surahNumber = (SurahPicker.SelectedItem as Surah)?.Number ?? 1;
+        // في وضع "المعلم"، نحتاج للروابط المباشرة من الـ API لهذا القارئ
+        int surahNumber = (SurahPicker?.SelectedItem as Surah)?.Number ?? 1;
         
         try {
-            // تحديث Preferences ليستهلكها API الخدمة (اختياري ولكن منظم)
+            // تحديث Preferences ليستهلكها API الخدمة
             Preferences.Default.Set("SelectedReciterId", reciterId);
             
-            // في وضع "المعلم"، نحتاج للروابط المباشرة من الـ API لهذا القارئ
             var updatedAyahs = await _quranApiService.GetAyahsAsync(surahNumber, true);
             if (updatedAyahs != null && updatedAyahs.Any())
             {

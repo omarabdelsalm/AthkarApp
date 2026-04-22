@@ -16,7 +16,12 @@ public partial class SettingsPage : ContentPage
         _notificationService = notificationService;
         _quranDownloadService = quranDownloadService;
         _prayerService = prayerService;
+    }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        
         // تحميل الإعدادات الحالية
         LoadSettings();
         LoadAdhanOptions();
