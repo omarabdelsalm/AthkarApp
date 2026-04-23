@@ -5,6 +5,8 @@ public class CalculationMethodOption
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
+    public override string ToString() => Name;
+
     public static List<CalculationMethodOption> GetMethods()
     {
         return new List<CalculationMethodOption>
@@ -25,6 +27,8 @@ public class MadhabOption
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+
+    public override string ToString() => Name;
 
     public static List<MadhabOption> GetMadhabs()
     {

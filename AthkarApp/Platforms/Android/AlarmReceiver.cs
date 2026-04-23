@@ -52,8 +52,17 @@ public class AlarmReceiver : BroadcastReceiver
         }
         else
         {
-            // للأذكار: إشعار عادي مع صوت
-            NativeNotificationHelper.ShowAthkarNotification(context, id, text, soundName);
+            // للأذكار: نستخدم الخدمة لتشغيل الصوت بضمان (مثل الأذان)
+            var serviceIntent = new Intent(context, typeof(AthkarForegroundService));
+            serviceIntent.SetAction("PLAY_ATHKAR");
+            serviceIntent.PutExtra("id", id);
+            serviceIntent.PutExtra("text", text);
+            serviceIntent.PutExtra("soundName", soundName);
+
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                context.StartForegroundService(serviceIntent);
+            else
+                context.StartService(serviceIntent);
         }
 
         // الحل الجذري: إعادة جدولة الإشعارات لليوم التالي لضمان الاستمرارية

@@ -11,6 +11,9 @@ public partial class SurahDetailPage : ContentPage
     private readonly IQuranApiService _quranApiService;
     private readonly IQuranDownloadService _quranDownloadService;
     private readonly Surah _surah;
+    private bool _isAutoScrolling = false;
+    private int  _scrollSpeed = 1;
+    private int  _currentIndex = 0;
     private IAudioPlayer _audioPlayer;
     private bool _isPlaying;
     public System.Windows.Input.ICommand PlayAyahCommand { get; }
@@ -114,7 +117,7 @@ public partial class SurahDetailPage : ContentPage
             }
 
             Stream audioStream;
-            
+
             if (_quranDownloadService.IsSurahDownloaded(_surah.Number))
             {
                 // تشغيل من الملف المحلي
@@ -132,29 +135,29 @@ public partial class SurahDetailPage : ContentPage
                 using var client = new HttpClient();
                 var audioBytes = await client.GetByteArrayAsync(audioUrl);
                 audioStream = new MemoryStream(audioBytes);
-                
+
                 PlayButton.Text = "▶ تشغيل التلاوة";
-            }
 
-            var audioManager = AudioManager.Current;
-            _audioPlayer = audioManager.CreatePlayer(audioStream);
-            
-            _audioPlayer.Play();
-            _isPlaying = true;
+                var audioManager = AudioManager.Current;
+                _audioPlayer = audioManager.CreatePlayer(audioStream);
 
-            PlayButton.IsEnabled = false; 
-            StopButton.IsEnabled = true;
+                _audioPlayer.Play();
+                _isPlaying = true;
 
-            _audioPlayer.PlaybackEnded += (s, args) =>
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
+                PlayButton.IsEnabled = false;
+                StopButton.IsEnabled = true;
+
+                _audioPlayer.PlaybackEnded += (s, args) =>
                 {
-                    _isPlaying = false;
-                    PlayButton.IsEnabled = true;
-                    StopButton.IsEnabled = false;
-                    audioStream.Dispose();
-                });
-            };
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        _isPlaying = false;
+                        PlayButton.IsEnabled = true;
+                        StopButton.IsEnabled = false;
+                        audioStream.Dispose();
+                    });
+                };
+            }
         }
         catch (Exception ex)
         {
@@ -207,5 +210,70 @@ public partial class SurahDetailPage : ContentPage
 
         PlayButton.IsEnabled = true;
         StopButton.IsEnabled = false;
+    }
+
+    // ===================== التحرك التلقائي (Auto-Scroll) =====================
+
+    private void OnAutoScrollClicked(object sender, EventArgs e)
+    {
+        if (_isAutoScrolling) StopAutoScroll();
+        else StartAutoScroll();
+    }
+
+    private void StartAutoScroll()
+    {
+        _isAutoScrolling = true;
+        AutoScrollBtn.Text = "⏹️";
+        SpeedControls.IsVisible = true;
+        _currentIndex = 0;
+        RunAutoScrollStep();
+    }
+
+    private void StopAutoScroll()
+    {
+        _isAutoScrolling = false;
+        AutoScrollBtn.Text = "▶️";
+        SpeedControls.IsVisible = false;
+    }
+
+    private void OnSpeedClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && int.TryParse(btn.CommandParameter?.ToString(), out int speed))
+        {
+            _scrollSpeed = speed;
+            foreach (var child in SpeedControls.Children)
+            {
+                if (child is Button b)
+                    b.BackgroundColor = (b.CommandParameter?.ToString() == speed.ToString()) 
+                        ? Color.FromArgb("#88FFFFFF") : Color.FromArgb("#44FFFFFF");
+            }
+        }
+    }
+
+    private async void RunAutoScrollStep()
+    {
+        if (!_isAutoScrolling) return;
+
+        // تحرك بكسل بكسل بدلاً من الانتقال بين الآيات
+        double scrollStep = _scrollSpeed * 0.8; 
+        double currentY = AyahsScrollView.ScrollY;
+        double maxY = AyahsScrollView.ContentSize.Height - AyahsScrollView.Height;
+
+        if (currentY >= maxY - 5)
+        {
+            StopAutoScroll();
+            return;
+        }
+
+        // التحريك السلس
+        await AyahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
+
+        // تكرار الخطوة بسرعة لضمان النعومة
+        await Task.Delay(30);
+
+        if (_isAutoScrolling)
+        {
+            RunAutoScrollStep();
+        }
     }
 }

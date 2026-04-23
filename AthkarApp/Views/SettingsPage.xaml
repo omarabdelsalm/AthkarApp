@@ -27,7 +27,6 @@
 
                     <Picker x:Name="ReciterPicker" 
                             Title="اختر القارئ" 
-                            ItemDisplayBinding="{Binding Name}"
                             TextColor="#333333"
                             SelectedIndexChanged="OnReciterChanged" />
 

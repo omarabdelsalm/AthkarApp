@@ -84,52 +84,76 @@
             </VerticalStackLayout>
         </Grid>
 
-        <!-- Fast CollectionView -->
-        <CollectionView x:Name="AyahsCollectionView"
-                       Grid.Row="2"
-                       ItemsSource="{Binding Ayahs}"
-                       SelectionMode="None"
-                       RemainingItemsThreshold="5">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Ayah">
-                    <Frame BackgroundColor="White"
-                           CornerRadius="12"
-                           Padding="12,8"
-                           HasShadow="True"
-                           Margin="10,2">
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
-                                   FontSize="14"
-                                   TextColor="Gray"
-                                   HorizontalOptions="Start"/>
-                            
-                            <Label Text="{Binding Text}"
-                                   FontSize="20"
-                                   TextColor="#2C6E2C"
-                                   HorizontalOptions="Center"
-                                   HorizontalTextAlignment="Center"
-                                   LineBreakMode="WordWrap"/>
-                            
-                            <Button Text="▶ إستماع"
-                                    FontSize="12"
-                                    HeightRequest="32"
-                                    Padding="10,0"
-                                    BackgroundColor="#2C6E2C"
-                                    TextColor="White"
-                                    HorizontalOptions="End"
-                                    CornerRadius="8"
-                                    Command="{Binding Source={x:Reference this}, Path=PlayAyahCommand}"
-                                    CommandParameter="{Binding .}"/>
-                        </VerticalStackLayout>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-            <CollectionView.Footer>
-                <BoxView HeightRequest="20" Color="Transparent"/>
-            </CollectionView.Footer>
-        </CollectionView>
+        <!-- Fast ScrollView (يدعم التحرك السلس) -->
+        <ScrollView x:Name="AyahsScrollView"
+                    Grid.Row="2">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Ayahs}"
+                                 x:Name="AyahsLayout"
+                                 Padding="0,10">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:Ayah">
+                        <Frame BackgroundColor="White"
+                               CornerRadius="12"
+                               Padding="12,8"
+                               HasShadow="True"
+                               Margin="10,2">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
+                                       FontSize="14"
+                                       TextColor="Gray"
+                                       HorizontalOptions="Start"/>
+                                
+                                <Label Text="{Binding Text}"
+                                       FontSize="20"
+                                       TextColor="#2C6E2C"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       LineBreakMode="WordWrap"/>
+                                
+                                <Button Text="▶ إستماع"
+                                        FontSize="12"
+                                        HeightRequest="32"
+                                        Padding="10,0"
+                                        BackgroundColor="#2C6E2C"
+                                        TextColor="White"
+                                        HorizontalOptions="End"
+                                        CornerRadius="8"
+                                        Command="{Binding Source={x:Reference this}, Path=PlayAyahCommand}"
+                                        CommandParameter="{Binding .}"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- زر عائم للتحرك التلقائي -->
+        <Frame x:Name="AutoScrollPanel"
+               Grid.Row="2"
+               BackgroundColor="#AA2C6E2C"
+               CornerRadius="25"
+               Padding="5,0"
+               Margin="15"
+               HeightRequest="50"
+               HorizontalOptions="End"
+               VerticalOptions="End"
+               HasShadow="False">
+            <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                <Button x:Name="AutoScrollBtn"
+                        Text="▶️"
+                        FontSize="18"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        Clicked="OnAutoScrollClicked"
+                        WidthRequest="44"
+                        Padding="0"/>
+                
+                <HorizontalStackLayout x:Name="SpeedControls" IsVisible="False" Spacing="2" VerticalOptions="Center">
+                    <Button Text="1x" Scale="0.8" BackgroundColor="#44FFFFFF" Clicked="OnSpeedClicked" CommandParameter="1" Padding="5"/>
+                    <Button Text="2x" Scale="0.8" BackgroundColor="#44FFFFFF" Clicked="OnSpeedClicked" CommandParameter="2" Padding="5"/>
+                    <Button Text="3x" Scale="0.8" BackgroundColor="#44FFFFFF" Clicked="OnSpeedClicked" CommandParameter="3" Padding="5"/>
+                </HorizontalStackLayout>
+            </HorizontalStackLayout>
+        </Frame>
     </Grid>
 </ContentPage>

@@ -11,6 +11,9 @@ public partial class MushafPage : ContentPage
     private bool _isScrollMode = true;
     private int  _currentPage  = 1;
     private bool _isFullscreen = false;
+    private bool _isAutoScrolling = false;
+    private int  _scrollSpeed = 1; // 1, 2, 3
+    private int  _currentAyahIndex = 0;
 
     private const string LastReadPageKey = "Mushaf_LastReadPage";
     private const string BookmarkPageKey = "Mushaf_BookmarkPage";
@@ -56,12 +59,12 @@ public partial class MushafPage : ContentPage
         var firstAyah = pageData.Ayahs.First();
         CurrentSurahLabel.Text = firstAyah.Surah?.Name ?? "";
 
-        AyahsCollectionView.ItemsSource = pageData.Ayahs;
+        BindableLayout.SetItemsSource(AyahsLayout, pageData.Ayahs);
 
         // عودة للأعلى بشكل فوري
-        if (AyahsCollectionView != null && pageData.Ayahs.Any())
+        if (AyahsScrollView != null && pageData.Ayahs.Any())
         {
-            AyahsCollectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+            AyahsScrollView.ScrollToAsync(0, 0, false);
         }
     }
 
@@ -96,7 +99,7 @@ public partial class MushafPage : ContentPage
     private void OnScrollModeClicked(object sender, EventArgs e)
     {
         _isScrollMode = true;
-        AyahsCollectionView.IsVisible = true;
+        AyahsScrollView.IsVisible     = true;
         SwipeModeView.IsVisible       = false;
 
         ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#2C6E2C");
@@ -110,8 +113,9 @@ public partial class MushafPage : ContentPage
 
     private async void OnSwipeModeClicked(object sender, EventArgs e)
     {
+        StopAutoScroll();
         _isScrollMode = false;
-        AyahsCollectionView.IsVisible = false;
+        AyahsScrollView.IsVisible     = false;
         SwipeModeView.IsVisible       = true;
 
         ScrollModeBtnCtrl.BackgroundColor = Color.FromArgb("#A5A58D");
@@ -128,6 +132,7 @@ public partial class MushafPage : ContentPage
 
     private void OnNextPage(object sender, EventArgs e)
     {
+        StopAutoScroll();
         if (_isScrollMode)
         {
             LoadScrollPage(_currentPage + 1);
@@ -141,6 +146,7 @@ public partial class MushafPage : ContentPage
 
     private void OnPrevPage(object sender, EventArgs e)
     {
+        StopAutoScroll();
         if (_isScrollMode)
         {
             LoadScrollPage(_currentPage - 1);
@@ -154,6 +160,7 @@ public partial class MushafPage : ContentPage
 
     private void OnPageEntryCompleted(object sender, EventArgs e)
     {
+        StopAutoScroll();
         if (int.TryParse(PageEntry.Text, out int p) && p >= 1 && p <= 604)
         {
             if (_isScrollMode)
@@ -332,6 +339,98 @@ public partial class MushafPage : ContentPage
 
         // تغيير أيقونة الزر العائم
         FullscreenBtnLabel.Text = _isFullscreen ? "⤡" : "⤢";
+    }
+
+    // ===================== التحرك التلقائي (Auto-Scroll) =====================
+
+    private void OnAutoScrollClicked(object sender, EventArgs e)
+    {
+        if (_isAutoScrolling)
+        {
+            StopAutoScroll();
+        }
+        else
+        {
+            StartAutoScroll();
+        }
+    }
+
+    private void StartAutoScroll()
+    {
+        if (!_isScrollMode)
+        {
+            DisplayAlert("تنبيه", "خاصية التحرك التلقائي متاحة في وضع التمرير فقط.", "حسناً");
+            return;
+        }
+
+        _isAutoScrolling = true;
+        AutoScrollBtn.Text = "⏹️";
+        SpeedControls.IsVisible = true;
+        
+        // البدء من أول آية ظاهرة حالياً أو من البداية
+        RunAutoScrollStep();
+    }
+
+    private void StopAutoScroll()
+    {
+        _isAutoScrolling = false;
+        AutoScrollBtn.Text = "▶️";
+        SpeedControls.IsVisible = false;
+    }
+
+    private void OnSpeedClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && int.TryParse(btn.CommandParameter?.ToString(), out int speed))
+        {
+            _scrollSpeed = speed;
+            
+            // تحديث مظهر الأزرار
+            foreach (var child in SpeedControls.Children)
+            {
+                if (child is Button b)
+                {
+                    b.BackgroundColor = (b.CommandParameter?.ToString() == speed.ToString()) 
+                        ? Color.FromArgb("#88FFFFFF") 
+                        : Color.FromArgb("#44FFFFFF");
+                }
+            }
+        }
+    }
+
+    private async void RunAutoScrollStep()
+    {
+        if (!_isAutoScrolling || !_isScrollMode) return;
+
+        // تحرك بكسل بكسل بدلاً من الانتقال بين الآيات
+        double scrollStep = _scrollSpeed * 0.8; 
+        double currentY = AyahsScrollView.ScrollY;
+        double maxY = AyahsScrollView.ContentSize.Height - AyahsScrollView.Height;
+
+        if (currentY >= maxY - 5)
+        {
+            if (_currentPage < 604)
+            {
+                LoadScrollPage(_currentPage + 1);
+                await Task.Delay(2000); 
+                RunAutoScrollStep();
+            }
+            else
+            {
+                StopAutoScroll();
+            }
+            return;
+        }
+
+        // التحريك السلس
+        await AyahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
+
+        // تكرار الخطوة بسرعة لضمان النعومة
+        await Task.Delay(30);
+
+        if (_isAutoScrolling)
+        {
+            RunAutoScrollStep();
+        }
     }
 
     // ===================== زر الرجوع (الهاتف) =====================

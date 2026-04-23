@@ -221,6 +221,18 @@ namespace AthkarApp.Services
                     manager.Cancel(AdhanNotificationId);
                     UpdateDefaultNotification();
                 }
+                else if (action == "PLAY_ATHKAR")
+                {
+                    int id = intent!.GetIntExtra("id", 0);
+                    string soundName = intent.GetStringExtra("soundName") ?? "om";
+                    string text = intent.GetStringExtra("text") ?? "";
+                    
+                    // تشغيل الصوت عبر MediaPlayer (نفس محرك الأذان الناجح)
+                    PlayShortSoundAsync(soundName);
+                    
+                    // عرض الإشعار عبر الهيلبر (سيقوم بعرض الإشعار بصمت لأن الصوت يعمل عبر الخدمة)
+                    NativeNotificationHelper.ShowAthkarNotification(this, id, text, "silent");
+                }
                 else
                 {
                     UpdateDefaultNotification();
@@ -260,6 +272,34 @@ namespace AthkarApp.Services
         }
 
         // Non-blocking media start: uses PrepareAsync to avoid blocking the main thread.
+        private void PlayShortSoundAsync(string soundName)
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    int resId = Resources!.GetIdentifier(soundName, "raw", PackageName);
+                    if (resId == 0) return;
+
+                    var player = new MediaPlayer();
+                    player.SetAudioAttributes(new AudioAttributes.Builder()
+                        .SetUsage(AudioUsageKind.Notification)
+                        .SetContentType(AudioContentType.Sonification)
+                        .Build());
+
+                    var soundUri = Android.Net.Uri.Parse($"android.resource://{PackageName}/{resId}");
+                    player.SetDataSource(this, soundUri);
+                    
+                    player.Prepared += (s, e) => player.Start();
+                    player.Completion += (s, e) => {
+                        player.Release();
+                    };
+                    player.PrepareAsync();
+                }
+                catch { }
+            });
+        }
+
         private void PlayAdhanSoundAsync(string soundName)
         {
             Task.Run(() =>

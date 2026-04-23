@@ -7,8 +7,8 @@ public partial class SettingsPage : ContentPage
 {
     private readonly IAthkarNotificationService _notificationService;
     private readonly IQuranDownloadService _quranDownloadService;
-
     private readonly IPrayerService _prayerService;
+    private bool _isInitializing = false;
 
     public SettingsPage(IAthkarNotificationService notificationService, IQuranDownloadService quranDownloadService, IPrayerService prayerService)
     {
@@ -22,24 +22,26 @@ public partial class SettingsPage : ContentPage
     {
         base.OnAppearing();
         
+        _isInitializing = true;
+
         // تحميل الإعدادات الحالية
         LoadSettings();
         LoadAdhanOptions();
         LoadCalculationSettings();
+
+        _isInitializing = false;
     }
 
     private void LoadCalculationSettings()
     {
         var methods = CalculationMethodOption.GetMethods();
         CalculationMethodPicker.ItemsSource = methods;
-        CalculationMethodPicker.ItemDisplayBinding = new Binding("Name");
 
         int selectedMethod = Preferences.Default.Get("SelectedCalculationMethod", 5);
         CalculationMethodPicker.SelectedItem = methods.FirstOrDefault(m => m.Id == selectedMethod);
 
         var madhabs = MadhabOption.GetMadhabs();
         MadhabPicker.ItemsSource = madhabs;
-        MadhabPicker.ItemDisplayBinding = new Binding("Name");
 
         int selectedMadhab = Preferences.Default.Get("SelectedMadhab", 0);
         MadhabPicker.SelectedItem = madhabs.FirstOrDefault(m => m.Id == selectedMadhab);
@@ -49,7 +51,6 @@ public partial class SettingsPage : ContentPage
     {
         var options = AdhanOption.GetAvailableAdhans();
         AdhanPicker.ItemsSource = options;
-        AdhanPicker.ItemDisplayBinding = new Binding("Name");
 
         string selected = Preferences.Default.Get("SelectedAdhanSound", "adhan");
         var selectedItem = options.FirstOrDefault(o => o.FileName == selected);
@@ -80,6 +81,8 @@ public partial class SettingsPage : ContentPage
 
     private void OnReciterChanged(object sender, EventArgs e)
     {
+        if (_isInitializing) return;
+
         if (ReciterPicker.SelectedItem is QuranReciter reciter)
         {
             Preferences.Default.Set("SelectedReciterId", reciter.Id);
@@ -107,6 +110,8 @@ public partial class SettingsPage : ContentPage
 
     private async void OnCalculationSettingChanged(object sender, EventArgs e)
     {
+        if (_isInitializing) return;
+
         if (CalculationMethodPicker.SelectedItem is CalculationMethodOption method)
         {
             Preferences.Default.Set("SelectedCalculationMethod", method.Id);
@@ -126,6 +131,8 @@ public partial class SettingsPage : ContentPage
     }
     private async void OnAdhanSelected(object sender, EventArgs e)
     {
+        if (_isInitializing) return;
+
         if (AdhanPicker.SelectedItem is AdhanOption selected)
         {
             Preferences.Default.Set("SelectedAdhanSound", selected.FileName);
@@ -147,6 +154,8 @@ public partial class SettingsPage : ContentPage
 
     private async void OnSoundToggled(object sender, ToggledEventArgs e)
     {
+        if (_isInitializing) return;
+
         Preferences.Default.Set("Sound_om_Enabled", SwitchOm.IsToggled);
         Preferences.Default.Set("Sound_ah_Enabled", SwitchAh.IsToggled);
         Preferences.Default.Set("Sound_ma_Enabled", SwitchMa.IsToggled);
@@ -171,6 +180,8 @@ public partial class SettingsPage : ContentPage
 
     private async void OnDstToggled(object sender, ToggledEventArgs e)
     {
+        if (_isInitializing) return;
+
         Preferences.Default.Set("ManualDstEnabled", e.Value);
         
         // إعادة جدولة الإشعارات والبيانات فوراً

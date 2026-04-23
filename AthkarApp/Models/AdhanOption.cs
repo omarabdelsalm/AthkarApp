@@ -5,6 +5,8 @@ public class AdhanOption
     public string Name { get; set; } = string.Empty;
     public string FileName { get; set; } = string.Empty;
 
+    public override string ToString() => Name;
+
     public static List<AdhanOption> GetAvailableAdhans()
     {
         return new List<AdhanOption>

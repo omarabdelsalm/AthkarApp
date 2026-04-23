@@ -6,6 +6,8 @@ public class QuranReciter
     public string Name { get; set; } = string.Empty;
     public string AudioFolderName { get; set; } = string.Empty;
 
+    public override string ToString() => Name;
+
     public static List<QuranReciter> GetPopularReciters()
     {
         return new List<QuranReciter>

@@ -9,6 +9,9 @@ public partial class QuranPage : ContentPage
     private readonly IQuranApiService _quranApiService;
     private readonly IQuranDownloadService _quranDownloadService;
     private List<Surah> _allSurahs;
+    private bool _isAutoScrolling = false;
+    private int  _scrollSpeed = 1;
+    private int  _currentIndex = 0;
 
     public ObservableCollection<Surah> Surahs { get; set; } = new();
 
@@ -95,13 +98,12 @@ public partial class QuranPage : ContentPage
         RefreshList();
     }
 
-    private async void OnSurahSelected(object sender, SelectionChangedEventArgs e)
+    private async void OnSurahTapped(object sender, EventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is Surah selectedSurah)
+        if (sender is BindableObject bo && bo.BindingContext is Surah selectedSurah)
         {
             var detailPage = new SurahDetailPage(_quranApiService, _quranDownloadService, selectedSurah);
             await Navigation.PushAsync(detailPage);
-            ((CollectionView)sender).SelectedItem = null;
         }
     }
 
@@ -138,6 +140,71 @@ public partial class QuranPage : ContentPage
             SyncProgressLayout.IsVisible = false;
             SyncButton.IsVisible = true;
             await DisplayAlert("خطأ", $"فشل المزامنة: {ex.Message}", "حسناً");
+        }
+    }
+
+    // ===================== التحرك التلقائي (Auto-Scroll) =====================
+
+    private void OnAutoScrollClicked(object sender, EventArgs e)
+    {
+        if (_isAutoScrolling) StopAutoScroll();
+        else StartAutoScroll();
+    }
+
+    private void StartAutoScroll()
+    {
+        _isAutoScrolling = true;
+        AutoScrollBtn.Text = "⏹️";
+        SpeedControls.IsVisible = true;
+        _currentIndex = 0;
+        RunAutoScrollStep();
+    }
+
+    private void StopAutoScroll()
+    {
+        _isAutoScrolling = false;
+        AutoScrollBtn.Text = "▶️";
+        SpeedControls.IsVisible = false;
+    }
+
+    private void OnSpeedClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && int.TryParse(btn.CommandParameter?.ToString(), out int speed))
+        {
+            _scrollSpeed = speed;
+            foreach (var child in SpeedControls.Children)
+            {
+                if (child is Button b)
+                    b.BackgroundColor = (b.CommandParameter?.ToString() == speed.ToString()) 
+                        ? Color.FromArgb("#88FFFFFF") : Color.FromArgb("#44FFFFFF");
+            }
+        }
+    }
+
+    private async void RunAutoScrollStep()
+    {
+        if (!_isAutoScrolling) return;
+
+        // تحرك بكسل بكسل بدلاً من الانتقال بين الآيات
+        double scrollStep = _scrollSpeed * 0.8; 
+        double currentY = SurahsScrollView.ScrollY;
+        double maxY = SurahsScrollView.ContentSize.Height - SurahsScrollView.Height;
+
+        if (currentY >= maxY - 5)
+        {
+            StopAutoScroll();
+            return;
+        }
+
+        // التحريك السلس
+        await SurahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
+
+        // تكرار الخطوة بسرعة لضمان النعومة
+        await Task.Delay(30);
+
+        if (_isAutoScrolling)
+        {
+            RunAutoScrollStep();
         }
     }
 }

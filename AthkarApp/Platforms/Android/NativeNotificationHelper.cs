@@ -1,17 +1,18 @@
 #if ANDROID
-using Android.App;
-using Android.Content;
-using Android.Graphics;
-using Android.Media;
-using Android.OS;
+using global::Android.App;
+using global::Android.Content;
+using global::Android.Graphics;
+using global::Android.Media;
+using global::Android.OS;
+using global::Android.Widget;
 using AndroidX.Core.App;
 
 namespace AthkarApp.Platforms.Android;
 
 public static class NativeNotificationHelper
 {
-    private const string AthkarChannelIdPrefix = "athkar_native_channel_";
-    private const string AdhanChannelIdPrefix = "adhan_native_channel_";
+    private const string AthkarChannelIdPrefix = "athkar_native_channel_v9_";
+    private const string AdhanChannelIdPrefix = "adhan_native_channel_v9_";
 
     // الألوان المميزة للتطبيق
     private static readonly int ColorGold   = unchecked((int)0xFFD4AF37); // الذهبي
@@ -33,7 +34,7 @@ public static class NativeNotificationHelper
         if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
 
         var manager = (NotificationManager)context.GetSystemService(Context.NotificationService)!;
-        string channelId = $"{AthkarChannelIdPrefix}{soundName}_v5";
+        string channelId = $"{AthkarChannelIdPrefix}{soundName}";
 
         if (manager.GetNotificationChannel(channelId) == null)
         {
@@ -47,7 +48,7 @@ public static class NativeNotificationHelper
                 int resId = context.Resources!.GetIdentifier(soundName, "raw", context.PackageName);
                 if (resId != 0)
                 {
-                    var soundUri = global::Android.Net.Uri.Parse($"android.resource://{context.PackageName}/{resId}");
+                    var soundUri = global::Android.Net.Uri.Parse($"android.resource://{context.PackageName}/raw/{soundName}");
                     var audioAttributes = new AudioAttributes.Builder()
                         .SetUsage(AudioUsageKind.Notification)
                         .SetContentType(AudioContentType.Sonification)
@@ -75,7 +76,7 @@ public static class NativeNotificationHelper
         if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
 
         var manager = (NotificationManager)context.GetSystemService(Context.NotificationService)!;
-        string channelId = $"{AdhanChannelIdPrefix}{soundName}_v8";
+        string channelId = $"{AdhanChannelIdPrefix}{soundName}";
 
         if (manager.GetNotificationChannel(channelId) == null)
         {
@@ -106,7 +107,7 @@ public static class NativeNotificationHelper
     public static void ShowAthkarNotification(Context context, int id, string text, string soundName)
     {
         CreateAthkarChannel(context, soundName);
-        string channelId = $"{AthkarChannelIdPrefix}{soundName}_v5";
+        string channelId = $"{AthkarChannelIdPrefix}{soundName}";
 
         // تحديد السمة بناءً على الوقت (صباحي / مسائي)
         var now = DateTime.Now;
@@ -115,7 +116,7 @@ public static class NativeNotificationHelper
         
         string themeEmoji = isMorning ? "☀️" : (isNight ? "🌙" : "✨");
         string themeTitle = isMorning ? "أذكار الصباح" : (isNight ? "أذكار المساء" : "تذكير روحاني");
-        int themeColor = isMorning ? ColorGold : (isNight ? unchecked((int)0xFF1B263B) : ColorGreen);
+        int themeColor = ColorGreen; // دائماً أخضر إسلامي
 
         string title = $"{themeEmoji}  {themeTitle} — نديّ بذكر الله";
         string subtext = GetIslamicGreeting();
@@ -124,16 +125,38 @@ public static class NativeNotificationHelper
         int streakCount = Microsoft.Maui.Storage.Preferences.Default.Get("athkar_streak_count", 0);
         string streakInfo = streakCount > 0 ? $"🔥 سلسلة الأذكار: {streakCount} يوم" : "";
 
-        var bigTextStyle = new NotificationCompat.BigTextStyle()
-            .BigText($"《 {text} 》\n\n‏ {subtext}\n{streakInfo}")
-            .SetBigContentTitle(title)
-            .SetSummaryText("📿 أذكار المسلم");
+        // إنشاء التخطيط المخصص - العرض المختصر
+        var collapsedView = new RemoteViews(context.PackageName ?? "", Resource.Layout.notification_athkar_collapsed);
+        collapsedView.SetTextViewText(Resource.Id.notif_title, title);
+        collapsedView.SetTextViewText(Resource.Id.notif_text, text);
+
+        var largeIcon = GetLargeIcon(context);
+        if (largeIcon != null)
+            collapsedView.SetImageViewBitmap(Resource.Id.notif_icon, largeIcon);
+
+        // إنشاء التخطيط المخصص - العرض الموسع
+        var expandedView = new RemoteViews(context.PackageName ?? "", Resource.Layout.notification_athkar_expanded);
+        expandedView.SetTextViewText(Resource.Id.notif_big_title, title);
+        expandedView.SetTextViewText(Resource.Id.notif_big_text, $"《 {text} 》");
+        expandedView.SetTextViewText(Resource.Id.notif_big_subtext, subtext);
+
+        if (largeIcon != null)
+            expandedView.SetImageViewBitmap(Resource.Id.notif_big_icon, largeIcon);
+
+        // عرض سلسلة الأذكار إن وجدت
+        if (!string.IsNullOrEmpty(streakInfo))
+        {
+            expandedView.SetTextViewText(Resource.Id.notif_big_streak, streakInfo);
+            expandedView.SetViewVisibility(Resource.Id.notif_big_streak, global::Android.Views.ViewStates.Visible);
+        }
 
         var builder = new NotificationCompat.Builder(context, channelId)
             .SetSmallIcon(GetSafeIcon(context))
             .SetContentTitle(title)
             .SetContentText(text)
-            .SetStyle(bigTextStyle)
+            .SetCustomContentView(collapsedView)
+            .SetCustomBigContentView(expandedView)
+            .SetStyle(new NotificationCompat.DecoratedCustomViewStyle())
             .SetColor(themeColor)
             .SetColorized(true)
             .SetPriority(NotificationCompat.PriorityMax)
@@ -143,7 +166,6 @@ public static class NativeNotificationHelper
             .SetShowWhen(true)
             .SetWhen(Java.Lang.JavaSystem.CurrentTimeMillis());
 
-        var largeIcon = GetLargeIcon(context);
         if (largeIcon != null)
             builder.SetLargeIcon(largeIcon);
 
@@ -152,7 +174,7 @@ public static class NativeNotificationHelper
             int resId = context.Resources!.GetIdentifier(soundName, "raw", context.PackageName);
             if (resId != 0)
             {
-                var soundUri = global::Android.Net.Uri.Parse($"android.resource://{context.PackageName}/{resId}");
+                var soundUri = global::Android.Net.Uri.Parse($"android.resource://{context.PackageName}/raw/{soundName}");
                 builder.SetSound(soundUri);
             }
             builder.SetDefaults((int)NotificationDefaults.Vibrate | (int)NotificationDefaults.Lights);
@@ -186,7 +208,7 @@ public static class NativeNotificationHelper
     {
         string soundName = "silent";
         CreateAthkarChannel(context, soundName);
-        string channelId = $"{AthkarChannelIdPrefix}{soundName}_v5";
+        string channelId = $"{AthkarChannelIdPrefix}{soundName}";
 
         var bigTextStyle = new NotificationCompat.BigTextStyle()
             .BigText($"استعد لصلاة {prayerName} في سكينة...\n\n«  قُومُوا إِلَى صَلاتِكُمْ يَرحَمكُمُ الله  »")
