@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:AthkarApp.Models"
              x:Class="AthkarApp.Views.QuranPage"
              Title="المصحف الشريف"
              BackgroundColor="#F5F5F0"
@@ -13,106 +14,104 @@
                    BackgroundColor="White"
                    Margin="10"/>
 
-        <ScrollView x:Name="SurahsScrollView"
-                    Grid.Row="1">
-            <VerticalStackLayout x:Name="SurahsLayout"
-                                 BindableLayout.ItemsSource="{Binding Surahs}">
-                <VerticalStackLayout.Header>
-                    <Frame BackgroundColor="White" 
-                           Margin="10" 
-                           Padding="15" 
-                           CornerRadius="15" 
-                           HasShadow="True">
-                        <VerticalStackLayout Spacing="10">
-                            <Label Text="المصحف أوفلاين" 
-                                   FontSize="18" 
-                                   FontAttributes="Bold" 
-                                   TextColor="#2C6E2C"/>
-                            <Label Text="يمكنك تحميل نصوص كافة السور لتصفح المصحف بدون إنترنت في أي وقت." 
-                                   FontSize="12" 
-                                   TextColor="Gray"/>
-                            
-                            <Button x:Name="SyncButton"
-                                    Text="مزامنة كافة النصوص (أوفلاين)"
-                                    BackgroundColor="#2C6E2C"
-                                    TextColor="White"
-                                    CornerRadius="10"
-                                    Clicked="OnSyncAllClicked"/>
-    
-                            <Button Text="🎓 المصحف المعلم (رفيق الحفظ)"
-                                    BackgroundColor="#D4AF37"
-                                    TextColor="#0B1A0B"
-                                    FontAttributes="Bold"
-                                    CornerRadius="10"
-                                    Clicked="OnTeacherClicked"/>
-    
-                            <VerticalStackLayout x:Name="SyncProgressLayout" IsVisible="False">
-                                <ProgressBar x:Name="SyncProgressBar" Progress="0" ProgressColor="#2C6E2C"/>
-                                <Label x:Name="SyncStatusLabel" Text="جاري المزامنة... 0%" FontSize="12" HorizontalOptions="Center"/>
-                            </VerticalStackLayout>
+        <CollectionView Grid.Row="1"
+                        x:Name="SurahsCollectionView"
+                        ItemsSource="{Binding Surahs}">
+            <CollectionView.Header>
+                <Frame BackgroundColor="White" 
+                       Margin="10" 
+                       Padding="15" 
+                       CornerRadius="15" 
+                       HasShadow="True">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="المصحف أوفلاين" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="#2C6E2C"/>
+                        <Label Text="يمكنك تحميل نصوص كافة السور لتصفح المصحف بدون إنترنت في أي وقت." 
+                               FontSize="12" 
+                               TextColor="Gray"/>
+                        
+                        <Button x:Name="SyncButton"
+                                Text="مزامنة كافة النصوص (أوفلاين)"
+                                BackgroundColor="#2C6E2C"
+                                TextColor="White"
+                                CornerRadius="10"
+                                Clicked="OnSyncAllClicked"/>
+
+                        <Button Text="🎓 المصحف المعلم (رفيق الحفظ)"
+                                BackgroundColor="#D4AF37"
+                                TextColor="#0B1A0B"
+                                FontAttributes="Bold"
+                                CornerRadius="10"
+                                Clicked="OnTeacherClicked"/>
+
+                        <VerticalStackLayout x:Name="SyncProgressLayout" IsVisible="False">
+                            <ProgressBar x:Name="SyncProgressBar" Progress="0" ProgressColor="#2C6E2C"/>
+                            <Label x:Name="SyncStatusLabel" Text="جاري المزامنة... 0%" FontSize="12" HorizontalOptions="Center"/>
                         </VerticalStackLayout>
-                    </Frame>
-                </VerticalStackLayout.Header>
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="15,10"
-                              ColumnDefinitions="Auto,*,Auto"
-                              BackgroundColor="White">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnSurahTapped" CommandParameter="{Binding .}" />
-                            </Grid.GestureRecognizers>
-                            <Frame Grid.Column="0"
-                                   WidthRequest="45"
-                                   HeightRequest="45"
-                                   CornerRadius="22.5"
-                                   BackgroundColor="#2C6E2C"
-                                   HasShadow="False">
-                                <Label Text="{Binding Number}"
-                                       TextColor="White"
-                                       FontSize="18"
+                    </VerticalStackLayout>
+                </Frame>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Surah">
+                    <Grid Padding="15,10"
+                          ColumnDefinitions="Auto,*,Auto"
+                          BackgroundColor="White">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSurahTapped" CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <Frame Grid.Column="0"
+                               WidthRequest="45"
+                               HeightRequest="45"
+                               CornerRadius="22.5"
+                               BackgroundColor="#2C6E2C"
+                               HasShadow="False">
+                            <Label Text="{Binding Number}"
+                                   TextColor="White"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+
+                        <VerticalStackLayout Grid.Column="1"
+                                             Margin="15,0"
+                                             VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="5">
+                                <Label Text="{Binding Name}"
+                                       FontSize="20"
                                        FontAttributes="Bold"
-                                       HorizontalOptions="Center"
+                                       TextColor="#2C6E2C"/>
+                                <Label Text="✓"
+                                       TextColor="#2C6E2C"
+                                       FontSize="14"
+                                       IsVisible="{Binding IsDownloaded}"
                                        VerticalOptions="Center"/>
-                            </Frame>
-    
-                            <VerticalStackLayout Grid.Column="1"
-                                                 Margin="15,0">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Label Text="{Binding Name}"
-                                           FontSize="18"
-                                           FontAttributes="Bold"
-                                           TextColor="#2C6E2C"/>
-                                    <Label Text="✓"
-                                           TextColor="#2C6E2C"
-                                           FontSize="14"
-                                           IsVisible="{Binding IsDownloaded}"
-                                           VerticalOptions="Center"/>
-                                </HorizontalStackLayout>
-                                <Label Text="{Binding EnglishNameTranslation}"
-                                       FontSize="14"
-                                       TextColor="#666666"/>
-                                <Label Text="متاح بدون إنترنت"
-                                       FontSize="10"
-                                       TextColor="#2C6E2C"
-                                       IsVisible="{Binding IsDownloaded}"/>
-                            </VerticalStackLayout>
-    
-                            <VerticalStackLayout Grid.Column="2"
-                                                 HorizontalOptions="End">
-                                <Label Text="{Binding EnglishName}"
-                                       FontSize="14"
-                                       TextColor="#2C6E2C"
-                                       HorizontalOptions="End"/>
-                                <Label Text="{Binding RevelationType}"
-                                       FontSize="12"
-                                       TextColor="#999999"
-                                       HorizontalOptions="End"/>
-                            </VerticalStackLayout>
-                        </Grid>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
-        </ScrollView>
+                            </HorizontalStackLayout>
+                            <Label Text="متاح بدون إنترنت"
+                                   FontSize="12"
+                                   TextColor="#2C6E2C"
+                                   IsVisible="{Binding IsDownloaded}"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="2"
+                                             HorizontalOptions="End"
+                                             VerticalOptions="Center">
+                            <Label Text="{Binding RevelationTypeArabic}"
+                                   FontSize="14"
+                                   TextColor="#999999"
+                                   HorizontalOptions="End"/>
+                            <Label Text="{Binding NumberOfAyahs, StringFormat='{0} آيات'}"
+                                   FontSize="12"
+                                   TextColor="#666666"
+                                   HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
         <!-- زر عائم للتحرك التلقائي -->
         <Frame x:Name="AutoScrollPanel"
                Grid.Row="1"

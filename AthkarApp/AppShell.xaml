@@ -6,39 +6,43 @@
        FlowDirection="RightToLeft">
 
     <TabBar>
-        <Tab Title="الأذكار" Icon="athkar_icon.jpg">
+        <Tab Title="الأذكار" Icon="athkar_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:AthkarPage}"/>
         </Tab>
 
-        <Tab Title="مواقييت الصلاة" Icon="quran_icon.jpg">
+        <Tab Title="مواقييت الصلاة" Icon="prayer_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:PrayerPage}"/>
         </Tab>
 
-        <Tab Title="المسبحة" Icon="dotnet_bot.png">
+        <Tab Title="المسبحة" Icon="athkar_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:TasbeehPage}"/>
         </Tab>
 
-        <Tab Title="المصحف" Icon="quran_icon.jpg">
+        <Tab Title="المصحف" Icon="quran_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:MushafPage}"/>
         </Tab>
 
-        <Tab Title="الختمة" Icon="athkar_icon.jpg">
+        <Tab Title="الختمة" Icon="quran_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:KhatmahPage}"/>
         </Tab>
 
-        <Tab Title="السيرة" Icon="athkar_icon.jpg">
+        <Tab Title="السيرة" Icon="athkar_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:SiraPage}"/>
         </Tab>
 
-        <Tab Title="الفقه" Icon="athkar_icon.jpg">
+        <Tab Title="الفقه" Icon="athkar_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:FiqhPage}"/>
         </Tab>
 
-        <Tab Title="قصص الأنبياء" Icon="athkar_icon.jpg">
+        <Tab Title="قصص الأنبياء" Icon="athkar_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:ProphetsPage}"/>
         </Tab>
 
-        <Tab Title="الفهرس" Icon="quran_icon.jpg">
+        <Tab Title="الأحاديث" Icon="athkar_tab_icon">
+            <ShellContent ContentTemplate="{DataTemplate views:HadithPage}"/>
+        </Tab>
+
+        <Tab Title="الفهرس" Icon="quran_tab_icon">
             <ShellContent ContentTemplate="{DataTemplate views:QuranPage}"/>
         </Tab>
     </TabBar>

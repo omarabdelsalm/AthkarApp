@@ -5,7 +5,7 @@ using AthkarApp.Services;
 
 namespace AthkarApp.Platforms.Android;
 
-[BroadcastReceiver(Enabled = true, Exported = false)]
+[BroadcastReceiver(Enabled = true, Exported = false, Name = "com.almanar.athkarapp.NotificationActionReceiver")]
 public class NotificationActionReceiver : BroadcastReceiver
 {
     public override void OnReceive(Context? context, Intent? intent)

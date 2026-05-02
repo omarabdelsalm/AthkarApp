@@ -20,7 +20,6 @@
         <Frame Grid.Row="0" Margin="15" Padding="0" CornerRadius="25" BorderColor="#D4AF37" HasShadow="True">
             <Grid HeightRequest="220" Background="{StaticResource HeaderGradient}">
                 <!-- Pattern Background -->
-                <Image Source="appicon.svg" Aspect="AspectFill" Opacity="0.05" Scale="2"/>
                 
                 <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
                     <Label x:Name="NextPrayerLabel" Text="الصلاة القادمة: --" TextColor="#D4AF37" FontSize="18" HorizontalOptions="Center" FontAttributes="Bold"/>
@@ -60,29 +59,54 @@
                             <cv:CameraView x:Name="CameraViewCtrl" WidthRequest="250" HeightRequest="250" CamerasLoaded="OnCamerasLoaded" IsVisible="False"/>
 
                             <!-- Premium Dial -->
-                            <Image x:Name="CompassDialImg" Source="compass_dial_premium.jpg" Aspect="AspectFit"/>
+                            <Image x:Name="CompassDialImg" 
+                                   Source="compass_dial_premium.jpg" 
+                                   Aspect="AspectFit" 
+                                   VerticalOptions="Center" 
+                                   HorizontalOptions="Center">
+                                <Image.Shadow>
+                                    <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.2"/>
+                                </Image.Shadow>
+                            </Image>
                             
-                            <!-- Needle Container -->
-                            <Grid x:Name="CompassContainer">
+                            <!-- Needle Container (Rotates) -->
+                            <Grid x:Name="CompassContainer" HeightRequest="220" WidthRequest="220" VerticalOptions="Center" HorizontalOptions="Center">
                                 <!-- Golden Needle -->
                                 <Image x:Name="QiblaNeedle" 
                                        Source="qibla_needle_gold.jpg" 
-                                       HeightRequest="140" 
-                                       WidthRequest="40" 
+                                       HeightRequest="180" 
+                                       WidthRequest="60" 
                                        VerticalOptions="Center" 
                                        HorizontalOptions="Center">
                                     <Image.Shadow>
-                                        <Shadow Brush="Black" Offset="3,3" Radius="5" Opacity="0.3"/>
+                                        <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.4"/>
+                                    </Image.Shadow>
+                                </Image>
+
+                                <!-- Kaaba Icon (Points to Qibla) -->
+                                <Image Source="kaba.png"
+                                       HeightRequest="36"
+                                       WidthRequest="36"
+                                       VerticalOptions="Start"
+                                       HorizontalOptions="Center"
+                                       Margin="0,-5,0,0">
+                                    <Image.Shadow>
+                                        <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.5"/>
                                     </Image.Shadow>
                                 </Image>
                             </Grid>
 
                             <!-- Center Cap -->
-                            <Ellipse Fill="#D4AF37" HeightRequest="12" WidthRequest="12" VerticalOptions="Center" HorizontalOptions="Center">
-                                <Ellipse.Shadow>
-                                    <Shadow Brush="Black" Offset="1,1" Radius="2" Opacity="0.3"/>
-                                </Ellipse.Shadow>
-                            </Ellipse>
+                            <Border BackgroundColor="#D4AF37" 
+                                    HeightRequest="16" 
+                                    WidthRequest="16" 
+                                    VerticalOptions="Center" 
+                                    HorizontalOptions="Center"
+                                    StrokeShape="RoundRectangle 8">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.5"/>
+                                </Border.Shadow>
+                            </Border>
                         </Grid>
                         
                         <Frame BackgroundColor="#F0F9F0" CornerRadius="15" Padding="15,8" HorizontalOptions="Center" BorderColor="#D4AF37">

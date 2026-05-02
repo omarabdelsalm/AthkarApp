@@ -35,12 +35,22 @@
                        VerticalOptions="Center"/>
 
                 <HorizontalStackLayout Grid.Column="2"
-                                       Spacing="10"
+                                       Spacing="8"
                                        VerticalOptions="Center">
                     
+                    <Label x:Name="ReciterIconLabel" 
+                           Text="🎙️" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           ToolTipProperties.Text="اختيار القارئ">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnReciterIconTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
                     <Label x:Name="BookmarkIconLabel" 
                            Text="🔖" 
-                           FontSize="22" 
+                           FontSize="20" 
                            VerticalOptions="Center" 
                            Opacity="0.5"
                            ToolTipProperties.Text="تحديد كعلامة مرجعية">
@@ -54,14 +64,15 @@
                            Text="1"
                            TextColor="White"
                            Keyboard="Numeric"
-                           WidthRequest="46"
-                           HeightRequest="34"
+                           WidthRequest="40"
+                           HeightRequest="30"
                            HorizontalTextAlignment="Center"
-                           FontSize="14"
+                           FontSize="13"
+                          
                            Completed="OnPageEntryCompleted"/>
                     <Label Text="/ 604"
-                           TextColor="#AAAAAA"
-                           FontSize="12"
+                           TextColor="#CCFFCC"
+                           FontSize="11"
                            VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                 </HorizontalStackLayout>
@@ -98,21 +109,19 @@
         <ScrollView x:Name="AyahsScrollView"
                     Grid.Row="2"
                     IsVisible="True">
-            <VerticalStackLayout x:Name="AyahsContainer" Padding="0,8">
-                <VerticalStackLayout.Header>
-                    <Label x:Name="BismillahLabel"
-                           Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                           FontSize="22"
-                           TextColor="#2C6E2C"
-                           HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center"
-                           Margin="0,10,0,14"
-                           IsVisible="False"/>
-                </VerticalStackLayout.Header>
+            <StackLayout x:Name="AyahsLayout" 
+                                 BindableLayout.ItemsSource="{Binding .}"
+                                 Padding="0,8">
+                <Label x:Name="BismillahLabel"
+                       Text="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                       FontSize="22"
+                       TextColor="#2C6E2C"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,10,0,14"
+                       IsVisible="False"/>
 
-                <VerticalStackLayout BindableLayout.ItemsSource="{Binding .}"
-                                    x:Name="AyahsLayout">
-                    <BindableLayout.ItemTemplate>
+                <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Ayah">
                             <Frame Padding="10,8"
                                    Margin="14,3"
@@ -130,19 +139,19 @@
                                        LineBreakMode="WordWrap">
                                     <Label.FormattedText>
                                         <FormattedString>
-                                            <Span Text="{Binding Text}" FontSize="22"/>
+                                            <Span Text="{Binding Text}" FontSize="24" FontFamily="UthmanicHafs"/>
                                             <Span Text=" "/>
                                             <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
                                                   TextColor="#2C6E2C"
-                                                  FontSize="15"/>
+                                                  FontSize="16"
+                                                  FontFamily="UthmanicHafs"/>
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
                             </Frame>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
-            </VerticalStackLayout>
+                </StackLayout>
         </ScrollView>
 
         <!-- ===== وضع التقليب (CarouselView) ===== -->
@@ -169,6 +178,13 @@
 
                             <CollectionView ItemsSource="{Binding Ayahs}"
                                             SelectionMode="None">
+                                <CollectionView.EmptyView>
+                                    <VerticalStackLayout Spacing="10" Padding="40" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Label Text="⚠️" FontSize="40" HorizontalOptions="Center"/>
+                                        <Label Text="لم يتم العثور على آيات لهذه الصفحة." TextColor="#666666" HorizontalOptions="Center"/>
+                                        <Label Text="يرجى التأكد من تحميل المصحف من صفحة القرآن الكريم." FontSize="12" TextColor="#888888" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </CollectionView.EmptyView>
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate x:DataType="models:Ayah">
                                         <Frame Padding="10,8"
@@ -187,11 +203,12 @@
                                                    LineBreakMode="WordWrap">
                                                 <Label.FormattedText>
                                                     <FormattedString>
-                                                        <Span Text="{Binding Text}" FontSize="22"/>
+                                                        <Span Text="{Binding Text}" FontSize="24" FontFamily="UthmanicHafs"/>
                                                         <Span Text=" "/>
                                                         <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
                                                               TextColor="#2C6E2C"
-                                                              FontSize="15"/>
+                                                              FontSize="16"
+                                                              FontFamily="UthmanicHafs"/>
                                                     </FormattedString>
                                                 </Label.FormattedText>
                                             </Label>
@@ -204,6 +221,16 @@
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
+
+        <!-- مؤشر التحميل -->
+        <ActivityIndicator x:Name="MainLoader"
+                           Grid.Row="2"
+                           IsRunning="False"
+                           IsVisible="False"
+                           Color="#2C6E2C"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"
+                           Scale="1.5"/>
 
         <!-- زر عائم للتحرك التلقائي -->
         <Frame x:Name="AutoScrollPanel"

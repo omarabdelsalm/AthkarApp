@@ -46,8 +46,23 @@ public partial class MushafPage : ContentPage
         _currentPage = pageNumber;
         UpdateNavUI();
 
+        MainLoader.IsRunning = true;
+        MainLoader.IsVisible = true;
+
         var pageData = await _quranApiService.GetPageAsync(pageNumber);
-        if (pageData?.Ayahs == null || !pageData.Ayahs.Any()) return;
+        
+        MainLoader.IsRunning = false;
+        MainLoader.IsVisible = false;
+
+        if (pageData?.Ayahs == null || !pageData.Ayahs.Any())
+        {
+            BindableLayout.SetItemsSource(AyahsLayout, null);
+            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+            {
+                await DisplayAlert("تنبيه", "هذه الصفحة غير محملة أوفلاين. يرجى الاتصال بالإنترنت مرة واحدة لتحميلها أو عمل مزامنة شاملة من صفحة السور.", "حسناً");
+            }
+            return;
+        }
 
         bool showBismillah = pageData.Ayahs.Any(a =>
             a.NumberInSurah == 1 &&
@@ -80,7 +95,14 @@ public partial class MushafPage : ContentPage
         var existingPage = _carouselPages[pageNumber - 1];
         if (existingPage.Ayahs != null && existingPage.Ayahs.Any()) return;
 
+        MainLoader.IsRunning = true;
+        MainLoader.IsVisible = true;
+
         var data = await _quranApiService.GetPageAsync(pageNumber);
+
+        MainLoader.IsRunning = false;
+        MainLoader.IsVisible = false;
+
         if (data != null)
         {
             data.HasBismillah = data.Ayahs?.Any(a =>
@@ -88,7 +110,7 @@ public partial class MushafPage : ContentPage
                 a.Surah?.Number != 9 &&
                 a.Surah?.Number != 1) ?? false;
 
-            // تحديث بالصفحة المحملة بلا استبدال الكائن لتجنب إعادة تعيين 위치
+            // تحديث بالصفحة المحملة بلا استبدال الكائن لتجنب إعادة تعيين 
             existingPage.Ayahs = data.Ayahs;
             existingPage.HasBismillah = data.HasBismillah;
         }
@@ -279,6 +301,39 @@ public partial class MushafPage : ContentPage
                     Preferences.Default.Set("Khatmah_LastGoalReachedDate", todayStr);
                     await DisplayAlert("تهانينا 🌟", "لقد أتممت وردك اليومي من الختمة بنجاح! تقبل الله طاعتك.", "الحمد لله");
                 }
+            }
+        }
+    }
+
+    // ===================== اختيار القارئ =====================
+    
+    private async void OnReciterIconTapped(object sender, EventArgs e)
+    {
+        var reciters = QuranReciter.GetPopularReciters();
+        var options = reciters.Select(r => r.Name).ToArray();
+        
+        string currentReciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
+        var currentReciter = reciters.FirstOrDefault(r => r.Id == currentReciterId);
+        
+        string title = $"القارئ الحالي: {currentReciter?.Name ?? "العفاسي"}";
+        string action = await DisplayActionSheet(title, "إلغاء", null, options);
+        
+        if (action != null && action != "إلغاء")
+        {
+            var selected = reciters.FirstOrDefault(r => r.Name == action);
+            if (selected != null && selected.Id != currentReciterId)
+            {
+                Preferences.Default.Set("SelectedReciterId", selected.Id);
+                
+                // إعادة تحميل الصفحة الحالية لجلب روابط الصوت الجديدة لهذا القارئ
+                if (_isScrollMode) LoadScrollPage(_currentPage);
+                else {
+                    // مسح الكاش لصفحات الكاروسيل لإجبارها على إعادة التحميل بروابط الصوت الجديدة
+                    foreach(var p in _carouselPages) p.Ayahs = new List<Ayah>();
+                    await LoadCarouselPage(_currentPage);
+                }
+                
+                await DisplayAlert("تم تغيير القارئ", $"سيتم تشغيل التلاوات بصوت الشيخ {selected.Name}.", "حسناً");
             }
         }
     }

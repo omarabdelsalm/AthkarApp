@@ -6,7 +6,7 @@ using AthkarApp.Services;
 
 namespace AthkarApp.Platforms.Android;
 
-[BroadcastReceiver(Enabled = true, Exported = true, Name = "com.Almanar.athkarapp.AlarmReceiver")]
+[BroadcastReceiver(Enabled = true, Exported = true, Name = "com.almanar.athkarapp.AlarmReceiver")]
 public class AlarmReceiver : BroadcastReceiver
 {
     public override void OnReceive(Context? context, Intent? intent)
@@ -39,16 +39,21 @@ public class AlarmReceiver : BroadcastReceiver
             serviceIntent.PutExtra("prayerName", prayerName);
             serviceIntent.PutExtra("soundName", soundName);
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+            try
             {
-                context.StartForegroundService(serviceIntent);
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                {
+                    context.StartForegroundService(serviceIntent);
+                }
+                else
+                {
+                    context.StartService(serviceIntent);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                context.StartService(serviceIntent);
+                System.Diagnostics.Debug.WriteLine($"Failed to start service from receiver: {ex.Message}");
             }
-
-            // سنعتمد على الخدمة لعرض إشعار الأذان مع زر الإيقاف
         }
         else
         {
@@ -59,10 +64,17 @@ public class AlarmReceiver : BroadcastReceiver
             serviceIntent.PutExtra("text", text);
             serviceIntent.PutExtra("soundName", soundName);
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-                context.StartForegroundService(serviceIntent);
-            else
-                context.StartService(serviceIntent);
+            try
+            {
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                    context.StartForegroundService(serviceIntent);
+                else
+                    context.StartService(serviceIntent);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to start service from receiver: {ex.Message}");
+            }
         }
 
         // الحل الجذري: إعادة جدولة الإشعارات لليوم التالي لضمان الاستمرارية

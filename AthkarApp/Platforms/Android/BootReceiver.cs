@@ -12,7 +12,7 @@ namespace AthkarApp.Platforms.Android;
     Enabled = true,
     Exported = true,
     DirectBootAware = true,
-    Name = "com.Almanar.athkarapp.BootReceiver")]
+    Name = "com.almanar.athkarapp.BootReceiver")]
 [IntentFilter(
     new[] { Intent.ActionBootCompleted, "android.intent.action.QUICKBOOT_POWERON" },
     Categories = new[] { Intent.CategoryDefault })]

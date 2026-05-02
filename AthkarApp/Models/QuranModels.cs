@@ -34,6 +34,10 @@ public class Surah
 
     [JsonIgnore]
     [Ignore]
+    public string RevelationTypeArabic => RevelationType?.ToLower() == "meccan" ? "مكية" : "مدنية";
+
+    [JsonIgnore]
+    [Ignore]
     public bool IsDownloaded { get; set; }
 
     [JsonIgnore]

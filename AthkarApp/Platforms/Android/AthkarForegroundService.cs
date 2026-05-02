@@ -13,7 +13,7 @@ using Debug = System.Diagnostics.Debug;
 namespace AthkarApp.Services
 {
     using AthkarApp.Platforms.Android;
-    [Service(Name = "com.Almanar.athkarapp.AthkarForegroundService",
+    [Service(Name = "com.almanar.athkarapp.AthkarForegroundService",
              Enabled = true,
              Exported = false,
              ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
@@ -53,7 +53,7 @@ namespace AthkarApp.Services
                 StartForegroundSafe(ServiceNotificationId, notif);
                 _foregroundStarted = true;
             }
-            catch (Exception ex)
+            catch 
             {
                 // If it fails here, we are about to crash anyway, but let's try to continue
             }
@@ -238,7 +238,7 @@ namespace AthkarApp.Services
                     UpdateDefaultNotification();
                 }
             }
-            catch (Exception ex)
+            catch
             {
             }
 
@@ -254,7 +254,7 @@ namespace AthkarApp.Services
                     _wakeLock.Acquire(10000);
                 }
             }
-            catch (Exception ex)
+            catch 
             {
             }
         }

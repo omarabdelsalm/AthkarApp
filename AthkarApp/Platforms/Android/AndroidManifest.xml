@@ -18,12 +18,12 @@
 	<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:usesCleartextTraffic="true">
 		<!-- تعريف الخدمة (استخدم هذا الاسم بالضبط) -->
-		<service android:name="com.Almanar.athkarapp.AthkarForegroundService"
+		<service android:name="com.almanar.athkarapp.AthkarForegroundService"
 				 android:enabled="true"
 				 android:exported="false"
 				 android:foregroundServiceType="mediaPlayback" />
 		<!-- ✅ لبدء الخدمة بعد إعادة تشغيل الجهاز -->
-		<receiver android:name="com.Almanar.athkarapp.BootReceiver"
+		<receiver android:name="com.almanar.athkarapp.BootReceiver"
                   android:enabled="true"
                   android:exported="true"
                   android:directBootAware="true">
@@ -34,12 +34,11 @@
 		</receiver>
 
 		<!-- ✅ مستقبل المنبهات (الأذان والأذكار) -->
-		<receiver android:name="com.Almanar.athkarapp.AlarmReceiver"
+		<receiver android:name="com.almanar.athkarapp.AlarmReceiver"
                   android:enabled="true"
                   android:exported="true" />
 
-		<!-- ✅ مستقبل التفاعلات مع الإشعارات -->
-		<receiver android:name="AthkarApp.Platforms.Android.NotificationActionReceiver"
+		<receiver android:name="com.almanar.athkarapp.NotificationActionReceiver"
                   android:enabled="true"
                   android:exported="false" />
 

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:AthkarApp.Models"
+             x:Class="AthkarApp.Views.HadithPage"
+             Title="الأحاديث النبوية"
+             FlowDirection="RightToLeft"
+             BackgroundColor="{StaticResource Secondary}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="HadithCardStyle" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                <Setter Property="BorderColor" Value="Transparent"/>
+                <Setter Property="CornerRadius" Value="15"/>
+                <Setter Property="HasShadow" Value="True"/>
+                <Setter Property="Padding" Value="15"/>
+                <Setter Property="Margin" Value="10,5"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="{StaticResource Primary}" HeightRequest="100" Margin="0,0,0,10" StrokeThickness="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="0,0,30,30" />
+            </Border.StrokeShape>
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.2"/>
+            </Border.Shadow>
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="صحيح الأحاديث النبوية" 
+                       TextColor="White" 
+                       FontSize="24" 
+                       FontAttributes="Bold" 
+                       HorizontalOptions="Center"/>
+                <Label Text="مختارات من كتب السنة مع الشرح الميسر" 
+                       TextColor="#E0E0E0" 
+                       FontSize="14" 
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Hadith List -->
+        <CollectionView Grid.Row="1" x:Name="HadithCollectionView">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Hadith">
+                    <Frame Style="{StaticResource HadithCardStyle}">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHadithTapped" CommandParameter="{Binding .}"/>
+                        </Frame.GestureRecognizers>
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="{Binding Title}" 
+                                   TextColor="White" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold"
+                                   LineBreakMode="WordWrap"/>
+                            <Label Text="عرض التفاصيل والشرح" 
+                                   TextColor="#FFD700" 
+                                   FontSize="12" 
+                                   HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            
+            <CollectionView.Footer>
+                <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False" Color="White" Margin="20"/>
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage>

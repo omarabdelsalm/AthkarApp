@@ -422,7 +422,7 @@ public partial class PrayerPage : ContentPage
 
             if (relativeAngle >= -180 && relativeAngle <= 180)
             {
-                QiblaNeedle.RotateTo(relativeAngle, 100);
+                CompassContainer.RotateTo(relativeAngle, 100);
             }
         }
     }

@@ -22,6 +22,9 @@ public static class MauiProgram
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                // الخطوط العثمانية (يجب إضافتها للمجلد Resources/Fonts أولاً)
+                fonts.AddFont("UthmanicHafs.ttf", "UthmanicHafs");
+                fonts.AddFont("Amiri-Regular.ttf", "Amiri");
             });
 
 #if DEBUG

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.HadithDetailPage"
+             Title="تفاصيل الحديث"
+             FlowDirection="RightToLeft"
+             BackgroundColor="{StaticResource Secondary}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <!-- Hadith Text Card -->
+            <Frame BackgroundColor="{StaticResource Primary}" CornerRadius="20" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="الحديث الشريف" 
+                           TextColor="#FFD700" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                    
+                    <Label x:Name="HadithTextLabel"
+                           TextColor="White" 
+                           FontSize="20" 
+                           LineHeight="1.5"
+                           HorizontalTextAlignment="Center"
+                           FontAttributes="Bold"/>
+                    
+                    <BoxView HeightRequest="1" Color="#40FFFFFF" HorizontalOptions="Fill"/>
+                    
+                    <Label x:Name="AttributionLabel"
+                           TextColor="#E0E0E0" 
+                           FontSize="14" 
+                           HorizontalOptions="Center"/>
+                    
+                    <Label x:Name="GradeLabel"
+                           TextColor="#90EE90" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Explanation Card -->
+            <Frame BackgroundColor="White" CornerRadius="20" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Start">
+                        <Label Text="الشرح الميسر" 
+                               TextColor="{StaticResource Primary}" 
+                               FontSize="18" 
+                               FontAttributes="Bold"/>
+                    </HorizontalStackLayout>
+                    
+                    <Label x:Name="ExplanationLabel"
+                           TextColor="#333333" 
+                           FontSize="16" 
+                           LineHeight="1.4"
+                           HorizontalTextAlignment="Start"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Reference -->
+            <Label x:Name="ReferenceLabel"
+                   TextColor="#666666" 
+                   FontSize="12" 
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+
+            <ActivityIndicator x:Name="DetailLoadingIndicator" IsRunning="True" Color="{StaticResource Primary}" VerticalOptions="Center" HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

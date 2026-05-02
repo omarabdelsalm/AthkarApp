@@ -24,11 +24,11 @@
 		<ApplicationTitle>أذكار</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.Almanar.athkarapp</ApplicationId>
+		<ApplicationId>com.almanar.athkarapp</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
+		<ApplicationVersion>2</ApplicationVersion>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
@@ -50,11 +50,23 @@
 	  <AndroidPackageFormat>aab</AndroidPackageFormat>
 	  <AndroidUseAapt2>True</AndroidUseAapt2>
 	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+	  <ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
+	  <ApplicationVersion>3</ApplicationVersion>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
 	  <AndroidUseAapt2>True</AndroidUseAapt2>
 	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 	  <AndroidPackageFormat>aab</AndroidPackageFormat>
+	  <ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
+	  <ApplicationVersion>3</ApplicationVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
+	  <ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
+	  <ApplicationVersion>3</ApplicationVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
+	  <ApplicationDisplayVersion>3.0</ApplicationDisplayVersion>
+	  <ApplicationVersion>3</ApplicationVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

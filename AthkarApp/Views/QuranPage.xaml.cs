@@ -77,15 +77,15 @@ public partial class QuranPage : ContentPage
         }
         else
         {
-            filtered = _allSurahs.Where(s =>
-                s.Name.Contains(searchText) ||
-                s.EnglishName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                s.EnglishNameTranslation.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            filtered = _allSurahs.Where(s => s.Name.Contains(searchText));
         }
 
-        Surahs.Clear();
-        foreach (var surah in filtered)
-            Surahs.Add(surah);
+        // تحسين الأداء: تحديث القائمة على الخيط الرئيسي لتجنب التجمد
+        MainThread.BeginInvokeOnMainThread(() => {
+            Surahs.Clear();
+            foreach (var surah in filtered)
+                Surahs.Add(surah);
+        });
     }
 
     private async void OnTeacherClicked(object sender, EventArgs e)
@@ -103,6 +103,11 @@ public partial class QuranPage : ContentPage
         if (sender is BindableObject bo && bo.BindingContext is Surah selectedSurah)
         {
             var detailPage = new SurahDetailPage(_quranApiService, _quranDownloadService, selectedSurah);
+            await Navigation.PushAsync(detailPage);
+        }
+        else if (sender is VisualElement ve && ve.BindingContext is Surah s) // للهواتف التي تستخدم التاب جشر
+        {
+            var detailPage = new SurahDetailPage(_quranApiService, _quranDownloadService, s);
             await Navigation.PushAsync(detailPage);
         }
     }
@@ -183,24 +188,22 @@ public partial class QuranPage : ContentPage
 
     private async void RunAutoScrollStep()
     {
-        if (!_isAutoScrolling) return;
+        if (!_isAutoScrolling || Surahs.Count == 0) return;
 
-        // تحرك بكسل بكسل بدلاً من الانتقال بين الآيات
-        double scrollStep = _scrollSpeed * 0.8; 
-        double currentY = SurahsScrollView.ScrollY;
-        double maxY = SurahsScrollView.ContentSize.Height - SurahsScrollView.Height;
-
-        if (currentY >= maxY - 5)
+        if (_currentIndex >= Surahs.Count)
         {
             StopAutoScroll();
             return;
         }
 
-        // التحريك السلس
-        await SurahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
+        // التحرك سورة بسورة في CollectionView
+        SurahsCollectionView.ScrollTo(_currentIndex, position: ScrollToPosition.Start, animate: true);
+        
+        _currentIndex++;
 
-        // تكرار الخطوة بسرعة لضمان النعومة
-        await Task.Delay(30);
+        // سرعة التحريك
+        int delay = 5000 / _scrollSpeed; 
+        await Task.Delay(delay);
 
         if (_isAutoScrolling)
         {

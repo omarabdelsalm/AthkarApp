@@ -6,11 +6,18 @@ namespace AthkarApp.Services;
 public class AthkarDatabase
 {
     private SQLiteAsyncConnection _database;
+    private readonly SemaphoreSlim _initSemaphore = new SemaphoreSlim(1, 1);
 
     private async Task Init()
     {
         if (_database is not null)
             return;
+
+        await _initSemaphore.WaitAsync();
+        try
+        {
+            if (_database is not null)
+                return;
 
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "athkar_v1.db3");
         _database = new SQLiteAsyncConnection(dbPath);
@@ -18,6 +25,11 @@ public class AthkarDatabase
         await _database.CreateTableAsync<AthkarCategory>();
         await _database.CreateTableAsync<ThikrItem>();
         await _database.CreateTableAsync<CounterState>();
+        }
+        finally
+        {
+            _initSemaphore.Release();
+        }
     }
 
     public async Task<List<AthkarCategory>> GetCategoriesAsync()

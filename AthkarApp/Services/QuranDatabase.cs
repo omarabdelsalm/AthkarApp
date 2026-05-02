@@ -6,17 +6,30 @@ namespace AthkarApp.Services;
 public class QuranDatabase
 {
     private SQLiteAsyncConnection _database;
+    private readonly SemaphoreSlim _initSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _writeSemaphore = new SemaphoreSlim(1, 1);
 
     private async Task Init()
     {
         if (_database is not null)
             return;
 
+        await _initSemaphore.WaitAsync();
+        try
+        {
+            if (_database is not null)
+                return;
+
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "quran_v1.db3");
         _database = new SQLiteAsyncConnection(dbPath);
 
         await _database.CreateTableAsync<Surah>();
         await _database.CreateTableAsync<Ayah>();
+        }
+        finally
+        {
+            _initSemaphore.Release();
+        }
     }
 
     public async Task<List<Surah>> GetSurahsAsync()
@@ -64,31 +77,63 @@ public class QuranDatabase
     public async Task SaveSurahsAsync(List<Surah> surahs)
     {
         await Init();
-        await _database.InsertAllAsync(surahs, "OR REPLACE");
+        await _writeSemaphore.WaitAsync();
+        try
+        {
+            await _database.InsertAllAsync(surahs, "OR REPLACE");
+        }
+        finally
+        {
+            _writeSemaphore.Release();
+        }
     }
 
     public async Task SaveAyahsAsync(List<Ayah> ayahs)
     {
         await Init();
-        await _database.InsertAllAsync(ayahs, "OR REPLACE");
+        await _writeSemaphore.WaitAsync();
+        try
+        {
+            await _database.InsertAllAsync(ayahs, "OR REPLACE");
+        }
+        finally
+        {
+            _writeSemaphore.Release();
+        }
     }
 
     public async Task UpdateAyahsInTransactionAsync(List<Ayah> ayahs)
     {
         await Init();
-        await _database.RunInTransactionAsync(conn =>
+        await _writeSemaphore.WaitAsync();
+        try
         {
-            foreach (var ayah in ayahs)
+            await _database.RunInTransactionAsync(conn =>
             {
-                conn.Update(ayah);
-            }
-        });
+                foreach (var ayah in ayahs)
+                {
+                    conn.Update(ayah);
+                }
+            });
+        }
+        finally
+        {
+            _writeSemaphore.Release();
+        }
     }
 
     public async Task UpdateAyahAsync(Ayah ayah)
     {
         await Init();
-        await _database.UpdateAsync(ayah);
+        await _writeSemaphore.WaitAsync();
+        try
+        {
+            await _database.UpdateAsync(ayah);
+        }
+        finally
+        {
+            _writeSemaphore.Release();
+        }
     }
 
     public async Task<int> GetAyahCountAsync()
