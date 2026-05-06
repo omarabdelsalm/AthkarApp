@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using AthkarApp.Models;
 using AthkarApp.Services;
+using CommunityToolkit.Maui.Views;
 
 namespace AthkarApp.Views;
 
@@ -304,6 +305,10 @@ public partial class MushafPage : ContentPage
             }
         }
     }
+
+    // ===================== الإعدادات =====================
+
+    
 
     // ===================== اختيار القارئ =====================
     

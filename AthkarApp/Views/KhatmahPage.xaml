@@ -28,106 +28,145 @@
         </Border>
 
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout x:Name="ActivePlanUI" Padding="15" Spacing="20" IsVisible="False">
+            <VerticalStackLayout x:Name="ActivePlanUI" Padding="15" Spacing="25" IsVisible="False">
                 
-                <!-- Main Progress Card -->
-                <Border BackgroundColor="White" StrokeShape="RoundRectangle 25" Padding="20" Stroke="Transparent">
-                    <Border.Shadow>
-                        <Shadow Brush="Gray" Offset="0,5" Radius="15" Opacity="0.15" />
-                    </Border.Shadow>
-                    <VerticalStackLayout Spacing="15">
-                        <Label Text="التقدم الإجمالي" FontSize="16" TextColor="#777" HorizontalOptions="Center"/>
-                        <Grid HeightRequest="30">
-                            <ProgressBar x:Name="KhatmahProgress" Progress="0.0" ProgressColor="#D4AF37" HeightRequest="12" VerticalOptions="Center"/>
-                            <Label x:Name="ProgressPercentLabel" Text="0%" TextColor="#1B4D1B" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" FontSize="14"/>
-                        </Grid>
-                        <Grid ColumnDefinitions="*,*">
-                            <Label x:Name="PagesReadLabel" Grid.Column="0" Text="المقروء: 0 صفحة" TextColor="#444" FontSize="13" FontAttributes="Bold"/>
-                            <Label x:Name="PagesLeftLabel" Grid.Column="1" Text="المتبقي: 604" TextColor="#444" HorizontalOptions="End" FontSize="13" FontAttributes="Bold"/>
-                        </Grid>
-                    </VerticalStackLayout>
-                </Border>
+                <!-- Circular Progress Section -->
+                <Grid HeightRequest="250" WidthRequest="250" HorizontalOptions="Center">
+                    <Ellipse Stroke="#E8E3D5" StrokeThickness="15" WidthRequest="220" HeightRequest="220" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    
+                    <!-- Simplified Progress Indicator (Using a stylized Border for now as MAUI Arcs require more complex drawing) -->
+                    <Border BackgroundColor="Transparent" 
+                            Stroke="#D4AF37" 
+                            StrokeThickness="15" 
+                            WidthRequest="220" 
+                            HeightRequest="220" 
+                            StrokeShape="Ellipse"
+                            HorizontalOptions="Center" 
+                            VerticalOptions="Center"
+                            Opacity="0.8">
+                        <Border.Shadow>
+                            <Shadow Brush="#D4AF37" Offset="0,0" Radius="15" Opacity="0.5"/>
+                        </Border.Shadow>
+                    </Border>
 
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                    <!-- Current Position Card -->
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
+                        <Label x:Name="ProgressPercentLabel" Text="0%" FontSize="44" FontAttributes="Bold" TextColor="#1B4D1B" HorizontalOptions="Center"/>
+                        <Label Text="التقدم الإجمالي" FontSize="14" TextColor="#777" HorizontalOptions="Center"/>
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="5" Margin="0,5">
+                            <Label x:Name="PagesReadLabel" Text="0" TextColor="#2C6E2C" FontAttributes="Bold" FontSize="16"/>
+                            <Label Text="من 604 صفحة" TextColor="#777" FontSize="14"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Stats Cards Row -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                    <!-- Days Remaining -->
+                    <Border Grid.Column="0" BackgroundColor="White" Padding="15" StrokeShape="RoundRectangle 20" Stroke="Transparent">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.05" Radius="10" Offset="0,4"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                            <Label Text="🗓️ الأيام" FontSize="12" TextColor="#777" HorizontalOptions="Center"/>
+                            <Label x:Name="DaysPassedLabel" Text="اليوم 1" FontSize="18" FontAttributes="Bold" TextColor="#1B4D1B" HorizontalOptions="Center"/>
+                            <Label x:Name="TotalDaysLabel" Text="من 30" FontSize="11" TextColor="#999" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Pages Left -->
+                    <Border Grid.Column="1" BackgroundColor="White" Padding="15" StrokeShape="RoundRectangle 20" Stroke="Transparent">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.05" Radius="10" Offset="0,4"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                            <Label Text="📖 المتبقي" FontSize="12" TextColor="#777" HorizontalOptions="Center"/>
+                            <Label x:Name="PagesLeftLabel" Text="604" FontSize="18" FontAttributes="Bold" TextColor="#D4AF37" HorizontalOptions="Center"/>
+                            <Label Text="صفحة" FontSize="11" TextColor="#999" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Location & Goal Grid -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
                     <Border Grid.Column="0" BackgroundColor="#FDFCF9" StrokeShape="RoundRectangle 20" Padding="15" Stroke="#E8E3D5">
-                        <VerticalStackLayout Spacing="10">
-                            <Label Text="أنت الآن 📍" FontSize="14" TextColor="#2C6E2C" FontAttributes="Bold" HorizontalOptions="Center"/>
-                            <BoxView HeightRequest="1" Color="#E8E3D5"/>
-                            
-                            <Label x:Name="CurrentSuraLabel" Text="..." FontSize="18" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center" FontFamily="Amiri-Regular"/>
-                            
-                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
-                                <Label Text="ص" FontSize="12" TextColor="#777" VerticalOptions="Center"/>
-                                <Label x:Name="CurrentPageLabel" Text="..." FontSize="16" FontAttributes="Bold" TextColor="#2C6E2C"/>
-                            </HorizontalStackLayout>
-                            
-                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
-                                <Label Text="آية" FontSize="12" TextColor="#777" VerticalOptions="Center"/>
-                                <Label x:Name="CurrentAyahLabel" Text="..." FontSize="16" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="مكانك الحالي 📍" FontSize="12" TextColor="#2C6E2C" FontAttributes="Bold" HorizontalOptions="Center"/>
+                            <Label x:Name="CurrentSuraLabel" Text="..." FontSize="16" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center" FontFamily="Amiri-Regular"/>
+                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="3">
+                                <Label Text="صفحة" FontSize="12" TextColor="#777"/>
+                                <Label x:Name="CurrentPageLabel" Text="..." FontSize="14" FontAttributes="Bold" TextColor="#2C6E2C"/>
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- Today's Goal Card -->
                     <Border Grid.Column="1" BackgroundColor="#F6FFF6" StrokeShape="RoundRectangle 20" Padding="15" Stroke="#D4AF37">
-                        <VerticalStackLayout Spacing="10">
-                            <Label Text="هدف اليوم 🎯" FontSize="14" TextColor="#143214" FontAttributes="Bold" HorizontalOptions="Center"/>
-                            <BoxView HeightRequest="1" Color="#E0F2E0"/>
-                            
-                            <Label x:Name="GoalSuraLabel" Text="..." FontSize="18" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center" FontFamily="Amiri-Regular"/>
-                            
-                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
-                                <Label Text="إلى ص" FontSize="12" TextColor="#777" VerticalOptions="Center"/>
-                                <Label x:Name="GoalPageLabel" Text="..." FontSize="16" FontAttributes="Bold" TextColor="#D4AF37"/>
-                            </HorizontalStackLayout>
-                            
-                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
-                                <Label Text="آية" FontSize="12" TextColor="#777" VerticalOptions="Center"/>
-                                <Label x:Name="GoalAyahLabel" Text="..." FontSize="16" FontAttributes="Bold" TextColor="#D4AF37"/>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="هدف اليوم 🎯" FontSize="12" TextColor="#143214" FontAttributes="Bold" HorizontalOptions="Center"/>
+                            <Label x:Name="GoalSuraLabel" Text="..." FontSize="16" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center" FontFamily="Amiri-Regular"/>
+                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="3">
+                                <Label Text="إلى صفحة" FontSize="12" TextColor="#777"/>
+                                <Label x:Name="GoalPageLabel" Text="..." FontSize="14" FontAttributes="Bold" TextColor="#D4AF37"/>
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
 
-                <!-- Today's Portion Summary & Action -->
-                <Border BackgroundColor="#143214" StrokeShape="RoundRectangle 20" Padding="20" Stroke="Transparent">
-                    <VerticalStackLayout Spacing="12">
-                        <Label x:Name="TodayPortionSummaryLabel" Text="جاري حساب الورد..." TextColor="White" FontSize="15" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                <!-- Bottom Status Card -->
+                <Border BackgroundColor="#143214" StrokeShape="RoundRectangle 25" Padding="20" Stroke="Transparent">
+                    <Border.Shadow>
+                        <Shadow Brush="#143214" Opacity="0.3" Radius="15" Offset="0,6"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="15">
+                        <Label x:Name="TodayPortionSummaryLabel" 
+                               Text="جاري حساب الورد..." 
+                               TextColor="White" 
+                               FontSize="14" 
+                               HorizontalOptions="Center" 
+                               HorizontalTextAlignment="Center"
+                               LineBreakMode="WordWrap"/>
                         
-                        <Button Text="استكمال القراءة الآن" 
+                        <Button Text="استكمال القراءة" 
                                 BackgroundColor="#D4AF37" 
                                 TextColor="#143214" 
                                 FontAttributes="Bold" 
-                                CornerRadius="15" 
+                                CornerRadius="18" 
                                 HeightRequest="55" 
-                                Clicked="OnContinueReadingClicked">
-                            <Button.Shadow>
-                                <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.3"/>
-                            </Button.Shadow>
-                        </Button>
+                                Clicked="OnContinueReadingClicked"/>
                     </VerticalStackLayout>
                 </Border>
 
-                <Button Text="إلغاء الخطة الحالية" BackgroundColor="Transparent" TextColor="#A5A58D" CornerRadius="12" HeightRequest="40" Margin="0,5,0,10" Clicked="OnCancelPlanClicked"/>
-
+                <Button Text="إيقاف الخطة الحالية" 
+                        BackgroundColor="Transparent" 
+                        TextColor="#A5A58D" 
+                        FontSize="13"
+                        Clicked="OnCancelPlanClicked"
+                        HorizontalOptions="Center"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout x:Name="NewPlanUI" Padding="20" Spacing="25" IsVisible="True" VerticalOptions="Center">
                 <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
                     <Label Text="ابدأ رحلة الختمة 🕋" FontSize="26" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center"/>
-                    <Label Text="اختر الخطة المناسبة لك للبدء" FontSize="16" TextColor="#666" HorizontalOptions="Center"/>
+                    <Label Text="قم بإنشاء خطة مخصصة تناسب وقتك" FontSize="16" TextColor="#666" HorizontalOptions="Center"/>
                 </VerticalStackLayout>
                 
-                <Border StrokeShape="RoundRectangle 18" BackgroundColor="White" Padding="5">
-                    <VerticalStackLayout Spacing="10" Padding="15">
-                        <Button Text="ختمة في 15 يوم (مكثفة)" BackgroundColor="#143214" TextColor="White" CornerRadius="15" HeightRequest="65" FontSize="17" Clicked="OnCreatePlan15"/>
-                        <Button Text="ختمة في 30 يوم (شهرية)" BackgroundColor="#2C6E2C" TextColor="White" CornerRadius="15" HeightRequest="65" FontSize="17" Clicked="OnCreatePlan30"/>
-                        <Button Text="ختمة في 60 يوم (ميسرة)" BackgroundColor="#4B634B" TextColor="White" CornerRadius="15" HeightRequest="65" FontSize="17" Clicked="OnCreatePlan60"/>
+                <Border StrokeShape="RoundRectangle 25" BackgroundColor="White" Padding="20" Stroke="Transparent">
+                    <Border.Shadow>
+                        <Shadow Brush="Gray" Offset="0,5" Radius="15" Opacity="0.1" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="20">
+                        <Image Source="quran_icon.jpg" HeightRequest="150" Aspect="AspectFit"/>
+                        <Button Text="إنشاء خطة ختمة جديدة" 
+                                BackgroundColor="#143214" 
+                                TextColor="White" 
+                                CornerRadius="20" 
+                                HeightRequest="65" 
+                                FontSize="18" 
+                                FontAttributes="Bold"
+                                Clicked="OnOpenCreatePopupClicked"/>
                     </VerticalStackLayout>
                 </Border>
                 
-                <Label Text="* الخطة تعتمد على المصحف الورقي (604 صفحة)" FontSize="12" TextColor="#999" HorizontalOptions="Center"/>
+                <Label Text="* يمكنك تخصيص المدة وكمية الورد اليومي" FontSize="12" TextColor="#999" HorizontalOptions="Center"/>
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

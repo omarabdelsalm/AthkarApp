@@ -18,13 +18,15 @@
                Padding="12,10"
                HasShadow="True">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <Label x:Name="CurrentSurahLabel"
-                       Grid.Column="0"
-                       Text="..."
-                       TextColor="White"
-                       FontSize="16"
-                       FontAttributes="Bold"
-                       VerticalOptions="Center"/>
+                <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                   
+                    <Label x:Name="CurrentSurahLabel"
+                           Text="..."
+                           TextColor="White"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
 
                 <Label x:Name="JuzLabel"
                        Grid.Column="1"
@@ -139,12 +141,11 @@
                                        LineBreakMode="WordWrap">
                                     <Label.FormattedText>
                                         <FormattedString>
-                                            <Span Text="{Binding Text}" FontSize="24" FontFamily="UthmanicHafs"/>
+                                            <Span Text="{Binding Text}" FontSize="24"/>
                                             <Span Text=" "/>
                                             <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
                                                   TextColor="#2C6E2C"
-                                                  FontSize="16"
-                                                  FontFamily="UthmanicHafs"/>
+                                                  FontSize="16"/>
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
@@ -203,12 +204,11 @@
                                                    LineBreakMode="WordWrap">
                                                 <Label.FormattedText>
                                                     <FormattedString>
-                                                        <Span Text="{Binding Text}" FontSize="24" FontFamily="UthmanicHafs"/>
+                                                        <Span Text="{Binding Text}" FontSize="24"/>
                                                         <Span Text=" "/>
                                                         <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
                                                               TextColor="#2C6E2C"
-                                                              FontSize="16"
-                                                              FontFamily="UthmanicHafs"/>
+                                                              FontSize="16"/>
                                                     </FormattedString>
                                                 </Label.FormattedText>
                                             </Label>
