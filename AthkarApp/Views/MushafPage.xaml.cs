@@ -34,6 +34,8 @@ public partial class MushafPage : ContentPage
 
         SwipeModeView.ItemsSource = _carouselPages;
 
+        ApplyReaderTheme(Preferences.Default.Get("Mushaf_ReaderTheme", "sepia"));
+
         int startPage = Preferences.Default.Get(LastReadPageKey, 1);
         LoadScrollPage(startPage);
     }
@@ -232,9 +234,21 @@ public partial class MushafPage : ContentPage
 
     // ===================== التفسير =====================
 
+    private Ayah _currentAyah;
+    private bool _isPickerUpdating = false;
+
     private async void ShowTafsir(Ayah ayah)
     {
+        _currentAyah = ayah;
         TafsirOverlay.IsVisible  = true;
+
+        // تعيين قيمة الـ Picker المخزنة مسبقاً دون إطلاق الحدث بشكل متكرر
+        _isPickerUpdating = true;
+        string savedEdition = Preferences.Default.Get("Tafsir_SelectedEdition", "ar.jalalayn");
+        EditionPicker.SelectedIndex = GetIndexFromEditionId(savedEdition);
+        TafsirTitleLabel.Text = EditionPicker.SelectedItem?.ToString() ?? "تفسير الجلالين";
+        _isPickerUpdating = false;
+
         TafsirLoader.IsRunning   = true;
         TafsirLoader.IsVisible   = true;
         TafsirBodyLabel.Text     = "";
@@ -242,11 +256,59 @@ public partial class MushafPage : ContentPage
         TafsirAyahTitle.Text = $"سورة {ayah.Surah?.Name ?? ""} — الآية {ayah.NumberInSurah}";
         TafsirAyahText.Text  = ayah.Text;
 
-        var tafsir = await _quranApiService.GetTafsirAsync(ayah.Number);
+        string result = await _quranApiService.GetAyahTranslationOrTafsirAsync(ayah.Number, savedEdition);
 
         TafsirLoader.IsRunning = false;
         TafsirLoader.IsVisible = false;
-        TafsirBodyLabel.Text   = tafsir;
+        TafsirBodyLabel.Text   = result;
+    }
+
+    private async void OnEditionPickerChanged(object sender, EventArgs e)
+    {
+        if (_isPickerUpdating || _currentAyah == null) return;
+
+        int selectedIndex = EditionPicker.SelectedIndex;
+        if (selectedIndex < 0) return;
+
+        string editionId = GetEditionIdFromIndex(selectedIndex);
+        Preferences.Default.Set("Tafsir_SelectedEdition", editionId);
+        TafsirTitleLabel.Text = EditionPicker.SelectedItem?.ToString() ?? "تفسير الجلالين";
+
+        TafsirLoader.IsRunning = true;
+        TafsirLoader.IsVisible = true;
+        TafsirBodyLabel.Text = "";
+
+        string result = await _quranApiService.GetAyahTranslationOrTafsirAsync(_currentAyah.Number, editionId);
+
+        TafsirLoader.IsRunning = false;
+        TafsirLoader.IsVisible = false;
+        TafsirBodyLabel.Text = result;
+    }
+
+    private string GetEditionIdFromIndex(int index)
+    {
+        return index switch
+        {
+            1 => "ar.muyassar",
+            2 => "en.sahih",
+            3 => "fr.hamidullah",
+            4 => "ur.jandagarhi",
+            0 => "ar.jalalayn",
+            _ => "ar.jalalayn"
+        };
+    }
+
+    private int GetIndexFromEditionId(string editionId)
+    {
+        return editionId switch
+        {
+            "ar.muyassar" => 1,
+            "en.sahih" => 2,
+            "fr.hamidullah" => 3,
+            "ur.jandagarhi" => 4,
+            "ar.jalalayn" => 0,
+            _ => 0
+        };
     }
 
     private void OnCloseTafsir(object sender, EventArgs e)
@@ -286,11 +348,16 @@ public partial class MushafPage : ContentPage
         if (isKhatmahActive)
         {
             int durationDays = Preferences.Default.Get("Khatmah_PlanDuration", 30);
-            DateTime startDate = Preferences.Default.Get("Khatmah_PlanStartDate", DateTime.Now);
-            
-            int totalPagesPerDay = (int)Math.Ceiling(604.0 / durationDays);
+            DateTime startDate = Preferences.Default.Get("Khatmah_PlanStartDate", DateTime.Now.Date);
+            int startPage = Preferences.Default.Get("Khatmah_PlanStartPage", 1);
+            int endPage = Preferences.Default.Get("Khatmah_PlanEndPage", 604);
+
+            int totalPages = endPage - startPage + 1;
             int daysPassed = (DateTime.Now.Date - startDate.Date).Days;
-            int expectedPageToBeAt = Math.Min(604, (daysPassed + 1) * totalPagesPerDay);
+            if (daysPassed < 0) daysPassed = 0;
+
+            int totalPagesPerDay = (int)Math.Ceiling((double)totalPages / durationDays);
+            int expectedPageToBeAt = Math.Min(endPage, startPage - 1 + (daysPassed + 1) * totalPagesPerDay);
 
             if (_currentPage >= expectedPageToBeAt)
             {
@@ -306,9 +373,72 @@ public partial class MushafPage : ContentPage
         }
     }
 
-    // ===================== الإعدادات =====================
+    // ===================== الإعدادات والمظهر =====================
 
-    
+    private async void OnThemeIconTapped(object sender, EventArgs e)
+    {
+        string currentTheme = Preferences.Default.Get("Mushaf_ReaderTheme", "sepia");
+        string title = "اختر مظهر المصحف:";
+        
+        string themeSepia = "📜 كلاسيكي (Sepia)";
+        string themeDark = "🌙 مظلم (Dark)";
+        string themeLight = "☀️ حديث (Light)";
+
+        string action = await DisplayActionSheet(title, "إلغاء", null, themeSepia, themeDark, themeLight);
+
+        if (action == themeSepia)
+        {
+            ApplyReaderTheme("sepia");
+        }
+        else if (action == themeDark)
+        {
+            ApplyReaderTheme("dark");
+        }
+        else if (action == themeLight)
+        {
+            ApplyReaderTheme("light");
+        }
+    }
+
+    private void ApplyReaderTheme(string theme)
+    {
+        Preferences.Default.Set("Mushaf_ReaderTheme", theme);
+
+        switch (theme)
+        {
+            case "dark":
+                Resources["ReaderPageBg"] = Color.FromArgb("#121212");
+                Resources["ReaderAyahBg"] = Color.FromArgb("#1E1E1E");
+                Resources["ReaderAyahBorder"] = Color.FromArgb("#2E2E2E");
+                Resources["ReaderAyahText"] = Color.FromArgb("#E0E0E0");
+                Resources["ReaderBismillahText"] = Color.FromArgb("#4CAF50");
+                Resources["ReaderHeaderBg"] = Color.FromArgb("#1E1E1E");
+                Resources["ReaderFooterBg"] = Color.FromArgb("#1E1E1E");
+                Resources["ReaderModeBarBg"] = Color.FromArgb("#1A1A1A");
+                break;
+            case "light":
+                Resources["ReaderPageBg"] = Color.FromArgb("#FFFFFF");
+                Resources["ReaderAyahBg"] = Color.FromArgb("#FFFFFF");
+                Resources["ReaderAyahBorder"] = Color.FromArgb("#E0E0E0");
+                Resources["ReaderAyahText"] = Color.FromArgb("#222222");
+                Resources["ReaderBismillahText"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderHeaderBg"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderFooterBg"] = Color.FromArgb("#F5F5F5");
+                Resources["ReaderModeBarBg"] = Color.FromArgb("#EBEBEB");
+                break;
+            case "sepia":
+            default:
+                Resources["ReaderPageBg"] = Color.FromArgb("#F9F6F0");
+                Resources["ReaderAyahBg"] = Color.FromArgb("#FFFFFF");
+                Resources["ReaderAyahBorder"] = Color.FromArgb("#E0DDD5");
+                Resources["ReaderAyahText"] = Color.FromArgb("#1A3A1A");
+                Resources["ReaderBismillahText"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderHeaderBg"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderFooterBg"] = Color.FromArgb("#EDE8DC");
+                Resources["ReaderModeBarBg"] = Color.FromArgb("#EDE8DC");
+                break;
+        }
+    }
 
     // ===================== اختيار القارئ =====================
     

@@ -11,6 +11,7 @@ public interface IQuranApiService
     Task<List<Ayah>> GetAyahsAsync(int surahNumber, bool forceRefresh = false);
     Task<PageData> GetPageAsync(int pageNumber);
     Task<string> GetTafsirAsync(int ayahNumber);
+    Task<string> GetAyahTranslationOrTafsirAsync(int ayahNumber, string editionIdentifier);
     Task SyncFullQuranAsync(Action<double> progressCallback);
 }
 
@@ -67,43 +68,38 @@ public class QuranApiService : IQuranApiService
 
     public async Task<List<Ayah>> GetAyahsAsync(int surahNumber, bool forceRefresh = false)
     {
+        string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
+
         // 1. Check Database
         var localAyahs = await _database.GetAyahsBySurahAsync(surahNumber);
         
         if (!forceRefresh && localAyahs != null && localAyahs.Any())
         {
-            // If we have audio OR we are offline, return local
-            // (If we only have text and are online, we proceed to fetch to get audio links)
-            if (!string.IsNullOrEmpty(localAyahs.First().Audio) || Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+            // بناء الروابط الصوتية محلياً بشكل فوري لتسريع الفتح 100%
+            foreach (var ayah in localAyahs)
             {
-                return localAyahs;
+                ayah.Audio = $"https://cdn.islamic.network/quran/audio/128/{reciterId}/{ayah.Number}.mp3";
             }
+            return localAyahs;
         }
 
-        // 2. Fetch from API
+        // 2. Fetch from API (Only Text Edition, reducing payload size by 50%!)
         try
         {
-            string reciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
-            var url = $"https://api.alquran.cloud/v1/surah/{surahNumber}/editions/quran-uthmani,{reciterId}";
+            var url = $"https://api.alquran.cloud/v1/surah/{surahNumber}/quran-uthmani";
             var response = await _httpClient.GetStringAsync(url);
             
-            var multiResponse = JsonSerializer.Deserialize<MultiAyahResponse>(response);
-            var textEdition = multiResponse?.Data?.FirstOrDefault(e => e.Edition?.Identifier == "quran-uthmani");
-            var audioEdition = multiResponse?.Data?.FirstOrDefault(e => e.Edition?.Identifier == reciterId);
-
-            var apiAyahs = textEdition?.Ayahs ?? new List<Ayah>();
-            
-            if (audioEdition?.Ayahs != null)
-            {
-                for (int i = 0; i < apiAyahs.Count && i < audioEdition.Ayahs.Count; i++)
-                {
-                    apiAyahs[i].Audio = audioEdition.Ayahs[i].Audio;
-                }
-            }
+            var surahResponse = JsonSerializer.Deserialize<SingleSurahResponse>(response);
+            var apiAyahs = surahResponse?.Data?.Ayahs ?? new List<Ayah>();
 
             if (apiAyahs.Any())
             {
-                foreach (var a in apiAyahs) a.SurahNumber = surahNumber;
+                foreach (var a in apiAyahs) 
+                {
+                    a.SurahNumber = surahNumber;
+                    a.Audio = $"https://cdn.islamic.network/quran/audio/128/{reciterId}/{a.Number}.mp3";
+                }
+                
                 await _database.SaveAyahsAsync(apiAyahs);
                 return apiAyahs;
             }
@@ -118,14 +114,15 @@ public class QuranApiService : IQuranApiService
 
     public async Task<PageData> GetPageAsync(int pageNumber)
     {
-        // 1. Check Database (Offline)
+        // 1. Check Database (Offline / Synced)
         var localAyahs = await _database.GetPageAsync(pageNumber);
+        bool isAllTextSynced = Preferences.Default.Get("Quran_TextSynced", false);
         string currentReciterId = Preferences.Default.Get("SelectedReciterId", "ar.alafasy");
 
         if (localAyahs != null && localAyahs.Any())
         {
-            // If we are offline, ALWAYS return what we have locally
-            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+            // إذا كانت النصوص قد تمت مزامنتها بالكامل، أو كنا أوفلاين، نرجع النص المحلي فوراً دون استهلاك للإنترنت
+            if (isAllTextSynced || Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
             {
                 return new PageData { Number = pageNumber, Ayahs = localAyahs };
             }
@@ -216,6 +213,45 @@ public class QuranApiService : IQuranApiService
         catch
         {
             return ayah?.TafsirText ?? "حدث خطأ أثناء الاتصال بالإنترنت لعرض التفسير.";
+        }
+    }
+
+    public async Task<string> GetAyahTranslationOrTafsirAsync(int ayahNumber, string editionIdentifier)
+    {
+        try
+        {
+            // If fetching default Jalalayn, fallback to database first
+            if (editionIdentifier == "ar.jalalayn")
+            {
+                var ayah = await _database.GetAyahAsync(ayahNumber);
+                if (ayah != null && !string.IsNullOrEmpty(ayah.TafsirText))
+                {
+                    return ayah.TafsirText;
+                }
+            }
+
+            var url = $"https://api.alquran.cloud/v1/ayah/{ayahNumber}/{editionIdentifier}";
+            var response = await _httpClient.GetStringAsync(url);
+            var tafsirResponse = JsonSerializer.Deserialize<TafsirResponse>(response);
+            var resultText = tafsirResponse?.Data?.Text ?? "تعذر جلب البيانات حالياً.";
+
+            // Save to local DB if we got a valid response for Jalalayn
+            if (editionIdentifier == "ar.jalalayn" && !resultText.Contains("تعذر"))
+            {
+                var ayah = await _database.GetAyahAsync(ayahNumber);
+                if (ayah != null)
+                {
+                    ayah.TafsirText = resultText;
+                    await _database.UpdateAyahAsync(ayah);
+                }
+            }
+
+            return resultText;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to fetch edition {editionIdentifier} for ayah {ayahNumber}: {ex.Message}");
+            return "حدث خطأ أثناء الاتصال بالإنترنت لعرض هذا المحتوى.";
         }
     }
 
@@ -312,6 +348,12 @@ public class EditionInfo
     public string Identifier { get; set; }
 }
 
+
+public class SingleSurahResponse
+{
+    [JsonPropertyName("data")]
+    public SurahWithAyahs Data { get; set; }
+}
 
 public class MultiAyahResponse
 {

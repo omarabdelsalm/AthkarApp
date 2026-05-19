@@ -2,6 +2,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Media;
+using Android.Media.Session; // ✅ لدعم متطلبات Android 14+ للـ MediaPlayback
 using Android.OS;
 using AndroidX.Core.App;
 using System;
@@ -22,6 +23,7 @@ namespace AthkarApp.Services
         private MediaPlayer? _mediaPlayer;
         private AudioManager? _audioManager;
         private PowerManager.WakeLock? _wakeLock;
+        private MediaSession? _mediaSession; // ✅ كائن الجلسة الصوتية لمنع الانهيار في أندرويد 14
 
         private const string ServiceChannelId = "athkar_foreground_channel";
         private const string AdhanChannelId = "athkar_adhan_channel";
@@ -43,6 +45,17 @@ namespace AthkarApp.Services
             try
             {
                 CreateNotificationChannels();
+            }
+            catch { }
+
+            // إنشاء الـ MediaSession لتوافق أندرويد 14+ مع وضع mediaPlayback
+            try
+            {
+                if ((int)Build.VERSION.SdkInt >= 29)
+                {
+                    _mediaSession = new MediaSession(this, "AthkarMediaSession");
+                    _mediaSession.Active = true;
+                }
             }
             catch { }
 
@@ -113,31 +126,64 @@ namespace AthkarApp.Services
 
         private void StartForegroundSafe(int id, Notification notification)
         {
+            bool success = false;
             try
             {
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.Q) // Android 10+
+                if ((int)Build.VERSION.SdkInt >= 34) // Android 14+ (API 34 is UpsideDownCake)
                 {
                     try
                     {
-                        // On Android 14 (API 34), we MUST provide a valid type that is declared in the manifest.
-                        StartForeground(id, notification, global::Android.Content.PM.ForegroundService.TypeMediaPlayback);
+                        // في أندرويد 14+، يجب توفير نوع الخدمة المتطابق مع المانيفست بالكامل
+                        StartForeground(id, notification, ForegroundService.TypeMediaPlayback);
+                        success = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed starting foreground type mediaPlayback: {ex.Message}");
+                        // محاولة البدء كبديل افتراضي
+                        try
+                        {
+                            StartForeground(id, notification);
+                            success = true;
+                        }
+                        catch { }
+                    }
+                }
+                else if ((int)Build.VERSION.SdkInt >= 29) // Android 10 - 13 (API 29 is Q)
+                {
+                    try
+                    {
+                        StartForeground(id, notification, ForegroundService.TypeMediaPlayback);
+                        success = true;
                     }
                     catch
                     {
-                        // Fallback
                         StartForeground(id, notification);
+                        success = true;
                     }
                 }
                 else
                 {
                     // Android 8.0 - 9.0
                     StartForeground(id, notification);
+                    success = true;
                 }
             }
             catch (Exception ex)
             {
-                // On some devices, calling StartForeground can throw if the notification is invalid or permissions are missing.
                 System.Diagnostics.Debug.WriteLine($"Failed to start foreground: {ex.Message}");
+            }
+
+            // الحل السحري والجذري: إذا فشل بدء الخدمة في المقدمة لأي سبب أمني أو بسبب وضع الخلفية،
+            // نقوم بإيقاف الخدمة ذاتياً فوراً بدلاً من تركها معلقة والتسبب بانهيار النظام!
+            if (!success)
+            {
+                System.Diagnostics.Debug.WriteLine("CRITICAL: Foreground service promotion failed. Stopping self immediately to prevent Android OS crash.");
+                try
+                {
+                    StopSelf();
+                }
+                catch { }
             }
         }
 
@@ -492,6 +538,16 @@ namespace AthkarApp.Services
 
         public override void OnDestroy()
         {
+            try
+            {
+                if (_mediaSession != null)
+                {
+                    _mediaSession.Active = false;
+                    _mediaSession.Release();
+                    _mediaSession = null;
+                }
+            }
+            catch { }
             base.OnDestroy();
         }
     }

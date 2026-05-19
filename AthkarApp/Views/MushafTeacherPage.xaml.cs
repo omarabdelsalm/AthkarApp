@@ -359,9 +359,9 @@ public partial class MushafTeacherPage : ContentPage
         if (LoadingIndicator != null) LoadingIndicator.IsRunning = false;
     }
 
-    private async Task UpdateAyahAudioUrls()
+    private Task UpdateAyahAudioUrls()
     {
-        if (ReciterPicker == null) return;
+        if (ReciterPicker == null) return Task.CompletedTask;
 
         string reciterId = "ar.husary";
         if (ReciterPicker.SelectedIndex >= 0)
@@ -376,19 +376,19 @@ public partial class MushafTeacherPage : ContentPage
             };
         }
 
-        // في وضع "المعلم"، نحتاج للروابط المباشرة من الـ API لهذا القارئ
-        int surahNumber = (SurahPicker?.SelectedItem as Surah)?.Number ?? 1;
-        
-        try {
-            // تحديث Preferences ليستهلكها API الخدمة
-            Preferences.Default.Set("SelectedReciterId", reciterId);
-            
-            var updatedAyahs = await _quranApiService.GetAyahsAsync(surahNumber, true);
-            if (updatedAyahs != null && updatedAyahs.Any())
+        // تحديث Preferences ليستهلكها API الخدمة في أماكن أخرى
+        Preferences.Default.Set("SelectedReciterId", reciterId);
+
+        // تركيب روابط الصوت محلياً لتسريع الفتح بشكل فوري بدلاً من الاتصال بالإنترنت
+        if (_currentSurahAyahs != null && _currentSurahAyahs.Any())
+        {
+            foreach (var ayah in _currentSurahAyahs)
             {
-                _currentSurahAyahs = updatedAyahs;
+                ayah.Audio = $"https://cdn.islamic.network/quran/audio/128/{reciterId}/{ayah.Number}.mp3";
             }
-        } catch { }
+        }
+        
+        return Task.CompletedTask;
     }
 
     private async void OnPlayMyRecitationClicked(object sender, EventArgs e)

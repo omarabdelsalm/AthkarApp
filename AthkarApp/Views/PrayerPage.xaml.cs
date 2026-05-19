@@ -29,6 +29,7 @@ public partial class PrayerPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        LoadTrackerData();
         await CheckAndEnableLocationServices();
     }
 
@@ -534,5 +535,85 @@ public partial class PrayerPage : ContentPage
         var months = new[] { "", "محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة" };
         if (monthNum >= 1 && monthNum <= 12) return months[monthNum];
         return "";
+    }
+
+    // ===================== سجل الصلوات اليومية والسنن =====================
+
+    private bool _isTrackerLoading = false;
+
+    private void LoadTrackerData()
+    {
+        _isTrackerLoading = true;
+        
+        string dateStr = DateTime.Today.ToString("yyyyMMdd");
+        TrackerDateLabel.Text = $"صلوات اليوم: {DateTime.Today.ToString("dd MMMM yyyy", new CultureInfo("ar-EG"))}";
+
+        // تحميل حالة الصلوات المفروضة
+        FajrStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Fajr", 0);
+        DhuhrStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Dhuhr", 0);
+        AsrStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Asr", 0);
+        MaghribStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Maghrib", 0);
+        IshaStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Isha", 0);
+
+        // تحميل حالة السنن الرواتب
+        FajrSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Fajr", false);
+        DhuhrSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Dhuhr", false);
+        AsrSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Asr", false);
+        MaghribSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Maghrib", false);
+        IshaSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Isha", false);
+
+        _isTrackerLoading = false;
+        
+        UpdateTrackerStatsUI();
+    }
+
+    private void OnTrackerStatusChanged(object sender, EventArgs e)
+    {
+        if (_isTrackerLoading) return;
+        
+        string dateStr = DateTime.Today.ToString("yyyyMMdd");
+        
+        Preferences.Default.Set($"Tracker_{dateStr}_Fajr", FajrStatusPicker.SelectedIndex);
+        Preferences.Default.Set($"Tracker_{dateStr}_Dhuhr", DhuhrStatusPicker.SelectedIndex);
+        Preferences.Default.Set($"Tracker_{dateStr}_Asr", AsrStatusPicker.SelectedIndex);
+        Preferences.Default.Set($"Tracker_{dateStr}_Maghrib", MaghribStatusPicker.SelectedIndex);
+        Preferences.Default.Set($"Tracker_{dateStr}_Isha", IshaStatusPicker.SelectedIndex);
+
+        UpdateTrackerStatsUI();
+    }
+
+    private void OnTrackerSunnahChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (_isTrackerLoading) return;
+        
+        string dateStr = DateTime.Today.ToString("yyyyMMdd");
+        
+        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Fajr", FajrSunnahCheck.IsChecked);
+        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Dhuhr", DhuhrSunnahCheck.IsChecked);
+        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Asr", AsrSunnahCheck.IsChecked);
+        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Maghrib", MaghribSunnahCheck.IsChecked);
+        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Isha", IshaSunnahCheck.IsChecked);
+
+        UpdateTrackerStatsUI();
+    }
+
+    private void UpdateTrackerStatsUI()
+    {
+        int prayedCount = 0;
+        if (FajrStatusPicker.SelectedIndex > 0 && FajrStatusPicker.SelectedIndex != 4) prayedCount++; // 4 is "Missed"
+        if (DhuhrStatusPicker.SelectedIndex > 0 && DhuhrStatusPicker.SelectedIndex != 4) prayedCount++;
+        if (AsrStatusPicker.SelectedIndex > 0 && AsrStatusPicker.SelectedIndex != 4) prayedCount++;
+        if (MaghribStatusPicker.SelectedIndex > 0 && MaghribStatusPicker.SelectedIndex != 4) prayedCount++;
+        if (IshaStatusPicker.SelectedIndex > 0 && IshaStatusPicker.SelectedIndex != 4) prayedCount++;
+
+        int sunnahTicks = 0;
+        if (FajrSunnahCheck.IsChecked) sunnahTicks++;
+        if (DhuhrSunnahCheck.IsChecked) sunnahTicks++;
+        if (AsrSunnahCheck.IsChecked) sunnahTicks++;
+        if (MaghribSunnahCheck.IsChecked) sunnahTicks++;
+        if (IshaSunnahCheck.IsChecked) sunnahTicks++;
+
+        TrackerStatsLabel.Text = $"الصلوات المؤداة اليوم: {prayedCount} من 5";
+        SunnahStatsLabel.Text = $"السنن الرواتب: {sunnahTicks} من 5";
     }
 }

@@ -42,25 +42,42 @@
                     
                     <!-- Bookmark Selection -->
                     <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
-                        <HorizontalStackLayout Spacing="15" HorizontalOptions="Center">
-                            <Border StrokeShape="RoundRectangle 25" Stroke="#3498db" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <!-- Blue Bookmark -->
+                            <Border x:Name="BlueBookmarkBorder" StrokeShape="RoundRectangle 22" Stroke="#3498db" StrokeThickness="2" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnColorTapped" CommandParameter="#3498db"/>
+                                </Border.GestureRecognizers>
                                 <Label Text="🔖" FontSize="24" TextColor="#3498db" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
-                            <Border StrokeShape="RoundRectangle 25" Stroke="#e67e22" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                            <!-- Orange Bookmark -->
+                            <Border x:Name="OrangeBookmarkBorder" StrokeShape="RoundRectangle 22" Stroke="#e67e22" StrokeThickness="2" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnColorTapped" CommandParameter="#e67e22"/>
+                                </Border.GestureRecognizers>
                                 <Label Text="🔖" FontSize="24" TextColor="#e67e22" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
-                            <Border StrokeShape="RoundRectangle 25" Stroke="#8d6e63" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                            <!-- Brown Bookmark -->
+                            <Border x:Name="BrownBookmarkBorder" StrokeShape="RoundRectangle 22" Stroke="#8d6e63" StrokeThickness="2" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnColorTapped" CommandParameter="#8d6e63"/>
+                                </Border.GestureRecognizers>
                                 <Label Text="🔖" FontSize="24" TextColor="#8d6e63" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
-                            <Border StrokeShape="RoundRectangle 25" Stroke="#e74c3c" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                            <!-- Red Bookmark -->
+                            <Border x:Name="RedBookmarkBorder" StrokeShape="RoundRectangle 22" Stroke="#e74c3c" StrokeThickness="2" BackgroundColor="Transparent" Padding="5" WidthRequest="45" HeightRequest="45">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnColorTapped" CommandParameter="#e74c3c"/>
+                                </Border.GestureRecognizers>
                                 <Label Text="🔖" FontSize="24" TextColor="#e74c3c" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
-                            <VerticalStackLayout Spacing="5">
-                                <Border StrokeShape="RoundRectangle 25" Stroke="#5EB670" BackgroundColor="#E0F2E0" Padding="5" WidthRequest="55" HeightRequest="55">
-                                    <Label Text="🔖" FontSize="30" TextColor="#5EB670" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                </Border>
-                                <BoxView HeightRequest="4" Color="#5EB670" CornerRadius="2" WidthRequest="30" HorizontalOptions="Center"/>
-                            </VerticalStackLayout>
+                            <!-- Green Bookmark -->
+                            <Border x:Name="GreenBookmarkBorder" StrokeShape="RoundRectangle 22" Stroke="#5EB670" StrokeThickness="2" BackgroundColor="#E0F2E0" Padding="5" WidthRequest="45" HeightRequest="45">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnColorTapped" CommandParameter="#5EB670"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="🔖" FontSize="24" TextColor="#5EB670" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
                         </HorizontalStackLayout>
                         <Label Text="سيتم إنشاء علامة مرجعية مرتبطة بالختمة، يمكنك استخدامها لتتبع التقدم في الختمة."
                                TextColor="#7F8C8D"
@@ -82,7 +99,10 @@
                     <VerticalStackLayout Spacing="5">
                         <Grid ColumnDefinitions="Auto, *, Auto">
                             <Label Text="📖" FontSize="20" VerticalOptions="Center"/>
-                            <Label Grid.Column="1" Text="نطاق الختمة" TextColor="#2C3E50" FontSize="15" Margin="10,0" VerticalOptions="Center"/>
+                            <HorizontalStackLayout Grid.Column="1" Spacing="5" Margin="10,0" VerticalOptions="Center">
+                                <Label Text="نطاق الختمة:" TextColor="#2C3E50" FontSize="15" FontAttributes="Bold"/>
+                                <Label x:Name="ScopeValueLabel" Text="كامل المصحف (30 جزء)" TextColor="#5EB670" FontSize="15" FontAttributes="Bold"/>
+                            </HorizontalStackLayout>
                             <Label Grid.Column="2" Text="ⓘ" TextColor="#3498db" FontSize="18" VerticalOptions="Center"/>
                         </Grid>
                         
@@ -131,9 +151,9 @@
                         <Label Grid.Column="1" Text="وقت التذكير" TextColor="#2C3E50" FontSize="15" Margin="10,0" VerticalOptions="Center"/>
                         <Border Grid.Column="2" StrokeShape="RoundRectangle 10" BackgroundColor="White" Padding="5" Stroke="Transparent">
                             <HorizontalStackLayout Spacing="10">
-                                <Label Text="10:56 م" VerticalOptions="Center" TextColor="#2C3E50" FontAttributes="Bold"/>
+                                <TimePicker x:Name="ReminderTimePicker" Time="21:00:00" Format="hh:mm tt" TextColor="#2C3E50" FontAttributes="Bold" BackgroundColor="Transparent"/>
                                 <BoxView WidthRequest="1" Color="#D5D5D5" Margin="0,5"/>
-                                <Switch IsToggled="True" OnColor="#5EB670" ThumbColor="White" Scale="0.8"/>
+                                <Switch x:Name="ReminderSwitch" IsToggled="True" OnColor="#5EB670" ThumbColor="White" Scale="0.8"/>
                             </HorizontalStackLayout>
                         </Border>
                     </Grid>

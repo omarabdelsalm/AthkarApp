@@ -63,19 +63,31 @@ public class AthkarDatabase
     public async Task SeedInitialDataAsync(List<AthkarCategory> categories)
     {
         await Init();
-        // التحقق مما إذا كانت قاعدة البيانات فارغة لتجنب التكرار
-        var count = await _database.Table<AthkarCategory>().CountAsync();
-        if (count > 0) return;
+        
+        // Version 2 has enriched Athkar quantity and counts
+        int currentVersion = Preferences.Default.Get("Athkar_SeededVersion", 0);
+        if (currentVersion >= 2)
+        {
+            return;
+        }
+
+        // Clear old static tables to force update of new/enriched Athkar
+        await _database.DeleteAllAsync<AthkarCategory>();
+        await _database.DeleteAllAsync<ThikrItem>();
 
         foreach (var category in categories)
         {
+            category.Id = 0; // Let SQLite auto-increment
             await _database.InsertAsync(category);
             foreach (var thikr in category.AthkarList)
             {
+                thikr.Id = 0;
                 thikr.CategoryId = category.Id;
                 await _database.InsertAsync(thikr);
             }
         }
+
+        Preferences.Default.Set("Athkar_SeededVersion", 2);
     }
 
     public async Task SaveCounterStateAsync(CounterState state)

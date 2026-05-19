@@ -186,7 +186,8 @@ public class PrayerService : IPrayerService
                 }
 
                 // 2. أذان الصلاة الفعلي
-                nativeService.ScheduleAdhanAlarm(p.Id, p.Ar, AdhanSoundName, notifyTime);
+                string soundToPlay = p.Name == "Fajr" ? "elfagr" : AdhanSoundName;
+                nativeService.ScheduleAdhanAlarm(p.Id, p.Ar, soundToPlay, notifyTime);
             }
         }
         await Task.CompletedTask;

@@ -49,6 +49,116 @@
                     </VerticalStackLayout>
                 </Frame>
 
+                <!-- سجل الصلوات اليومية (Prayer Tracker) -->
+                <Frame BackgroundColor="White" CornerRadius="25" Padding="20" HasShadow="True" BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="سجل الصلوات اليومية والسنن" FontSize="20" FontAttributes="Bold" TextColor="#143214" HorizontalOptions="Center"/>
+                        <Label x:Name="TrackerDateLabel" Text="صلوات اليوم" FontSize="14" TextColor="#666666" HorizontalOptions="Center"/>
+                        
+                        <BoxView HeightRequest="1" Color="#EEEEEE"/>
+                        
+                        <Grid ColumnDefinitions="*, Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="10">
+                            <!-- Fajr -->
+                            <Label Grid.Row="0" Grid.Column="0" Text="الفجر" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" TextColor="#333333"/>
+                            <Picker Grid.Row="0" Grid.Column="1" x:Name="FajrStatusPicker" WidthRequest="150" HeightRequest="38" FontSize="13" SelectedIndexChanged="OnTrackerStatusChanged">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>❌ لم تصلِ بعد</x:String>
+                                        <x:String>🕌 جماعة في المسجد</x:String>
+                                        <x:String>🏠 صلاة فردية</x:String>
+                                        <x:String>⏳ قضاء</x:String>
+                                        <x:String>🚫 فوتت</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+                            <HorizontalStackLayout Grid.Row="0" Grid.Column="2" Spacing="4" VerticalOptions="Center">
+                                <CheckBox x:Name="FajrSunnahCheck" CheckedChanged="OnTrackerSunnahChanged"/>
+                                <Label Text="السنّة" FontSize="13" VerticalOptions="Center" TextColor="#555555"/>
+                            </HorizontalStackLayout>
+                            
+                            <!-- Dhuhr -->
+                            <Label Grid.Row="1" Grid.Column="0" Text="الظهر" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" TextColor="#333333"/>
+                            <Picker Grid.Row="1" Grid.Column="1" x:Name="DhuhrStatusPicker" WidthRequest="150" HeightRequest="38" FontSize="13" SelectedIndexChanged="OnTrackerStatusChanged">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>❌ لم تصلِ بعد</x:String>
+                                        <x:String>🕌 جماعة في المسجد</x:String>
+                                        <x:String>🏠 صلاة فردية</x:String>
+                                        <x:String>⏳ قضاء</x:String>
+                                        <x:String>🚫 فوتت</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+                            <HorizontalStackLayout Grid.Row="1" Grid.Column="2" Spacing="4" VerticalOptions="Center">
+                                <CheckBox x:Name="DhuhrSunnahCheck" CheckedChanged="OnTrackerSunnahChanged"/>
+                                <Label Text="السنّة" FontSize="13" VerticalOptions="Center" TextColor="#555555"/>
+                            </HorizontalStackLayout>
+                            
+                            <!-- Asr -->
+                            <Label Grid.Row="2" Grid.Column="0" Text="العصر" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" TextColor="#333333"/>
+                            <Picker Grid.Row="2" Grid.Column="1" x:Name="AsrStatusPicker" WidthRequest="150" HeightRequest="38" FontSize="13" SelectedIndexChanged="OnTrackerStatusChanged">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>❌ لم تصلِ بعد</x:String>
+                                        <x:String>🕌 جماعة في المسجد</x:String>
+                                        <x:String>🏠 صلاة فردية</x:String>
+                                        <x:String>⏳ قضاء</x:String>
+                                        <x:String>🚫 فوتت</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+                            <HorizontalStackLayout Grid.Row="2" Grid.Column="2" Spacing="4" VerticalOptions="Center">
+                                <CheckBox x:Name="AsrSunnahCheck" CheckedChanged="OnTrackerSunnahChanged"/>
+                                <Label Text="السنّة" FontSize="13" VerticalOptions="Center" TextColor="#555555"/>
+                            </HorizontalStackLayout>
+                            
+                            <!-- Maghrib -->
+                            <Label Grid.Row="3" Grid.Column="0" Text="المغرب" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" TextColor="#333333"/>
+                            <Picker Grid.Row="3" Grid.Column="1" x:Name="MaghribStatusPicker" WidthRequest="150" HeightRequest="38" FontSize="13" SelectedIndexChanged="OnTrackerStatusChanged">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>❌ لم تصلِ بعد</x:String>
+                                        <x:String>🕌 جماعة في المسجد</x:String>
+                                        <x:String>🏠 صلاة فردية</x:String>
+                                        <x:String>⏳ قضاء</x:String>
+                                        <x:String>🚫 فوتت</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+                            <HorizontalStackLayout Grid.Row="3" Grid.Column="2" Spacing="4" VerticalOptions="Center">
+                                <CheckBox x:Name="MaghribSunnahCheck" CheckedChanged="OnTrackerSunnahChanged"/>
+                                <Label Text="السنّة" FontSize="13" VerticalOptions="Center" TextColor="#555555"/>
+                            </HorizontalStackLayout>
+                            
+                            <!-- Isha -->
+                            <Label Grid.Row="4" Grid.Column="0" Text="العشاء" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" TextColor="#333333"/>
+                            <Picker Grid.Row="4" Grid.Column="1" x:Name="IshaStatusPicker" WidthRequest="150" HeightRequest="38" FontSize="13" SelectedIndexChanged="OnTrackerStatusChanged">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>❌ لم تصلِ بعد</x:String>
+                                        <x:String>🕌 جماعة في المسجد</x:String>
+                                        <x:String>🏠 صلاة فردية</x:String>
+                                        <x:String>⏳ قضاء</x:String>
+                                        <x:String>🚫 فوتت</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+                            <HorizontalStackLayout Grid.Row="4" Grid.Column="2" Spacing="4" VerticalOptions="Center">
+                                <CheckBox x:Name="IshaSunnahCheck" CheckedChanged="OnTrackerSunnahChanged"/>
+                                <Label Text="السنّة" FontSize="13" VerticalOptions="Center" TextColor="#555555"/>
+                            </HorizontalStackLayout>
+                        </Grid>
+                        
+                        <BoxView HeightRequest="1" Color="#EEEEEE"/>
+                        
+                        <!-- Statistics summary -->
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
+                            <Label x:Name="TrackerStatsLabel" Text="الصلوات المؤداة اليوم: 0 من 5" FontSize="13" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                            <Label x:Name="SunnahStatsLabel" Text="السنن الرواتب: 0" FontSize="13" FontAttributes="Bold" TextColor="#FF9800"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
                 <!-- Qibla Finder Card -->
                 <Frame BackgroundColor="White" CornerRadius="25" Padding="25" HasShadow="True" BorderColor="Transparent">
                     <VerticalStackLayout Spacing="20" HorizontalOptions="Center">

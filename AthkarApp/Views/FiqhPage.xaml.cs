@@ -45,7 +45,11 @@ namespace AthkarApp.Views
 
                 var tapGesture = new TapGestureRecognizer();
                 tapGesture.Tapped += (s, e) => {
-                    ChaptersList.ScrollTo(chapter, position: ScrollToPosition.Start, animate: true);
+                    var firstTopic = chapter.FirstOrDefault();
+                    if (firstTopic != null)
+                    {
+                        ChaptersList.ScrollTo(item: firstTopic, group: chapter, position: ScrollToPosition.Start, animate: true);
+                    }
                 };
                 frame.GestureRecognizers.Add(tapGesture);
 

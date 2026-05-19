@@ -74,13 +74,13 @@
                 </VerticalStackLayout>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
                 <Button Text="🔄 إعادة" 
                         BackgroundColor="#FF9800"
                         TextColor="White"
                         CornerRadius="25"
-                        Padding="20,0"
-                        HeightRequest="50"
+                        Padding="15,0"
+                        HeightRequest="46"
                         Clicked="OnResetClicked"/>
                 
                 <Button x:Name="HapticBtn"
@@ -88,9 +88,18 @@
                         BackgroundColor="#2C6E2C"
                         TextColor="White"
                         CornerRadius="25"
-                        Padding="20,0"
-                        HeightRequest="50"
+                        Padding="15,0"
+                        HeightRequest="46"
                         Clicked="OnToggleHaptic"/>
+
+                <Button x:Name="SoundBtn"
+                        Text="🔊 صوت: مفعّل" 
+                        BackgroundColor="#2C6E2C"
+                        TextColor="White"
+                        CornerRadius="25"
+                        Padding="15,0"
+                        HeightRequest="46"
+                        Clicked="OnToggleSound"/>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>

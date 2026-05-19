@@ -144,6 +144,33 @@ public class AthkarNotificationService : IAthkarNotificationService
         }
         catch { }
 
+        // --- 3. جدولة تذكير الختمة اليومي ---
+        try
+        {
+            bool isKhatmahActive = Preferences.Default.Get("Khatmah_PlanActive", false);
+            bool isKhatmahReminderEnabled = Preferences.Default.Get("Khatmah_PlanReminderEnabled", true);
+            
+            // Cancel any old Khatmah alarm (ID: 8888)
+            _nativeService.CancelNotification(8888);
+
+            if (isKhatmahActive && isKhatmahReminderEnabled)
+            {
+                long ticks = Preferences.Default.Get("Khatmah_PlanReminderTime", TimeSpan.FromHours(21).Ticks);
+                TimeSpan reminderTime = TimeSpan.FromTicks(ticks);
+
+                DateTime todayReminder = DateTime.Today.Add(reminderTime);
+                if (todayReminder < DateTime.Now)
+                {
+                    // If reminder time has already passed today, schedule for tomorrow
+                    todayReminder = todayReminder.AddDays(1);
+                }
+
+                string planName = Preferences.Default.Get("Khatmah_PlanName", "الختمة");
+                _nativeService.ScheduleAthkarAlarm(8888, $"حان وقت ورد {planName} اليومي 📖", "om", todayReminder);
+            }
+        }
+        catch { }
+
         Preferences.Default.Set(LastScheduledDateKey, currentHourStr);
         Preferences.Default.Set(LastSoundIndexKey, (lastIndex + athkarCount) % 1000);
         await Task.CompletedTask;

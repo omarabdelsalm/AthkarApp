@@ -57,24 +57,36 @@ public class AlarmReceiver : BroadcastReceiver
         }
         else
         {
-            // للأذكار: نستخدم الخدمة لتشغيل الصوت بضمان (مثل الأذان)
-            var serviceIntent = new Intent(context, typeof(AthkarForegroundService));
-            serviceIntent.SetAction("PLAY_ATHKAR");
-            serviceIntent.PutExtra("id", id);
-            serviceIntent.PutExtra("text", text);
-            serviceIntent.PutExtra("soundName", soundName);
+            // للأذكار: تشغيل الصوت القصير مباشرة عبر MediaPlayer في خلفية الـ Receiver
+            // هذا يلغي تماماً الحاجة لبدء Foreground Service ويمنع انهيار النظام عند تشغيل الأذكار التذكيرية في الخلفية.
+            Task.Run(() =>
+            {
+                try
+                {
+                    int resId = context.Resources!.GetIdentifier(soundName, "raw", context.PackageName);
+                    if (resId != 0)
+                    {
+                        var player = new global::Android.Media.MediaPlayer();
+                        player.SetAudioAttributes(new global::Android.Media.AudioAttributes.Builder()
+                            .SetUsage(global::Android.Media.AudioUsageKind.Notification)
+                            .SetContentType(global::Android.Media.AudioContentType.Sonification)
+                            .Build());
 
-            try
-            {
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-                    context.StartForegroundService(serviceIntent);
-                else
-                    context.StartService(serviceIntent);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to start service from receiver: {ex.Message}");
-            }
+                        var soundUri = global::Android.Net.Uri.Parse($"android.resource://{context.PackageName}/{resId}");
+                        player.SetDataSource(context, soundUri);
+                        player.Prepared += (s, e) => player.Start();
+                        player.Completion += (s, e) => player.Release();
+                        player.Prepare();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to play short sound directly: {ex.Message}");
+                }
+            });
+
+            // عرض الإشعار مباشرة بشكل صامت لأن الصوت تم تشغيله بالفعل
+            NativeNotificationHelper.ShowAthkarNotification(context, id, text, "silent");
         }
 
         // الحل الجذري: إعادة جدولة الإشعارات لليوم التالي لضمان الاستمرارية

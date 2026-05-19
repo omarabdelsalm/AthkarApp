@@ -44,6 +44,19 @@ public partial class QuranPage : ContentPage
     {
         base.OnAppearing();
         LoadSurahs();
+
+        // تحديث حالة زر المزامنة الشاملة بناءً على حالة التخزين المحلي
+        bool isAllTextSynced = Preferences.Default.Get("Quran_TextSynced", false);
+        if (isAllTextSynced)
+        {
+            SyncButton.Text = "✓ تم تحديث المصحف أوفلاين بالكامل";
+            SyncButton.IsEnabled = false;
+        }
+        else
+        {
+            SyncButton.Text = "مزامنة كافة النصوص (أوفلاين)";
+            SyncButton.IsEnabled = true;
+        }
     }
 
     private async void LoadSurahs()
@@ -52,10 +65,11 @@ public partial class QuranPage : ContentPage
         {
             _allSurahs = await _quranApiService.GetSurahsAsync();
             
+            bool isAllTextSynced = Preferences.Default.Get("Quran_TextSynced", false);
             // تحديث حالة التحميل لكل سورة
             foreach (var surah in _allSurahs)
             {
-                surah.IsDownloaded = _quranDownloadService.IsSurahDownloaded(surah.Number);
+                surah.IsDownloaded = isAllTextSynced || _quranDownloadService.IsSurahDownloaded(surah.Number);
             }
 
             RefreshList();
@@ -130,8 +144,11 @@ public partial class QuranPage : ContentPage
                 });
             });
 
+            // حفظ حالة اكتمال المزامنة الشاملة للنصوص بنجاح في الإعدادات
+            Preferences.Default.Set("Quran_TextSynced", true);
+
             SyncProgressLayout.IsVisible = false;
-            SyncButton.Text = "✓ تم تحديث المصحف أوفلاين";
+            SyncButton.Text = "✓ تم تحديث المصحف أوفلاين بالكامل";
             SyncButton.IsEnabled = false;
             SyncButton.IsVisible = true;
 

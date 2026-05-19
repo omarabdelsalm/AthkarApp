@@ -33,6 +33,7 @@ public partial class SurahDetailPage : ContentPage
         SurahInfoLabel.Text = $"عدد الآيات: {_surah.NumberOfAyahs} | {_surah.RevelationType}";
 
         UpdateDownloadStatus();
+        ApplyReaderTheme(Preferences.Default.Get("Mushaf_ReaderTheme", "sepia"));
         LoadAyahs();
     }
 
@@ -274,6 +275,66 @@ public partial class SurahDetailPage : ContentPage
         if (_isAutoScrolling)
         {
             RunAutoScrollStep();
+        }
+    }
+
+    // ===================== الإعدادات والمظهر =====================
+
+    private async void OnThemeIconTapped(object sender, EventArgs e)
+    {
+        string title = "اختر مظهر المصحف:";
+        
+        string themeSepia = "📜 كلاسيكي (Sepia)";
+        string themeDark = "🌙 مظلم (Dark)";
+        string themeLight = "☀️ حديث (Light)";
+
+        string action = await DisplayActionSheet(title, "إلغاء", null, themeSepia, themeDark, themeLight);
+
+        if (action == themeSepia)
+        {
+            ApplyReaderTheme("sepia");
+        }
+        else if (action == themeDark)
+        {
+            ApplyReaderTheme("dark");
+        }
+        else if (action == themeLight)
+        {
+            ApplyReaderTheme("light");
+        }
+    }
+
+    private void ApplyReaderTheme(string theme)
+    {
+        Preferences.Default.Set("Mushaf_ReaderTheme", theme);
+
+        switch (theme)
+        {
+            case "dark":
+                Resources["ReaderPageBg"] = Color.FromArgb("#121212");
+                Resources["ReaderAyahBg"] = Color.FromArgb("#1E1E1E");
+                Resources["ReaderAyahBorder"] = Color.FromArgb("#2E2E2E");
+                Resources["ReaderAyahText"] = Color.FromArgb("#4CAF50"); // الأخضر المشع
+                Resources["ReaderHeaderBg"] = Color.FromArgb("#1E1E1E");
+                Resources["ReaderButtonsBg"] = Color.FromArgb("#121212");
+                break;
+            case "light":
+                Resources["ReaderPageBg"] = Color.FromArgb("#FFFFFF");
+                Resources["ReaderAyahBg"] = Color.FromArgb("#FFFFFF");
+                Resources["ReaderAyahBorder"] = Color.FromArgb("#E0E0E0");
+                Resources["ReaderAyahText"] = Color.FromArgb("#1A1A1A");
+                Resources["ReaderHeaderBg"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderButtonsBg"] = Color.FromArgb("#F5F5F5");
+                break;
+            case "sepia":
+            default:
+                Resources["ReaderPageBg"] = Color.FromArgb("#F5F5F0");
+                Resources["ReaderAyahBg"] = Color.FromArgb("#FFFFFF");
+                Resources["ReaderAyahBorder"] = Color.FromArgb("#E0DDD5");
+                Resources["ReaderAyahText"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderHeaderBg"] = Color.FromArgb("#2C6E2C");
+                Resources["ReaderButtonsBg"] = Color.FromArgb("#F5F5F0");
+                break;
         }
     }
 }

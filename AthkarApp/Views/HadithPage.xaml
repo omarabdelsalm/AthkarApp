@@ -20,7 +20,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, Auto, *">
         <!-- Header -->
         <Border Grid.Row="0" BackgroundColor="{StaticResource Primary}" HeightRequest="100" Margin="0,0,0,10" StrokeThickness="0">
             <Border.StrokeShape>
@@ -42,8 +42,17 @@
             </VerticalStackLayout>
         </Border>
 
+        <!-- Category Selector -->
+        <ScrollView Grid.Row="1" 
+                    Orientation="Horizontal" 
+                    HorizontalScrollBarVisibility="Never" 
+                    Margin="10,0,10,10"
+                    FlowDirection="RightToLeft">
+            <HorizontalStackLayout x:Name="CategoriesLayout" Spacing="8" Padding="5,0"/>
+        </ScrollView>
+
         <!-- Hadith List -->
-        <CollectionView Grid.Row="1" x:Name="HadithCollectionView">
+        <CollectionView Grid.Row="2" x:Name="HadithCollectionView">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
             </CollectionView.ItemsLayout>
@@ -69,7 +78,18 @@
             </CollectionView.ItemTemplate>
             
             <CollectionView.Footer>
-                <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False" Color="White" Margin="20"/>
+                <VerticalStackLayout Spacing="10" Padding="10">
+                    <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False" Color="{StaticResource Primary}" Margin="10"/>
+                    <Button x:Name="LoadMoreButton"
+                            Text="🔄 تحميل المزيد من الأحاديث"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            CornerRadius="10"
+                            FontAttributes="Bold"
+                            HeightRequest="45"
+                            Clicked="OnLoadMoreClicked"
+                            IsVisible="False"/>
+                </VerticalStackLayout>
             </CollectionView.Footer>
         </CollectionView>
     </Grid>

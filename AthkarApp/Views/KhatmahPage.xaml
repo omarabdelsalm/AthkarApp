@@ -28,7 +28,8 @@
         </Border>
 
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout x:Name="ActivePlanUI" Padding="15" Spacing="25" IsVisible="False">
+            <Grid>
+                <VerticalStackLayout x:Name="ActivePlanUI" Padding="15" Spacing="25" IsVisible="False">
                 
                 <!-- Circular Progress Section -->
                 <Grid HeightRequest="250" WidthRequest="250" HorizontalOptions="Center">
@@ -54,7 +55,7 @@
                         <Label Text="التقدم الإجمالي" FontSize="14" TextColor="#777" HorizontalOptions="Center"/>
                         <HorizontalStackLayout HorizontalOptions="Center" Spacing="5" Margin="0,5">
                             <Label x:Name="PagesReadLabel" Text="0" TextColor="#2C6E2C" FontAttributes="Bold" FontSize="16"/>
-                            <Label Text="من 604 صفحة" TextColor="#777" FontSize="14"/>
+                            <Label x:Name="PagesTotalLabel" Text="من 604 صفحة" TextColor="#777" FontSize="14"/>
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Grid>
@@ -168,6 +169,7 @@
                 
                 <Label Text="* يمكنك تخصيص المدة وكمية الورد اليومي" FontSize="12" TextColor="#999" HorizontalOptions="Center"/>
             </VerticalStackLayout>
+            </Grid>
         </ScrollView>
     </Grid>
 </ContentPage>
