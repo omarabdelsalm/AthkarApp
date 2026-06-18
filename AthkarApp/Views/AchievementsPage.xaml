@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.AchievementsPage"
+             Title="حصاد الأسبوع"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Border BackgroundColor="#143214" StrokeShape="RoundRectangle 20" Padding="20">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="إنجازاتك الكلية" TextColor="#D4AF37" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    <HorizontalStackLayout Spacing="30" HorizontalOptions="Center" Margin="0,10,0,0">
+                        <VerticalStackLayout Spacing="0">
+                            <Label x:Name="TotalQuranLabel" Text="0" TextColor="White" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
+                            <Label Text="صفحة قرآن" TextColor="#AAAAAA" FontSize="12" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                        <BoxView WidthRequest="1" Color="#D4AF37" Opacity="0.5" />
+                        <VerticalStackLayout Spacing="0">
+                            <Label x:Name="TotalTasbeehLabel" Text="0" TextColor="White" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center"/>
+                            <Label Text="تسبيحة" TextColor="#AAAAAA" FontSize="12" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="نشاط آخر 7 أيام" FontSize="18" FontAttributes="Bold" TextColor="#143214" Margin="0,10,0,0"/>
+
+            <!-- قراءة القرآن -->
+            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="15" Stroke="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="القرآن الكريم (صفحة)" FontSize="16" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Grid x:Name="QuranChartGrid" HeightRequest="120" ColumnSpacing="5">
+                        <!-- Bars injected from code-behind -->
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- المسبحة -->
+            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="15" Stroke="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="التسبيح" FontSize="16" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Grid x:Name="TasbeehChartGrid" HeightRequest="120" ColumnSpacing="5">
+                        <!-- Bars injected from code-behind -->
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- الأذكار -->
+            <Border BackgroundColor="White" StrokeShape="RoundRectangle 15" Padding="15" Stroke="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="أذكار الصباح والمساء" FontSize="16" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Grid x:Name="AthkarGrid" RowSpacing="10">
+                        <!-- Icons injected from code-behind -->
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

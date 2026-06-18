@@ -166,14 +166,48 @@ public class AthkarNotificationService : IAthkarNotificationService
                 }
 
                 string planName = Preferences.Default.Get("Khatmah_PlanName", "الختمة");
-                _nativeService.ScheduleAthkarAlarm(8888, $"حان وقت ورد {planName} اليومي 📖", "om", todayReminder);
+                // رسالة محفزة لتذكير الختمة
+                _nativeService.ScheduleAthkarAlarm(8888, $"لم تقرأ وِردك اليوم من {planName}، الجنة تناديك 🕊️", "om", todayReminder);
             }
+        }
+        catch { }
+
+        // --- 4. الإشعارات الذكية والسياقية (Smart Contextual Notifications) ---
+        try
+        {
+            // 4.1 تنبيه سورة الكهف يوم الجمعة (9 صباحاً)
+            DateTime nextFriday = GetNextDayOfWeek(DayOfWeek.Friday, 9, 0);
+            _nativeService.ScheduleAthkarAlarm(3001, "🌅 لا تنسَ قراءة سورة الكهف والصلاة على النبي ﷺ في يوم الجمعة.", "om", nextFriday);
+
+            // 4.2 تنبيه صيام الإثنين والخميس (يُرسل الأحد والأربعاء 8 مساءً)
+            DateTime nextSunday = GetNextDayOfWeek(DayOfWeek.Sunday, 20, 0);
+            DateTime nextWednesday = GetNextDayOfWeek(DayOfWeek.Wednesday, 20, 0);
+            _nativeService.ScheduleAthkarAlarm(3002, "🌙 غداً الإثنين ترفع الأعمال، هل نويت الصيام؟", "om", nextSunday);
+            _nativeService.ScheduleAthkarAlarm(3003, "🌙 غداً الخميس ترفع الأعمال، هل نويت الصيام؟", "om", nextWednesday);
+
+            // 4.3 أذكار النوم (الساعة 10:30 مساءً)
+            DateTime sleepTime = new DateTime(now.Year, now.Month, now.Day, 22, 30, 0);
+            if (sleepTime < now) sleepTime = sleepTime.AddDays(1);
+            _nativeService.ScheduleAthkarAlarm(3004, "💤 لا تنسَ أذكار النوم وقراءة آية الكرسي قبل نومك.", "om", sleepTime);
         }
         catch { }
 
         Preferences.Default.Set(LastScheduledDateKey, currentHourStr);
         Preferences.Default.Set(LastSoundIndexKey, (lastIndex + athkarCount) % 1000);
         await Task.CompletedTask;
+    }
+
+    private DateTime GetNextDayOfWeek(DayOfWeek day, int hour, int minute)
+    {
+        DateTime now = DateTime.Now;
+        DateTime next = new DateTime(now.Year, now.Month, now.Day, hour, minute, 0);
+        
+        if (next.DayOfWeek == day && next > now) return next;
+        
+        int daysToAdd = ((int)day - (int)next.DayOfWeek + 7) % 7;
+        if (daysToAdd == 0) daysToAdd = 7;
+        
+        return next.AddDays(daysToAdd);
     }
 
     public async Task ShowNotificationPreviewAsync(string soundName)

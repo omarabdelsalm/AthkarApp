@@ -45,6 +45,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IStreakService, StreakService>();
         builder.Services.AddSingleton<IQuranNormalizationService, QuranNormalizationService>();
         builder.Services.AddSingleton<IHifzAssessmentService, HifzAssessmentService>();
+        builder.Services.AddSingleton<AchievementsService>();
         builder.Services.AddSingleton(AudioManager.Current);
 
         builder.Services.AddHttpClient<IQuranApiService, QuranApiService>(client =>
@@ -63,8 +64,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<QuranPage>();
         builder.Services.AddSingleton<MushafPage>();
         builder.Services.AddTransient<SurahDetailPage>();
+        builder.Services.AddTransient<AchievementsPage>();
         builder.Services.AddTransient<SettingsPage>();
-        builder.Services.AddSingleton<TasbeehPage>();
+        builder.Services.AddTransient<TasbeehPage>();
         builder.Services.AddSingleton<PrayerPage>();
         builder.Services.AddSingleton<KhatmahPage>();
         builder.Services.AddSingleton<SiraPage>();
@@ -72,6 +74,11 @@ public static class MauiProgram
         builder.Services.AddSingleton<ProphetsPage>();
         builder.Services.AddSingleton<MushafTeacherPage>();
         builder.Services.AddTransient<ProphetDetailPage>();
+        
+        // Shared Khatmah
+        builder.Services.AddSingleton<SharedKhatmahService>();
+        builder.Services.AddTransient<SharedKhatmahListPage>();
+        builder.Services.AddTransient<SharedKhatmahDetailsPage>();
 
         return builder.Build();
     }

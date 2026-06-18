@@ -33,6 +33,10 @@
             android:textStyle="bold"
             android:singleLine="true"
             android:ellipsize="end"
+            android:shadowColor="#66000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
             android:fontFamily="sans-serif-medium" />
 
         <!-- التصنيف -->
@@ -67,6 +71,10 @@
         android:textSize="13sp"
         android:lineSpacingExtra="3dp"
         android:gravity="center"
+        android:shadowColor="#66000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
         android:fontFamily="sans-serif" />
 
     <!-- نص ذكر فرعي -->

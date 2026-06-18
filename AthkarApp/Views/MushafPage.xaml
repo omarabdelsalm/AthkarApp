@@ -53,6 +53,11 @@
                                        Spacing="8"
                                        VerticalOptions="Center">
                     
+                    <HorizontalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Button Text="A+" Clicked="OnIncreaseFontSize" BackgroundColor="Transparent" TextColor="White" FontSize="14" Padding="0" WidthRequest="30"/>
+                        <Button Text="A-" Clicked="OnDecreaseFontSize" BackgroundColor="Transparent" TextColor="White" FontSize="12" Padding="0" WidthRequest="30"/>
+                    </HorizontalStackLayout>
+
                     <Label x:Name="ThemeIconLabel" 
                            Text="🎨" 
                            FontSize="18" 
@@ -164,11 +169,11 @@
                                        LineBreakMode="WordWrap">
                                     <Label.FormattedText>
                                         <FormattedString>
-                                            <Span Text="{Binding Text}" FontSize="24"/>
+                                            <Span Text="{Binding Text}" FontSize="{DynamicResource MushafFontSize}" FontFamily="UthmanicHafs"/>
                                             <Span Text=" "/>
                                             <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
                                                   TextColor="#2C6E2C"
-                                                  FontSize="16"/>
+                                                  FontSize="16" FontFamily="UthmanicHafs"/>
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
@@ -227,11 +232,11 @@
                                                    LineBreakMode="WordWrap">
                                                 <Label.FormattedText>
                                                     <FormattedString>
-                                                        <Span Text="{Binding Text}" FontSize="24"/>
+                                                        <Span Text="{Binding Text}" FontSize="{DynamicResource MushafFontSize}" FontFamily="UthmanicHafs"/>
                                                         <Span Text=" "/>
                                                         <Span Text="{Binding NumberInSurah, StringFormat='﴿{0}﴾'}"
                                                               TextColor="#2C6E2C"
-                                                              FontSize="16"/>
+                                                              FontSize="16" FontFamily="UthmanicHafs"/>
                                                     </FormattedString>
                                                 </Label.FormattedText>
                                             </Label>

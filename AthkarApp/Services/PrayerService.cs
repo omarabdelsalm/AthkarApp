@@ -186,7 +186,7 @@ public class PrayerService : IPrayerService
                 }
 
                 // 2. أذان الصلاة الفعلي
-                string soundToPlay = p.Name == "Fajr" ? "elfagr" : AdhanSoundName;
+                string soundToPlay = AdhanSoundName; // تم توحيد الصوت لعدم وجود ملف elfagr في المشروع حالياً
                 nativeService.ScheduleAdhanAlarm(p.Id, p.Ar, soundToPlay, notifyTime);
             }
         }

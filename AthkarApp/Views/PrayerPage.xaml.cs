@@ -354,15 +354,23 @@ public partial class PrayerPage : ContentPage
     {
 #if ANDROID
         var context = Android.App.Application.Context;
+        var appWidgetManager = Android.Appwidget.AppWidgetManager.GetInstance(context);
+
+        // Update PrayerWidgetProvider
         var intent = new Android.Content.Intent(context, typeof(AthkarApp.Platforms.Android.PrayerWidgetProvider));
         intent.SetAction(Android.Appwidget.AppWidgetManager.ActionAppwidgetUpdate);
-        
-        var appWidgetManager = Android.Appwidget.AppWidgetManager.GetInstance(context);
         var componentName = new Android.Content.ComponentName(context, Java.Lang.Class.FromType(typeof(AthkarApp.Platforms.Android.PrayerWidgetProvider)));
         int[] appWidgetIds = appWidgetManager.GetAppWidgetIds(componentName);
-        
         intent.PutExtra(Android.Appwidget.AppWidgetManager.ExtraAppwidgetIds, appWidgetIds);
         context.SendBroadcast(intent);
+
+        // Update UnifiedWidgetProvider
+        var intent2 = new Android.Content.Intent(context, typeof(AthkarApp.Platforms.Android.UnifiedWidgetProvider));
+        intent2.SetAction(Android.Appwidget.AppWidgetManager.ActionAppwidgetUpdate);
+        var componentName2 = new Android.Content.ComponentName(context, Java.Lang.Class.FromType(typeof(AthkarApp.Platforms.Android.UnifiedWidgetProvider)));
+        int[] appWidgetIds2 = appWidgetManager.GetAppWidgetIds(componentName2);
+        intent2.PutExtra(Android.Appwidget.AppWidgetManager.ExtraAppwidgetIds, appWidgetIds2);
+        context.SendBroadcast(intent2);
 #endif
     }
 
@@ -386,7 +394,11 @@ public partial class PrayerPage : ContentPage
     {
         try
         {
-            if (!Compass.Default.IsSupported) return;
+            if (!Compass.Default.IsSupported)
+            {
+                QiblaAngleLabel.Text = "تحديد القبلة غير مدعوم (لا توجد بوصلة)";
+                return;
+            }
             if (Compass.Default.IsMonitoring) return;
 
             Compass.Default.ReadingChanged += OnCompassReadingChanged;

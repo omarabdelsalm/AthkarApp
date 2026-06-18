@@ -66,6 +66,7 @@ public partial class SettingsPage : ContentPage
         SwitchAh.IsToggled = Preferences.Default.Get("Sound_ah_Enabled", true);
         SwitchMa.IsToggled = Preferences.Default.Get("Sound_ma_Enabled", true);
         DstSwitch.IsToggled = Preferences.Default.Get("ManualDstEnabled", false);
+        DarkModeSwitch.IsToggled = Preferences.Default.Get("IsDarkMode", false);
 
         // تحميل قائمة القراء
         var reciters = QuranReciter.GetPopularReciters();
@@ -189,6 +190,38 @@ public partial class SettingsPage : ContentPage
         if (data != null)
         {
             await _prayerService.ScheduleAdhanNotificationsAsync(data);
+        }
+    }
+
+    private void OnDarkModeToggled(object sender, ToggledEventArgs e)
+    {
+        if (_isInitializing) return;
+
+        Preferences.Default.Set("IsDarkMode", e.Value);
+        Application.Current.UserAppTheme = e.Value ? AppTheme.Dark : AppTheme.Light;
+    }
+
+    private async void OnAddUnifiedWidgetClicked(object sender, EventArgs e)
+    {
+        if (WidgetHelper.IsPinSupported())
+        {
+            WidgetHelper.RequestPinUnifiedWidget();
+        }
+        else
+        {
+            await DisplayAlert("غير مدعوم", "جهازك أو إصدار الأندرويد لا يدعم إضافة الويدجت تلقائياً من داخل التطبيق. يرجى إضافته يدوياً بالضغط المطول على الشاشة الرئيسية.", "حسناً");
+        }
+    }
+
+    private async void OnAddAthkarWidgetClicked(object sender, EventArgs e)
+    {
+        if (WidgetHelper.IsPinSupported())
+        {
+            WidgetHelper.RequestPinAthkarWidget();
+        }
+        else
+        {
+            await DisplayAlert("غير مدعوم", "جهازك أو إصدار الأندرويد لا يدعم إضافة الويدجت تلقائياً من داخل التطبيق. يرجى إضافته يدوياً بالضغط المطول على الشاشة الرئيسية.", "حسناً");
         }
     }
 }

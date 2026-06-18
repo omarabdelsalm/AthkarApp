@@ -20,11 +20,14 @@ public partial class MushafPage : ContentPage
     private const string BookmarkPageKey = "Mushaf_BookmarkPage";
 
     private readonly ObservableCollection<PageData> _carouselPages = new();
+    private readonly AchievementsService _achievementsService;
+    private HashSet<int> _readPagesToday = new HashSet<int>();
 
-    public MushafPage(IQuranApiService quranApiService)
+    public MushafPage(IQuranApiService quranApiService, AchievementsService achievementsService)
     {
         InitializeComponent();
         _quranApiService = quranApiService;
+        _achievementsService = achievementsService;
 
         // تهيئة 604 صفحة فارغة لتسريع الأداء ومنع التعليق
         for (int i = 1; i <= 604; i++)
@@ -35,9 +38,36 @@ public partial class MushafPage : ContentPage
         SwipeModeView.ItemsSource = _carouselPages;
 
         ApplyReaderTheme(Preferences.Default.Get("Mushaf_ReaderTheme", "sepia"));
+        Resources["MushafFontSize"] = Preferences.Default.Get("MushafFontSize", 24.0);
 
         int startPage = Preferences.Default.Get(LastReadPageKey, 1);
         LoadScrollPage(startPage);
+    }
+
+    private void OnIncreaseFontSize(object sender, EventArgs e)
+    {
+        if (Resources.TryGetValue("MushafFontSize", out var value) && value is double size)
+        {
+            if (size < 40)
+            {
+                size += 2;
+                Resources["MushafFontSize"] = size;
+                Preferences.Default.Set("MushafFontSize", size);
+            }
+        }
+    }
+
+    private void OnDecreaseFontSize(object sender, EventArgs e)
+    {
+        if (Resources.TryGetValue("MushafFontSize", out var value) && value is double size)
+        {
+            if (size > 14)
+            {
+                size -= 2;
+                Resources["MushafFontSize"] = size;
+                Preferences.Default.Set("MushafFontSize", size);
+            }
+        }
     }
 
     // ===================== تحميل الصفحة (وضع التمرير) =====================
@@ -337,6 +367,13 @@ public partial class MushafPage : ContentPage
 
         // حفظ مكان التوقف تلقائياً
         Preferences.Default.Set(LastReadPageKey, _currentPage);
+
+        // Track achievement
+        if (!_readPagesToday.Contains(_currentPage))
+        {
+            _readPagesToday.Add(_currentPage);
+            _achievementsService.AddQuranPage();
+        }
 
         // التحقق من إنجاز الورد اليومي للختمة
         CheckKhatmahProgress();

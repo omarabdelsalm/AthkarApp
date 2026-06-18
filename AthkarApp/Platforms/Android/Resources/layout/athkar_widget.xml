@@ -4,52 +4,39 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_background"
-    android:padding="12dp"
+    android:padding="16dp"
     android:gravity="center">
 
     <TextView
-        android:id="@+id/widget_title_label"
+        android:id="@+id/widget_athkar_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="الصلاة القادمة"
+        android:text="آية اليوم"
         android:textColor="#D4AF37"
-        android:textSize="14sp"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/widget_prayer_name"
+        android:id="@+id/widget_athkar_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="الفجر"
+        android:text="وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ"
         android:textColor="#FFFFFF"
-        android:textSize="28sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:shadowColor="#99000000"
         android:shadowDx="1"
         android:shadowDy="2"
         android:shadowRadius="4"
-        android:layout_marginTop="4dp" />
+        android:gravity="center"
+        android:layout_marginTop="8dp" />
 
     <TextView
-        android:id="@+id/widget_prayer_time"
+        android:id="@+id/widget_athkar_ref"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="04:30 AM"
-        android:textColor="#EEFFEE"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:shadowColor="#99000000"
-        android:shadowDx="1"
-        android:shadowDy="2"
-        android:shadowRadius="4"
-        android:layout_marginTop="2dp" />
-
-    <TextView
-        android:id="@+id/widget_countdown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="متبقي: 01:20:00"
-        android:textColor="#AAAAAA"
+        android:text="سورة الذاريات"
+        android:textColor="#CCFFCC"
         android:textSize="12sp"
         android:layout_marginTop="4dp" />
 

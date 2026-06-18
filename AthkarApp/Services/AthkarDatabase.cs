@@ -66,7 +66,7 @@ public class AthkarDatabase
         
         // Version 2 has enriched Athkar quantity and counts
         int currentVersion = Preferences.Default.Get("Athkar_SeededVersion", 0);
-        if (currentVersion >= 2)
+        if (currentVersion >= 3)
         {
             return;
         }
@@ -87,7 +87,7 @@ public class AthkarDatabase
             }
         }
 
-        Preferences.Default.Set("Athkar_SeededVersion", 2);
+        Preferences.Default.Set("Athkar_SeededVersion", 3);
     }
 
     public async Task SaveCounterStateAsync(CounterState state)

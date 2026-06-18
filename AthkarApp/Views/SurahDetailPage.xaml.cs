@@ -18,7 +18,6 @@ public partial class SurahDetailPage : ContentPage
     private bool _isPlaying;
     public System.Windows.Input.ICommand PlayAyahCommand { get; }
 
-    public ObservableCollection<Ayah> Ayahs { get; set; } = new();
 
     public SurahDetailPage(IQuranApiService quranApiService, IQuranDownloadService quranDownloadService, Surah surah)
     {
@@ -53,9 +52,7 @@ public partial class SurahDetailPage : ContentPage
         try
         {
             var ayahs = await _quranApiService.GetAyahsAsync(_surah.Number);
-            Ayahs.Clear();
-            foreach (var ayah in ayahs)
-                Ayahs.Add(ayah);
+            AyahsCollectionView.ItemsSource = ayahs;
         }
         catch (Exception ex)
         {
@@ -255,22 +252,24 @@ public partial class SurahDetailPage : ContentPage
     {
         if (!_isAutoScrolling) return;
 
-        // تحرك بكسل بكسل بدلاً من الانتقال بين الآيات
-        double scrollStep = _scrollSpeed * 0.8; 
-        double currentY = AyahsScrollView.ScrollY;
-        double maxY = AyahsScrollView.ContentSize.Height - AyahsScrollView.Height;
-
-        if (currentY >= maxY - 5)
+        var ayahs = AyahsCollectionView.ItemsSource as System.Collections.Generic.IEnumerable<Ayah>;
+        if (ayahs == null) return;
+        
+        int count = ayahs.Count();
+        if (_currentIndex >= count)
         {
             StopAutoScroll();
             return;
         }
 
-        // التحريك السلس
-        await AyahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
+        // Scroll to the next Ayah
+        AyahsCollectionView.ScrollTo(_currentIndex, position: ScrollToPosition.Center, animate: true);
+        _currentIndex++;
 
-        // تكرار الخطوة بسرعة لضمان النعومة
-        await Task.Delay(30);
+        // Wait based on speed (slower speed = longer delay between Ayahs)
+        // 1x = 3.5s per Ayah, 2x = 2.5s, 3x = 1.5s
+        int delayMs = 3500 - ((_scrollSpeed - 1) * 1000);
+        await Task.Delay(delayMs);
 
         if (_isAutoScrolling)
         {

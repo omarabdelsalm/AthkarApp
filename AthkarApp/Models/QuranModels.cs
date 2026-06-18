@@ -73,8 +73,15 @@ public class Ayah
     [JsonPropertyName("number")]
     public int Number { get; set; }
 
+    private string _text;
+
     [JsonPropertyName("text")]
-    public string Text { get; set; }
+    public string Text 
+    { 
+        get => _text; 
+        // Remove 'Sifr Mustadir' (\u06DF) and 'Sifr Mustatil' (\u06E0) to fix rendering issues with the font
+        set => _text = value?.Replace("\u06DF", "")?.Replace("\u06E0", ""); 
+    }
 
     [JsonPropertyName("numberInSurah")]
     public int NumberInSurah { get; set; }

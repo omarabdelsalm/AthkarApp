@@ -8,23 +8,27 @@ public partial class AthkarPage : ContentPage
     private readonly AthkarService _athkarService;
     private readonly ISoundService _soundService;
     private readonly IStreakService _streakService;
+    private readonly AchievementsService _achievementsService;
     private List<AthkarCategory> _categories;
     private List<ThikrItem> _currentAthkarList;
     private int _currentIndex;
     private int _currentCount;
 
-    public AthkarPage(AthkarService athkarService, ISoundService soundService, IStreakService streakService)
+    public AthkarPage(AthkarService athkarService, ISoundService soundService, IStreakService streakService, AchievementsService achievementsService)
     {
         InitializeComponent();
         _athkarService = athkarService;
         _soundService = soundService;
         _streakService = streakService;
+        _achievementsService = achievementsService;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         
+        AthkarLabel.FontSize = Preferences.Default.Get("AthkarFontSize", 22.0);
+
         await LoadCategoriesAsync();
 
         var streakInfo = await _streakService.CheckAndUpdateStreakAsync();
@@ -33,6 +37,26 @@ public partial class AthkarPage : ContentPage
         if (streakInfo.IsNewDay)
         {
             await DisplayAlert("سلسلة الأذكار 🔥", streakInfo.Message, "الحمد لله");
+        }
+    }
+
+    private void OnIncreaseFontSize(object sender, EventArgs e)
+    {
+        double currentSize = AthkarLabel.FontSize;
+        if (currentSize < 40)
+        {
+            AthkarLabel.FontSize = currentSize + 2;
+            Preferences.Default.Set("AthkarFontSize", AthkarLabel.FontSize);
+        }
+    }
+
+    private void OnDecreaseFontSize(object sender, EventArgs e)
+    {
+        double currentSize = AthkarLabel.FontSize;
+        if (currentSize > 14)
+        {
+            AthkarLabel.FontSize = currentSize - 2;
+            Preferences.Default.Set("AthkarFontSize", AthkarLabel.FontSize);
         }
     }
 
@@ -72,7 +96,15 @@ public partial class AthkarPage : ContentPage
             CounterLabel.Text = _currentCount.ToString();
             ProgressLabel.Text = $"{_currentIndex + 1} / {_currentAthkarList.Count}";
             
-            NextButton.Text = (_currentIndex == _currentAthkarList.Count - 1) ? "العودة للبداية ↺" : "الذكر التالي ➔";
+            bool isLastItem = _currentIndex == _currentAthkarList.Count - 1;
+            bool isSabahOrMasaa = CategoryTitleLabel.Text == "أذكار الصباح" || CategoryTitleLabel.Text == "أذكار المساء";
+            
+            if (isLastItem && isSabahOrMasaa)
+                NextButton.Text = "إتمام الورد ✅";
+            else if (isLastItem)
+                NextButton.Text = "العودة للبداية ↺";
+            else
+                NextButton.Text = "الذكر التالي ➔";
         }
         else
         {
@@ -141,6 +173,14 @@ public partial class AthkarPage : ContentPage
         {
             if (_currentAthkarList != null && _currentAthkarList.Any())
             {
+                if (NextButton.Text == "إتمام الورد ✅")
+                {
+                    _achievementsService.MarkAthkarCompleted(CategoryTitleLabel.Text);
+                    await DisplayAlert("تهانينا", $"تقبل الله منك قراءة {CategoryTitleLabel.Text}.", "آمين");
+                    OnBackToSelection(null, null);
+                    return;
+                }
+
                 _currentIndex = (_currentIndex + 1) % _currentAthkarList.Count;
                 _currentCount = 0;
                 
@@ -165,13 +205,63 @@ public partial class AthkarPage : ContentPage
         if (_currentAthkarList != null && _currentIndex < _currentAthkarList.Count)
         {
             var item = _currentAthkarList[_currentIndex];
-            string shareText = $"🌟 {item.Text}\n\n📖 {item.Reference}\n\nتمت المشاركة من تطبيق \"أذكار\"";
             
-            await Share.Default.RequestAsync(new ShareTextRequest
+            string action = await DisplayActionSheet("اختر طريقة المشاركة", "إلغاء", null, "مشاركة كصورة (بطاقة)", "مشاركة كنص");
+            
+            if (action == "مشاركة كنص")
             {
-                Title = "مشاركة ذكر",
-                Text = shareText
+                string shareText = $"🌟 {item.Text}\n\n📖 {item.Reference}\n\nتمت المشاركة من تطبيق \"أذكار\"";
+                await Share.Default.RequestAsync(new ShareTextRequest
+                {
+                    Title = "مشاركة ذكر",
+                    Text = shareText
+                });
+            }
+            else if (action == "مشاركة كصورة (بطاقة)")
+            {
+                await ShareAsImageAsync(item);
+            }
+        }
+    }
+
+    private async Task ShareAsImageAsync(ThikrItem item)
+    {
+        try
+        {
+            await CommunityToolkit.Maui.Alerts.Toast.Make("جارٍ المعالجة...").Show();
+
+            // إعداد النص في البطاقة المخفية (في حال تم دعمها لاحقاً)
+            ShareAthkarLabel.Text = item.Text;
+            ShareReferenceLabel.Text = item.Reference;
+
+            // كحل بديل وموثوق، نلتقط الشاشة الحالية التي تحتوي على الذكر وتصميمه الجميل
+            var screenshot = await Microsoft.Maui.Media.Screenshot.Default.CaptureAsync();
+            
+            if (screenshot == null)
+            {
+                await DisplayAlert("خطأ", "لم نتمكن من توليد الصورة.", "حسناً");
+                return;
+            }
+
+            // حفظ الصورة في ملف مؤقت
+            string tempFilePath = Path.Combine(FileSystem.CacheDirectory, $"share_{Guid.NewGuid():N}.png");
+            
+            using (var fileStream = File.Create(tempFilePath))
+            {
+                var stream = await screenshot.OpenReadAsync();
+                await stream.CopyToAsync(fileStream);
+            }
+
+            // مشاركة الملف
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "مشاركة بطاقة دعوية",
+                File = new ShareFile(tempFilePath)
             });
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("خطأ", $"فشل توليد البطاقة: {ex.Message}", "حسناً");
         }
     }
 

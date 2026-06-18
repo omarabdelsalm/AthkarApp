@@ -29,6 +29,10 @@
         android:textStyle="bold"
         android:singleLine="true"
         android:ellipsize="end"
+        android:shadowColor="#66000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
         android:fontFamily="sans-serif-medium" />
 
     <!-- النص المختصر -->
@@ -45,6 +49,10 @@
         android:textSize="12sp"
         android:maxLines="2"
         android:ellipsize="end"
+        android:shadowColor="#66000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
         android:fontFamily="sans-serif" />
 
 </RelativeLayout>

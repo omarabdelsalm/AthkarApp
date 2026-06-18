@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using static Android.OS.PowerManager;
+using Android.Appwidget;
 using Debug = System.Diagnostics.Debug;
 
 namespace AthkarApp.Services
@@ -24,6 +25,7 @@ namespace AthkarApp.Services
         private AudioManager? _audioManager;
         private PowerManager.WakeLock? _wakeLock;
         private MediaSession? _mediaSession; // ✅ كائن الجلسة الصوتية لمنع الانهيار في أندرويد 14
+        private System.Threading.Timer? _widgetTimer;
 
         private const string ServiceChannelId = "athkar_foreground_channel";
         private const string AdhanChannelId = "athkar_adhan_channel";
@@ -200,10 +202,29 @@ namespace AthkarApp.Services
                 // Heavy resource loads / UI/layout work must NOT run on the service's main thread.
                 // If you have large bitmap decoding, database migrations, or other CPU work at app startup,
                 // move them to background tasks from your Activity/App initialization code.
+                
+                // Start widget update loop every minute
+                _widgetTimer = new System.Threading.Timer(UpdateWidgets, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             }
             catch 
             {
             }
+        }
+
+        private void UpdateWidgets(object? state)
+        {
+            try
+            {
+                var intent = new Intent(this, typeof(PrayerWidgetProvider));
+                intent.SetAction("android.appwidget.action.APPWIDGET_UPDATE");
+                var ids = AppWidgetManager.GetInstance(this)?.GetAppWidgetIds(new ComponentName(this, Java.Lang.Class.FromType(typeof(PrayerWidgetProvider))));
+                if (ids != null && ids.Length > 0)
+                {
+                    intent.PutExtra("appWidgetIds", ids);
+                    SendBroadcast(intent);
+                }
+            }
+            catch { }
         }
 
         private void CreateNotificationChannels()
@@ -369,7 +390,7 @@ namespace AthkarApp.Services
 
                     if (resId == 0)
                     {
-                        resId = Resources.GetIdentifier("default_adhan", "raw", PackageName);
+                        resId = Resources.GetIdentifier("adhan", "raw", PackageName);
                         if (resId == 0)
                         {
                             ReleaseWakeLock();

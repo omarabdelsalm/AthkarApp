@@ -8,16 +8,18 @@ public partial class TasbeehPage : ContentPage
     private bool _isHapticEnabled = true;
     private bool _isSoundEnabled = true;
     private readonly ISoundService _soundService;
+    private readonly AchievementsService _achievementsService;
 
     private const string GlobalTotalKey = "tasbeeh_global_total";
     private const string BestSessionKey = "tasbeeh_best_session";
     private const string HapticEnabledKey = "tasbeeh_haptic_enabled";
     private const string SoundEnabledKey = "tasbeeh_sound_enabled";
 
-    public TasbeehPage(ISoundService soundService)
+    public TasbeehPage(ISoundService soundService, AchievementsService achievementsService)
     {
         InitializeComponent();
         _soundService = soundService;
+        _achievementsService = achievementsService;
         LoadStats();
     }
 
@@ -44,6 +46,9 @@ public partial class TasbeehPage : ContentPage
         int globalTotal = Preferences.Default.Get(GlobalTotalKey, 0) + 1;
         Preferences.Default.Set(GlobalTotalKey, globalTotal);
         TotalLabel.Text = globalTotal.ToString();
+
+        // تحديث إنجازات اليوم
+        _achievementsService.AddTasbeeh(1);
 
         // تحديث أفضل جلسة
         int bestSession = Preferences.Default.Get(BestSessionKey, 0);

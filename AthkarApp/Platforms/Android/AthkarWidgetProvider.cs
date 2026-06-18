@@ -1,0 +1,48 @@
+using Android.App;
+using Android.Appwidget;
+using Android.Content;
+using Android.Widget;
+using System;
+
+namespace AthkarApp.Platforms.Android
+{
+    [BroadcastReceiver(Exported = true, Label = "آية وذكر")]
+    [IntentFilter(new string[] { "android.appwidget.action.APPWIDGET_UPDATE" })]
+    [MetaData("android.appwidget.provider", Resource = "@xml/athkar_widget_info")]
+    public class AthkarWidgetProvider : AppWidgetProvider
+    {
+        private static readonly string[] _athkarList = new[]
+        {
+            "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا",
+            "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ العَظِيمِ",
+            "لا حَوْلَ وَلا قُوَّةَ إِلَّا بِاللَّهِ",
+            "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ",
+            "أَسْتَغْفِرُ اللَّهَ العَظِيمَ الَّذِي لاَ إِلَهَ إِلاَّ هُوَ الحَيُّ القَيُّومُ وَأَتُوبُ إِلَيْهِ",
+            "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالإِسْلامِ دِينًا، وَبِمُحَمَّدٍ نَبِيًّا",
+            "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ"
+        };
+
+        public override void OnUpdate(Context? context, AppWidgetManager? appWidgetManager, int[]? appWidgetIds)
+        {
+            if (context == null || appWidgetManager == null || appWidgetIds == null)
+                return;
+
+            string selectedThikr = _athkarList[new Random().Next(_athkarList.Length)];
+
+            foreach (int widgetId in appWidgetIds)
+            {
+                RemoteViews views = new RemoteViews(context.PackageName, Resource.Layout.athkar_widget);
+
+                views.SetTextViewText(Resource.Id.widget_athkar_title, "ذكر اليوم");
+                views.SetTextViewText(Resource.Id.widget_athkar_content, selectedThikr);
+                views.SetTextViewText(Resource.Id.widget_athkar_ref, "كررها لتنال الأجر");
+
+                Intent intent = new Intent(context, typeof(MainActivity));
+                PendingIntent pendingIntent = PendingIntent.GetActivity(context, 0, intent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+                views.SetOnClickPendingIntent(Resource.Id.widget_athkar_content, pendingIntent);
+
+                appWidgetManager.UpdateAppWidget(widgetId, views);
+            }
+        }
+    }
+}

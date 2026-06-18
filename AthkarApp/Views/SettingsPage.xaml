@@ -57,6 +57,57 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="المظهر العام" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="#2C6E2C" 
+                           HorizontalOptions="Center" />
+
+                    <Grid ColumnDefinitions="*, Auto" Padding="0,5">
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="تفعيل الوضع الليلي (Dark Mode)" FontSize="16" TextColor="#333333" FontAttributes="Bold"/>
+                            <Label Text="تحويل التطبيق إلى الألوان الداكنة المريحة للعين" FontSize="12" TextColor="#666666"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" x:Name="DarkModeSwitch" OnColor="#2C6E2C" Toggled="OnDarkModeToggled"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- إعدادات الويدجت -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="تطبيقات الشاشة الرئيسية (الويدجت)" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="#2C6E2C" 
+                           HorizontalOptions="Center" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Label Text="أضف الويدجت المفضلة لديك إلى شاشة هاتفك الرئيسية بنقرة واحدة (للأجهزة المدعومة أندرويد 8+):" 
+                           FontSize="14" 
+                           TextColor="#666666" 
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,0,0,10"/>
+
+                    <Button Text="إضافة الوديجت الشامل (مواقيت وأذكار)" 
+                            BackgroundColor="#2C6E2C" 
+                            TextColor="White" 
+                            CornerRadius="10"
+                            FontSize="14"
+                            Clicked="OnAddUnifiedWidgetClicked" />
+
+                    <Button Text="إضافة ويدجت الأذكار فقط" 
+                            BackgroundColor="#D4AF37" 
+                            TextColor="Black" 
+                            CornerRadius="10"
+                            FontSize="14"
+                            Clicked="OnAddAthkarWidgetClicked" />
+                </VerticalStackLayout>
+            </Frame>
+
             <!-- إعدادات مواقيت الصلاة -->
             <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True">
                 <VerticalStackLayout Spacing="15">

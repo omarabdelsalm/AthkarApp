@@ -10,6 +10,9 @@ namespace AthkarApp
             InitializeComponent();
             _notificationService = notificationService;
             _prayerService = prayerService;
+
+            bool isDarkMode = Preferences.Default.Get("IsDarkMode", false);
+            Application.Current.UserAppTheme = isDarkMode ? AppTheme.Dark : AppTheme.Light;
         }
 
         protected override void OnStart()
