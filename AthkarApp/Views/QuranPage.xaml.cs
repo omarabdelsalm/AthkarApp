@@ -116,13 +116,13 @@ public partial class QuranPage : ContentPage
     {
         if (sender is BindableObject bo && bo.BindingContext is Surah selectedSurah)
         {
-            var detailPage = new SurahDetailPage(_quranApiService, _quranDownloadService, selectedSurah);
-            await Navigation.PushAsync(detailPage);
+            var uthmaniPage = new QuranUthmaniPage(_quranApiService) { SurahNumber = selectedSurah.Number };
+            await Navigation.PushAsync(uthmaniPage);
         }
         else if (sender is VisualElement ve && ve.BindingContext is Surah s) // للهواتف التي تستخدم التاب جشر
         {
-            var detailPage = new SurahDetailPage(_quranApiService, _quranDownloadService, s);
-            await Navigation.PushAsync(detailPage);
+            var uthmaniPage = new QuranUthmaniPage(_quranApiService) { SurahNumber = s.Number };
+            await Navigation.PushAsync(uthmaniPage);
         }
     }
 

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.UserGuidePage"
+             Title="دليل الاستخدام"
+             BackgroundColor="#E8F0F8"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <Image Source="appicon.png" HeightRequest="80" WidthRequest="80" HorizontalOptions="Center" Margin="0,0,0,10">
+                <Image.Source>
+                    <FontImageSource FontFamily="MaterialIcons" Glyph="help_outline" Color="#2C6E2C" Size="80" />
+                </Image.Source>
+            </Image>
+            
+            <Label Text="مرحباً بك في دليل استخدام تطبيق أذكار" 
+                   FontSize="22" 
+                   FontAttributes="Bold" 
+                   TextColor="#143214" 
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+
+            <Label Text="في هذه الصفحة ستجد شرحاً مبسطاً لأهم ميزات التطبيق وكيفية الاستفادة منها بأفضل شكل." 
+                   FontSize="14" 
+                   TextColor="#555555" 
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,0,0,10"/>
+
+            <!-- قسم الختمة المشتركة -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="📖 الختمة المشتركة" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="يتيح لك هذا القسم مشاركة الأجر مع الآخرين في ختم القرآن الكريم معاً." FontSize="14" TextColor="#333333" FontAttributes="Bold"/>
+                    <Label Text="1. اذهب إلى قسم (الختمة المشتركة) من القائمة." FontSize="14" TextColor="#555555"/>
+                    <Label Text="2. اختر الختمة المتاحة، ثم اختر الجزء الذي ترغب بقراءته." FontSize="14" TextColor="#555555"/>
+                    <Label Text="3. بعد انتهائك من قراءة الجزء، اضغط على زر (تمت القراءة) ليتم تسجيل إنجازك ويراه الباقون." FontSize="14" TextColor="#555555"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- قسم المقرأة الحية -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🎙️ المقرأة الحية" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="مجالس حية لتسميع القرآن مع المشايخ والمعلمين للرجال والنساء." FontSize="14" TextColor="#333333" FontAttributes="Bold"/>
+                    <Label Text="1. اذهب لقسم (المقرأة الحية)، وستظهر لك الغرف المتاحة حالياً." FontSize="14" TextColor="#555555"/>
+                    <Label Text="2. ادخل الغرفة واكتب اسمك، ستكون حالة المايك الخاصة بك (مكتوم) تلقائياً." FontSize="14" TextColor="#555555"/>
+                    <Label Text="3. انتظر دورك، وسيقوم الشيخ بفتح المايك لك لتتمكن من التسميع والتحدث." FontSize="14" TextColor="#555555"/>
+                    <Label Text="ملاحظة: الشيوخ المعتمدون يمكنهم إنشاء الغرف باستخدام كلمة المرور الخاصة." FontSize="12" TextColor="#D32F2F" Margin="0,5,0,0"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- قسم المصحف المرتل والمعلم -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="📖 المصحف والقراءات الصوتية" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="يحتوي التطبيق على مصحف متكامل للقرآن الكريم مدعوماً بالصوت." FontSize="14" TextColor="#333333" FontAttributes="Bold"/>
+                    <Label Text="1. للتشغيل بدون إنترنت: اذهب للسورة واضغط على زر التحميل للحفظ في هاتفك." FontSize="14" TextColor="#555555"/>
+                    <Label Text="2. تغيير القارئ: من خلال قائمة (الإعدادات)، يمكنك اختيار صوت القارئ المفضل لديك." FontSize="14" TextColor="#555555"/>
+                    <Label Text="3. يمكنك مسح التنزيلات السابقة في أي وقت من الإعدادات لتوفير مساحة في هاتفك." FontSize="14" TextColor="#555555"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- قسم المسبحة والإنجازات -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="📿 المسبحة ومتابعة الإنجازات" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="نظام ذكي لمساعدتك في الاستمرار على الذكر." FontSize="14" TextColor="#333333" FontAttributes="Bold"/>
+                    <Label Text="1. في صفحة المسبحة، يمكنك إنشاء ذكر جديد وتحديد العدد المطلوب." FontSize="14" TextColor="#555555"/>
+                    <Label Text="2. سيقوم التطبيق بتسجيل نشاطك اليومي في صفحة (الإنجازات) لمتابعة مدى التزامك." FontSize="14" TextColor="#555555"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- قسم التنبيهات والأذان -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="⏰ الأذان وتنبيهات الأذكار" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="التطبيق مزود بنظام تنبيهات دقيق جداً للأذان والأذكار الساعية." FontSize="14" TextColor="#333333" FontAttributes="Bold"/>
+                    <Label Text="⚠️ لتجنب أي تأخير في الأذان (مهم جداً):" FontSize="14" TextColor="#D32F2F" FontAttributes="Bold"/>
+                    <Label Text="إذا كان هاتفك (شاومي، هواوي، سامسونج)، يرجى الذهاب إلى إعدادات الهاتف -> التطبيقات -> أذكار -> البطارية -> واختر (غير مقيد Unrestricted) لتجنب قيام النظام بقتل منبه الأذان توفيراً للطاقة." FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+                    <Label Text="• التوقيت الصيفي: إذا كان التوقيت متأخراً بساعة، قم بتفعيل (التوقيت الصيفي) من صفحة الإعدادات لضبطه." FontSize="14" TextColor="#555555" Margin="0,5,0,0"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- قسم الويدجت -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="📱 الويدجت (التطبيق المصغر)" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="يمكنك إضافة ويدجت لمواقيت الصلاة والأذكار على شاشة هاتفك الرئيسية." FontSize="14" TextColor="#333333" FontAttributes="Bold"/>
+                    <Label Text="1. من شاشة (الإعدادات)، اضغط على (إضافة الويدجت) ليتم وضعه تلقائياً في الشاشة." FontSize="14" TextColor="#555555"/>
+                    <Label Text="2. إذا لم يكن جهازك يدعم الإضافة التلقائية، اضغط مطولاً على مساحة فارغة في شاشتك الرئيسية، ثم اختر (التطبيقات المصغرة / Widgets) واسحب ويدجت أذكار." FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- الدعم والمظهر -->
+            <Frame BackgroundColor="White" CornerRadius="15" Padding="20" HasShadow="True" BorderColor="#E0E0E0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🌙 المظهر المريح" FontSize="18" FontAttributes="Bold" TextColor="#2C6E2C"/>
+                    <Label Text="يمكنك تفعيل الوضع الليلي (Dark Mode) لحماية عينيك أثناء القراءة في الظلام وذلك عبر صفحة الإعدادات الرئيسية." FontSize="14" TextColor="#555555" LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

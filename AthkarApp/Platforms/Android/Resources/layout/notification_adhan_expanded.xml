@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/notification_bg_islamic"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Top Row: Title + Icon -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- App Icon -->
+        <ImageView
+            android:id="@+id/notif_adhan_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="أذان" />
+
+        <!-- Main Title -->
+        <TextView
+            android:id="@+id/notif_adhan_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/notif_adhan_icon"
+            android:layout_alignParentStart="true"
+            android:text="🕌 نداء الصلاة"
+            android:textColor="#D4AF37"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:shadowColor="#66000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:fontFamily="sans-serif-medium" />
+
+        <!-- Category / Time -->
+        <TextView
+            android:id="@+id/notif_adhan_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/notif_adhan_title"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="1dp"
+            android:text="⏰ حان الآن موقت الأذان"
+            android:textColor="#80D4AF37"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif" />
+    </RelativeLayout>
+
+    <!-- Thin gold divider using FrameLayout for better RemoteViews compatibility -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#25D4AF37" />
+
+    <!-- Main Adhan Text -->
+    <TextView
+        android:id="@+id/notif_adhan_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="حَيَّ عَلَى الصَّلاةِ ✦ حَيَّ عَلَى الفَلاحِ"
+        android:textColor="#F0F5F0"
+        android:textSize="13sp"
+        android:lineSpacingExtra="3dp"
+        android:gravity="center"
+        android:shadowColor="#66000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:fontFamily="sans-serif" />
+
+    <!-- Sub text (Ayah) -->
+    <TextView
+        android:id="@+id/notif_adhan_subtext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="« إِنَّ الصَّلاةَ كَانَتْ عَلَى المُؤْمِنِينَ كِتَابًا مَّوقُوتًا »"
+        android:textColor="#90C8B8"
+        android:textSize="11sp"
+        android:gravity="center"
+        android:fontFamily="sans-serif-light" />
+
+    <!-- Action Buttons Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:gravity="center">
+
+        <!-- Stop Button -->
+        <LinearLayout
+            android:id="@+id/btn_stop_adhan_expanded"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:background="#33FFFFFF"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="إيقاف الصوت"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+        <!-- Snooze Button -->
+        <LinearLayout
+            android:id="@+id/btn_snooze_adhan_expanded"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="#33FFFFFF"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_recent_history" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="تأجيل 5 دقائق"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

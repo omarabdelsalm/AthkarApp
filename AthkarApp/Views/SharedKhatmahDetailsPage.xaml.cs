@@ -140,9 +140,8 @@ namespace AthkarApp.Views
             }
             else if (action == "قراءة الجزء 📖")
             {
-                // To do: Navigate to MushafPage and set the Surah/Ayah according to the Part
-                // For now just navigate to Mushaf
-                await Shell.Current.GoToAsync("//MushafPage");
+                int startPage = part.PartNumber == 1 ? 1 : (part.PartNumber - 1) * 20 + 2;
+                await Shell.Current.GoToAsync($"SharedKhatmahMushaf?Page={startPage}");
             }
         }
 

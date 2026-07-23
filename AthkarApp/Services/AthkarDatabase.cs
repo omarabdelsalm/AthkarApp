@@ -25,6 +25,7 @@ public class AthkarDatabase
         await _database.CreateTableAsync<AthkarCategory>();
         await _database.CreateTableAsync<ThikrItem>();
         await _database.CreateTableAsync<CounterState>();
+        await _database.CreateTableAsync<DailyPrayerTracker>();
         }
         finally
         {
@@ -113,5 +114,64 @@ public class AthkarDatabase
         return await _database.Table<CounterState>()
                              .Where(s => s.CategoryName == categoryName)
                              .FirstOrDefaultAsync();
+    }
+
+    public async Task SaveDailyTrackerAsync(DailyPrayerTracker tracker)
+    {
+        await Init();
+        var existing = await _database.Table<DailyPrayerTracker>()
+                                     .Where(t => t.DateString == tracker.DateString)
+                                     .FirstOrDefaultAsync();
+        if (existing != null)
+        {
+            await _database.UpdateAsync(tracker);
+        }
+        else
+        {
+            await _database.InsertAsync(tracker);
+        }
+    }
+
+    public async Task<DailyPrayerTracker> GetDailyTrackerAsync(string dateStr)
+    {
+        await Init();
+        var tracker = await _database.Table<DailyPrayerTracker>()
+                                     .Where(t => t.DateString == dateStr)
+                                     .FirstOrDefaultAsync();
+
+        if (tracker == null)
+        {
+            tracker = new DailyPrayerTracker { DateString = dateStr };
+
+            // Safe Migration from Preferences
+            bool hasLegacyData = false;
+            if (Preferences.Default.ContainsKey($"Tracker_{dateStr}_Fajr"))
+            {
+                tracker.FajrStatus = Preferences.Default.Get($"Tracker_{dateStr}_Fajr", 0);
+                tracker.DhuhrStatus = Preferences.Default.Get($"Tracker_{dateStr}_Dhuhr", 0);
+                tracker.AsrStatus = Preferences.Default.Get($"Tracker_{dateStr}_Asr", 0);
+                tracker.MaghribStatus = Preferences.Default.Get($"Tracker_{dateStr}_Maghrib", 0);
+                tracker.IshaStatus = Preferences.Default.Get($"Tracker_{dateStr}_Isha", 0);
+                hasLegacyData = true;
+            }
+
+            if (Preferences.Default.ContainsKey($"TrackerSunnah_{dateStr}_Fajr"))
+            {
+                tracker.FajrSunnah = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Fajr", false);
+                tracker.DhuhrSunnah = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Dhuhr", false);
+                tracker.AsrSunnah = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Asr", false);
+                tracker.MaghribSunnah = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Maghrib", false);
+                tracker.IshaSunnah = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Isha", false);
+                hasLegacyData = true;
+            }
+
+            if (hasLegacyData)
+            {
+                await SaveDailyTrackerAsync(tracker);
+                // Optionally clear Preferences here to save space
+            }
+        }
+
+        return tracker;
     }
 }

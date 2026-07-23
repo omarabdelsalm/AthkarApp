@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.MaqraaRoomPage"
+             Title="غرفة المقرأة"
+             FlowDirection="RightToLeft"
+             BackgroundColor="#F7F9F7">
+
+    <Grid RowDefinitions="Auto,*,Auto,0">
+        
+        <!-- Header -->
+        <Frame Grid.Row="0" BackgroundColor="#143214" CornerRadius="0" Padding="15">
+            <StackLayout>
+                <Label x:Name="RoomTitleLabel" TextColor="White" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+                <Label x:Name="RoomTimerLabel" TextColor="#A5D6A7" FontSize="14" HorizontalOptions="Center" Margin="0,5,0,0"/>
+            </StackLayout>
+        </Frame>
+
+        <!-- Participants List -->
+        <CollectionView Grid.Row="1" x:Name="ParticipantsList" Margin="10">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,6" Padding="15" CornerRadius="12" BorderColor="#E0E0E0" HasShadow="True" BackgroundColor="White">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            
+                            <!-- Status Indicator -->
+                            <Ellipse x:Name="StatusDot" Grid.Column="0" WidthRequest="15" HeightRequest="15" Fill="#F44336" VerticalOptions="Center" Margin="0,0,10,0">
+                                <Ellipse.Triggers>
+                                    <DataTrigger TargetType="Ellipse" Binding="{Binding IsMuted}" Value="False">
+                                        <Setter Property="Fill" Value="#4CAF50" />
+                                    </DataTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            
+                            <!-- Name -->
+                            <Label Grid.Column="1" Text="{Binding Name}" VerticalOptions="Center" FontSize="16" FontAttributes="Bold" TextColor="#333333"/>
+                            
+                            <!-- Hand Raised Indicator -->
+                            <Label Grid.Column="2" Text="✋" IsVisible="{Binding IsHandRaised}" VerticalOptions="Center" FontSize="20" Margin="0,0,10,0" />
+                            
+                            <!-- Sheikh Controls (Visible only to Sheikh) -->
+                            <StackLayout Grid.Column="3" Orientation="Horizontal" IsVisible="{Binding BindingContext.IsCurrentUserSheikh, Source={x:Reference ParticipantsList}}">
+                                <!-- Show Mute/Unmute if it's NOT the Sheikh himself in this row -->
+                                <Button x:Name="MuteButton" Text="تفعيل المايك" 
+                                        BackgroundColor="#4CAF50"
+                                        TextColor="White"
+                                        Padding="10,5"
+                                        CornerRadius="15"
+                                        Command="{Binding BindingContext.ToggleMuteCommand, Source={x:Reference ParticipantsList}}"
+                                        CommandParameter="{Binding .}">
+                                    <Button.Triggers>
+                                        <DataTrigger TargetType="Button" Binding="{Binding IsMuted}" Value="False">
+                                            <Setter Property="Text" Value="كتم المايك" />
+                                            <Setter Property="BackgroundColor" Value="#F44336" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Button" Binding="{Binding IsSheikh}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+                                </Button>
+                            </StackLayout>
+                            
+                        </Grid>
+                        
+                        <Frame.Triggers>
+                            <DataTrigger TargetType="Frame" Binding="{Binding IsSpeaking}" Value="True">
+                                <Setter Property="BorderColor" Value="#4CAF50" />
+                            </DataTrigger>
+                        </Frame.Triggers>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Footer Controls -->
+        <StackLayout Grid.Row="2" Spacing="10" Margin="20,10,20,20">
+            <!-- Sheikh Control: Mute My Mic -->
+            <Button Text="تبديل حالة المايك الخاص بي" 
+                    BackgroundColor="#388E3C" 
+                    TextColor="White" 
+                    CornerRadius="25" 
+                    Command="{Binding ToggleMyMuteCommand}" 
+                    IsVisible="{Binding IsCurrentUserSheikh}"/>
+
+            <!-- Student Control: Raise Hand -->
+            <Button Text="رفع / خفض اليد ✋" 
+                    BackgroundColor="#FF9800" 
+                    TextColor="White" 
+                    CornerRadius="25" 
+                    Command="{Binding ToggleMyHandCommand}" 
+                    IsVisible="{Binding IsCurrentUserNotSheikh}"/>
+
+            <!-- Leave Button -->
+            <Button x:Name="LeaveButton" 
+                    Text="مغادرة المقرأة" 
+                    BackgroundColor="#D32F2F" 
+                    TextColor="White" 
+                    CornerRadius="25" 
+                    Clicked="OnLeaveClicked"/>
+        </StackLayout>
+
+        <!-- Hidden WebView for Agora Audio SDK -->
+        <WebView Grid.Row="3" x:Name="AgoraWebView" HeightRequest="1" WidthRequest="1" Opacity="0.01" />
+        
+    </Grid>
+
+</ContentPage>

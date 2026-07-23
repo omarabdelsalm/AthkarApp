@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.QuranUthmaniPage"
+             Title="القرآن الكريم"
+             BackgroundColor="#FFF8E7">
+
+    <Grid>
+        <WebView x:Name="QuranWebView"
+                 HorizontalOptions="Fill"
+                 VerticalOptions="Fill"
+                 Navigating="OnWebViewNavigating" />
+                 
+        <!-- أزرار التحكم بالتحرك التلقائي -->
+        <Frame HorizontalOptions="Center" 
+               VerticalOptions="End" 
+               Margin="0,0,0,30"
+               Padding="10,5"
+               BackgroundColor="#F0F0F0"
+               CornerRadius="25"
+               BorderColor="#A97C50"
+               HasShadow="True">
+            <StackLayout Orientation="Horizontal" 
+                         Spacing="10">
+                <StackLayout.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="CornerRadius" Value="20"/>
+                        <Setter Property="HeightRequest" Value="40"/>
+                        <Setter Property="TextColor" Value="White"/>
+                        <Setter Property="FontAttributes" Value="Bold"/>
+                    </Style>
+                </StackLayout.Resources>
+                
+                <Button x:Name="AutoScrollBtn" Text="▶️ تلقائي" BackgroundColor="#2E7D32" Clicked="OnAutoScrollClicked"/>
+                
+                <StackLayout x:Name="SpeedControls" Orientation="Horizontal" Spacing="5" IsVisible="False">
+                    <Button Text="1x" BackgroundColor="#A97C50" TextColor="White" CommandParameter="1" Clicked="OnSpeedClicked" WidthRequest="45"/>
+                    <Button Text="2x" BackgroundColor="#D3A77C" TextColor="White" CommandParameter="2" Clicked="OnSpeedClicked" WidthRequest="45"/>
+                    <Button Text="3x" BackgroundColor="#D3A77C" TextColor="White" CommandParameter="3" Clicked="OnSpeedClicked" WidthRequest="45"/>
+                </StackLayout>
+            </StackLayout>
+        </Frame>
+    </Grid>
+
+</ContentPage>

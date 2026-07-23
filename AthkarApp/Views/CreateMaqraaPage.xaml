@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.CreateMaqraaPage"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             Title="إنشاء مقرأة"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="15">
+            <Label Text="بيانات المقرأة" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#143214"/>
+
+            <Label Text="اسم الشيخ:" FontAttributes="Bold" />
+            <Entry x:Name="SheikhNameEntry" Placeholder="مثال: الشيخ أحمد" />
+
+            <Label Text="الحد الأقصى للطلاب:" FontAttributes="Bold" />
+            <Entry x:Name="MaxStudentsEntry" Keyboard="Numeric" Placeholder="مثال: 5" />
+
+            <Label Text="المدة (بالدقائق):" FontAttributes="Bold" />
+            <Entry x:Name="DurationEntry" Keyboard="Numeric" Placeholder="مثال: 60" />
+
+            <Label Text="كلمة المرور (مهمة للشيخ):" FontAttributes="Bold" />
+            <Entry x:Name="PasswordEntry" IsPassword="True" Placeholder="أدخل كلمة سر لهذه الجلسة" />
+
+            <StackLayout Orientation="Horizontal" Spacing="10" VerticalOptions="Center">
+                <Switch x:Name="ScheduleSwitch" />
+                <Label Text="جدولة لوقت لاحق" VerticalOptions="Center" />
+            </StackLayout>
+
+            <StackLayout x:Name="ScheduleOptionsLayout" IsVisible="{Binding Source={x:Reference ScheduleSwitch}, Path=IsToggled}" Spacing="10">
+                <Label Text="تاريخ المقرأة:" FontAttributes="Bold" />
+                <DatePicker x:Name="SessionDatePicker" MinimumDate="{x:Static sys:DateTime.Today}" />
+
+                <Label Text="وقت المقرأة:" FontAttributes="Bold" />
+                <TimePicker x:Name="SessionTimePicker" />
+            </StackLayout>
+
+            <Button Text="بدء المقرأة الآن" 
+                    BackgroundColor="#2E7D32" 
+                    TextColor="White" 
+                    Margin="0,20,0,0" 
+                    CornerRadius="25" 
+                    Clicked="OnStartClicked"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

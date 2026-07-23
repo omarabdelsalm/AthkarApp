@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/notification_bg_islamic"
+    android:padding="12dp"
+    android:minHeight="48dp">
+
+    <!-- App Icon -->
+    <ImageView
+        android:id="@+id/notif_adhan_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
+        android:contentDescription="أذان" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/notif_adhan_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/notif_adhan_icon"
+        android:layout_alignParentStart="true"
+        android:text="🕌 نداء الصلاة"
+        android:textColor="#D4AF37"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:shadowColor="#66000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:fontFamily="sans-serif-medium" />
+
+    <!-- Text -->
+    <TextView
+        android:id="@+id/notif_adhan_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/notif_adhan_title"
+        android:layout_toStartOf="@id/notif_adhan_icon"
+        android:layout_toEndOf="@+id/btn_stop_adhan"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="2dp"
+        android:text="حَيَّ عَلَى الصَّلاةِ ✦ حَيَّ عَلَى الفَلاحِ"
+        android:textColor="#E0E8E0"
+        android:textSize="12sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:shadowColor="#66000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:fontFamily="sans-serif" />
+
+    <!-- Stop Button -->
+    <ImageView
+        android:id="@+id/btn_stop_adhan"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="10dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:background="#33FFFFFF"
+        android:padding="6dp" />
+
+</RelativeLayout>

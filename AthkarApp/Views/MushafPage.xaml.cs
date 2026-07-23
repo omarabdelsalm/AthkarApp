@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace AthkarApp.Views;
 
+[QueryProperty(nameof(StartPage), "Page")]
 public partial class MushafPage : ContentPage
 {
     private readonly IQuranApiService _quranApiService;
@@ -66,6 +67,27 @@ public partial class MushafPage : ContentPage
                 size -= 2;
                 Resources["MushafFontSize"] = size;
                 Preferences.Default.Set("MushafFontSize", size);
+            }
+        }
+    }
+
+    public string StartPage
+    {
+        set
+        {
+            if (int.TryParse(Uri.UnescapeDataString(value), out int pageNum))
+            {
+                if (pageNum >= 1 && pageNum <= 604)
+                {
+                    if (_isScrollMode)
+                    {
+                        LoadScrollPage(pageNum);
+                    }
+                    else
+                    {
+                        _ = GoToCarouselPage(pageNum);
+                    }
+                }
             }
         }
     }
@@ -570,6 +592,8 @@ public partial class MushafPage : ContentPage
 
     // ===================== التحرك التلقائي (Auto-Scroll) =====================
 
+    private IDispatcherTimer _autoScrollTimer;
+
     private void OnAutoScrollClicked(object sender, EventArgs e)
     {
         if (_isAutoScrolling)
@@ -594,8 +618,13 @@ public partial class MushafPage : ContentPage
         AutoScrollBtn.Text = "⏹️";
         SpeedControls.IsVisible = true;
         
-        // البدء من أول آية ظاهرة حالياً أو من البداية
-        RunAutoScrollStep();
+        if (_autoScrollTimer == null)
+        {
+            _autoScrollTimer = Dispatcher.CreateTimer();
+            _autoScrollTimer.Interval = TimeSpan.FromMilliseconds(16); // ~60fps
+            _autoScrollTimer.Tick += (s, e) => RunAutoScrollTick();
+        }
+        _autoScrollTimer.Start();
     }
 
     private void StopAutoScroll()
@@ -603,6 +632,7 @@ public partial class MushafPage : ContentPage
         _isAutoScrolling = false;
         AutoScrollBtn.Text = "▶️";
         SpeedControls.IsVisible = false;
+        _autoScrollTimer?.Stop();
     }
 
     private void OnSpeedClicked(object sender, EventArgs e)
@@ -624,22 +654,30 @@ public partial class MushafPage : ContentPage
         }
     }
 
-    private async void RunAutoScrollStep()
+    private void RunAutoScrollTick()
     {
-        if (!_isAutoScrolling || !_isScrollMode) return;
+        if (!_isAutoScrolling || !_isScrollMode) 
+        {
+            _autoScrollTimer?.Stop();
+            return;
+        }
 
-        // تحرك بكسل بكسل بدلاً من الانتقال بين الآيات
-        double scrollStep = _scrollSpeed * 0.8; 
+        double scrollStep = _scrollSpeed * 1.5; // سرعة سلسة
         double currentY = AyahsScrollView.ScrollY;
         double maxY = AyahsScrollView.ContentSize.Height - AyahsScrollView.Height;
 
-        if (currentY >= maxY - 5)
+        if (maxY > 0 && currentY >= maxY - 5)
         {
+            _autoScrollTimer.Stop();
             if (_currentPage < 604)
             {
                 LoadScrollPage(_currentPage + 1);
-                await Task.Delay(2000); 
-                RunAutoScrollStep();
+                // الانتظار قليلاً ثم إكمال النزول في الصفحة التالية
+                Dispatcher.StartTimer(TimeSpan.FromSeconds(2), () => 
+                { 
+                    if (_isAutoScrolling) _autoScrollTimer.Start(); 
+                    return false; 
+                });
             }
             else
             {
@@ -649,15 +687,7 @@ public partial class MushafPage : ContentPage
         }
 
         // التحريك السلس
-        await AyahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
-
-        // تكرار الخطوة بسرعة لضمان النعومة
-        await Task.Delay(30);
-
-        if (_isAutoScrolling)
-        {
-            RunAutoScrollStep();
-        }
+        AyahsScrollView.ScrollToAsync(0, currentY + scrollStep, false);
     }
 
     // ===================== زر الرجوع (الهاتف) =====================

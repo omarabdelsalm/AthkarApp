@@ -119,8 +119,8 @@ namespace AthkarApp.Services
 
         private int GetSafeIcon()
         {
-            int resId = Resources!.GetIdentifier("appicon_round", "mipmap", PackageName);
-            if (resId == 0) resId = Resources.GetIdentifier("appicon", "mipmap", PackageName);
+            int resId = Resources!.GetIdentifier("omr_round", "mipmap", PackageName);
+            if (resId == 0) resId = Resources.GetIdentifier("omr", "mipmap", PackageName);
             if (resId == 0 && ApplicationInfo != null) resId = ApplicationInfo.Icon;
             if (resId == 0) resId = global::Android.Resource.Drawable.IcDialogInfo;
             return resId;
@@ -203,8 +203,8 @@ namespace AthkarApp.Services
                 // If you have large bitmap decoding, database migrations, or other CPU work at app startup,
                 // move them to background tasks from your Activity/App initialization code.
                 
-                // Start widget update loop every minute
-                _widgetTimer = new System.Threading.Timer(UpdateWidgets, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+                // Start widget update loop every 30 minutes (Chronometer handles countdown)
+                _widgetTimer = new System.Threading.Timer(UpdateWidgets, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
             }
             catch 
             {
@@ -215,13 +215,27 @@ namespace AthkarApp.Services
         {
             try
             {
-                var intent = new Intent(this, typeof(PrayerWidgetProvider));
-                intent.SetAction("android.appwidget.action.APPWIDGET_UPDATE");
-                var ids = AppWidgetManager.GetInstance(this)?.GetAppWidgetIds(new ComponentName(this, Java.Lang.Class.FromType(typeof(PrayerWidgetProvider))));
-                if (ids != null && ids.Length > 0)
+                var appWidgetManager = AppWidgetManager.GetInstance(this);
+                if (appWidgetManager == null) return;
+
+                // Update Prayer Widget
+                var intent1 = new Intent(this, typeof(PrayerWidgetProvider));
+                intent1.SetAction("android.appwidget.action.APPWIDGET_UPDATE");
+                var ids1 = appWidgetManager.GetAppWidgetIds(new ComponentName(this, Java.Lang.Class.FromType(typeof(PrayerWidgetProvider))));
+                if (ids1 != null && ids1.Length > 0)
                 {
-                    intent.PutExtra("appWidgetIds", ids);
-                    SendBroadcast(intent);
+                    intent1.PutExtra("appWidgetIds", ids1);
+                    SendBroadcast(intent1);
+                }
+
+                // Update Unified Widget
+                var intent2 = new Intent(this, typeof(UnifiedWidgetProvider));
+                intent2.SetAction("android.appwidget.action.APPWIDGET_UPDATE");
+                var ids2 = appWidgetManager.GetAppWidgetIds(new ComponentName(this, Java.Lang.Class.FromType(typeof(UnifiedWidgetProvider))));
+                if (ids2 != null && ids2.Length > 0)
+                {
+                    intent2.PutExtra("appWidgetIds", ids2);
+                    SendBroadcast(intent2);
                 }
             }
             catch { }
@@ -415,6 +429,7 @@ namespace AthkarApp.Services
                         try
                         {
                             _mediaPlayer?.Start();
+                            UpdateWidgets(null); // Force widget to calculate next prayer
                         }
                         catch (Exception ex)
                         {
@@ -472,6 +487,8 @@ namespace AthkarApp.Services
 
         private void UpdateForegroundNotificationForAdhan(string prayerName, int id)
         {
+            PendingIntent? stopPendingIntent = null;
+            PendingIntent? snoozePendingIntent = null;
             try
             {
                 var flags = PendingIntentFlags.UpdateCurrent;
@@ -481,36 +498,39 @@ namespace AthkarApp.Services
                 // --- زر «إيقاف» ---
                 var stopIntent = new Intent(this, typeof(AthkarForegroundService));
                 stopIntent.SetAction("STOP_ADHAN");
-                var stopPendingIntent = PendingIntent.GetService(this, id, stopIntent, flags);
+                stopPendingIntent = PendingIntent.GetService(this, id, stopIntent, flags);
 
                 // --- زر «تأجيل» ---
                 var snoozeIntent = new Intent(this, typeof(AthkarApp.Platforms.Android.NotificationActionReceiver));
                 snoozeIntent.SetAction("SNOOZE_ATHKAR");
                 snoozeIntent.PutExtra("notification_id", id);
                 snoozeIntent.PutExtra("type", "adhan");
-                var snoozePendingIntent = PendingIntent.GetBroadcast(this, id + 600, snoozeIntent, flags);
+                snoozePendingIntent = PendingIntent.GetBroadcast(this, id + 600, snoozeIntent, flags);
 
-                // --- Big Text Style مع الآية الكريمة ---
-                var bigTextStyle = new NotificationCompat.BigTextStyle()
-                    .BigText($"حَيَّ عَلَى الصَّلاةِ ✦ حَيَّ عَلَى الفَلاحِ\n\n« إِنَّ الصَّلاةَ كَانَتْ عَلَى المُؤْمِنِينَ كِتَابًا مَّوقُوتًا »")
-                    .SetBigContentTitle($"🕌  نداء الصلاة — {prayerName}")
-                    .SetSummaryText("⏰ حان الآن موقت الأذان");
+                var packageName = PackageName;
+                var collapsedView = new Android.Widget.RemoteViews(packageName, Resource.Layout.notification_adhan_collapsed);
+                var expandedView = new Android.Widget.RemoteViews(packageName, Resource.Layout.notification_adhan_expanded);
+
+                collapsedView.SetImageViewResource(Resource.Id.notif_adhan_icon, GetSafeIcon());
+                collapsedView.SetTextViewText(Resource.Id.notif_adhan_title, $"🕌 نداء الصلاة — {prayerName}");
+                collapsedView.SetOnClickPendingIntent(Resource.Id.btn_stop_adhan, stopPendingIntent);
+
+                expandedView.SetImageViewResource(Resource.Id.notif_adhan_icon, GetSafeIcon());
+                expandedView.SetTextViewText(Resource.Id.notif_adhan_title, $"🕌 نداء الصلاة — {prayerName}");
+                expandedView.SetOnClickPendingIntent(Resource.Id.btn_stop_adhan_expanded, stopPendingIntent);
+                expandedView.SetOnClickPendingIntent(Resource.Id.btn_snooze_adhan_expanded, snoozePendingIntent);
 
                 var builder = new NotificationCompat.Builder(this, AdhanChannelId)
-                    .SetContentTitle($"🕌  أذان {prayerName}")
-                    .SetContentText("حي على الصلاة ✦ حي على الفلاح")
-                    .SetStyle(bigTextStyle)
                     .SetSmallIcon(GetSafeIcon())
-                    .SetColor(unchecked((int)0xFF1A3A6B))   // أزرق داكن فخم
-                    .SetColorized(true)
+                    .SetColor(unchecked((int)0xFF0B5E1B))   // اللون الإسلامي الأساسي
+                    .SetCustomContentView(collapsedView)
+                    .SetCustomBigContentView(expandedView)
                     .SetPriority(NotificationCompat.PriorityMax)
                     .SetCategory(NotificationCompat.CategoryAlarm)
                     .SetVisibility(NotificationCompat.VisibilityPublic)
                     .SetOngoing(true)
                     .SetShowWhen(true)
-                    .SetWhen(Java.Lang.JavaSystem.CurrentTimeMillis())
-                    .AddAction(global::Android.Resource.Drawable.IcMenuCloseClearCancel, "🔇  إيقاف الصوت", stopPendingIntent)
-                    .AddAction(global::Android.Resource.Drawable.IcMenuRecentHistory, "⏰  تأجيل 5 دقائق", snoozePendingIntent);
+                    .SetWhen(Java.Lang.JavaSystem.CurrentTimeMillis());
 
                 var manager = (NotificationManager)GetSystemService(Context.NotificationService)!;
                 manager.Notify(AdhanNotificationId, builder.Build());
@@ -520,6 +540,26 @@ namespace AthkarApp.Services
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Failed to show Adhan notification: {ex.Message}");
+                // Fallback to basic notification if RemoteViews inflation fails
+                try 
+                {
+                    var fallbackBuilder = new NotificationCompat.Builder(this, AdhanChannelId)
+                        .SetSmallIcon(GetSafeIcon())
+                        .SetContentTitle($"🕌 نداء الصلاة — {prayerName}")
+                        .SetContentText("حَيَّ عَلَى الصَّلاةِ ✦ حَيَّ عَلَى الفَلاحِ")
+                        .SetPriority(NotificationCompat.PriorityMax)
+                        .SetCategory(NotificationCompat.CategoryAlarm)
+                        .SetVisibility(NotificationCompat.VisibilityPublic)
+                        .SetOngoing(true)
+                        .AddAction(global::Android.Resource.Drawable.IcMenuCloseClearCancel, "🔇  إيقاف الصوت", stopPendingIntent)
+                        .AddAction(global::Android.Resource.Drawable.IcMenuRecentHistory, "⏰  تأجيل", snoozePendingIntent);
+
+                    var manager = (NotificationManager)GetSystemService(Context.NotificationService)!;
+                    manager.Notify(AdhanNotificationId, fallbackBuilder.Build());
+                    UpdateDefaultNotification();
+                } 
+                catch { }
             }
         }
 // Brennan

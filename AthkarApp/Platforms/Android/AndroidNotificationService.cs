@@ -44,34 +44,35 @@ public class AndroidNotificationService : IAppNotificationService
             // للأرقام الخاصة بالتجربة (Preview)، نستخدم منبه غير دقيق لتجنب طلب صلاحيات إضافية ولضمان عدم خروج التطبيق
             bool isPreview = (id == 9999 || id == 7777);
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.S && !isPreview)
+            if (isPreview)
             {
-                if (alarmManager.CanScheduleExactAlarms())
-                {
-                    alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
-                }
-                else
-                {
-                    // Fallback to inexact if permission missing
-                    alarmManager.SetAndAllowWhileIdle(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
-                }
-            }
-            else if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
-            {
-                // إذا كان تجربة (Preview)، نستخدم Set بدلاً من SetExact لتجنب الـ SecurityException
-                if (isPreview)
-                    alarmManager.Set(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
-                else
-                    alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
+                // إذا كان تجربة نستخدم Set العادي
+                alarmManager.Set(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
             }
             else
             {
-                alarmManager.SetExact(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
+                // الحل الجذري لأجهزة أندرويد الحديثة (شاومي، سامسونج، هواوي) للهروب من الـ Doze Mode
+                // استخدام SetAlarmClock يجبر النظام على الاستيقاظ في الثانية المحددة بالضبط
+                // وهو ما نحتاجه بشدة في الأذان وأذكار كل ساعة
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+                {
+                    // Create an intent to launch the app when the user taps the alarm icon in the status bar
+                    var launchIntent = new Intent(_context, typeof(MainActivity));
+                    var pendingLaunchIntent = PendingIntent.GetActivity(_context, 0, launchIntent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+                    
+                    var alarmClockInfo = new AlarmManager.AlarmClockInfo(triggerAtMillis, pendingLaunchIntent);
+                    alarmManager.SetAlarmClock(alarmClockInfo, pendingIntent);
+                }
+                else
+                {
+                    // للأجهزة القديمة جداً
+                    alarmManager.SetExact(AlarmType.RtcWakeup, triggerAtMillis, pendingIntent);
+                }
             }
         }
         catch (Exception ex)
         {
-            // منع انهيار التطبيق في حال فشل جدولة المنبه (خاصة في أندرويد 14/15)
+            // منع انهيار التطبيق في حال فشل جدولة المنبه
             System.Diagnostics.Debug.WriteLine($"Alarm scheduling failed: {ex.Message}");
         }
     }

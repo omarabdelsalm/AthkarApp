@@ -31,6 +31,18 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
+#if ANDROID
+        Microsoft.Maui.Handlers.WebViewHandler.Mapper.AppendToMapping("WebRTCPermissions", (handler, view) =>
+        {
+            handler.PlatformView.SetWebChromeClient(new AthkarApp.Platforms.Android.CustomWebChromeClient());
+            handler.PlatformView.Settings.JavaScriptEnabled = true;
+            handler.PlatformView.Settings.MediaPlaybackRequiresUserGesture = false;
+            handler.PlatformView.Settings.DomStorageEnabled = true;
+            handler.PlatformView.Settings.AllowFileAccessFromFileURLs = true;
+            handler.PlatformView.Settings.AllowUniversalAccessFromFileURLs = true;
+        });
+#endif
+
         // تسجيل الخدمات
         builder.Services.AddSingleton<QuranDatabase>();
         builder.Services.AddSingleton<AthkarDatabase>();
@@ -63,7 +75,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AthkarPage>();
         builder.Services.AddSingleton<QuranPage>();
         builder.Services.AddSingleton<MushafPage>();
-        builder.Services.AddTransient<SurahDetailPage>();
+        builder.Services.AddTransient<QuranUthmaniPage>();
         builder.Services.AddTransient<AchievementsPage>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<TasbeehPage>();
@@ -79,6 +91,12 @@ public static class MauiProgram
         builder.Services.AddSingleton<SharedKhatmahService>();
         builder.Services.AddTransient<SharedKhatmahListPage>();
         builder.Services.AddTransient<SharedKhatmahDetailsPage>();
+        
+        // Maqraa
+        builder.Services.AddSingleton<MaqraaService>();
+        builder.Services.AddTransient<MaqraaListPage>();
+        builder.Services.AddTransient<CreateMaqraaPage>();
+        builder.Services.AddTransient<MaqraaRoomPage>();
 
         return builder.Build();
     }

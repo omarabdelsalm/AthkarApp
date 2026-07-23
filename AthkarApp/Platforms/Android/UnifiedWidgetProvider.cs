@@ -30,15 +30,14 @@ namespace AthkarApp.Platforms.Android
 
             string selectedThikr = _athkarList[new Random().Next(_athkarList.Length)];
             
-            string nextPrayerName = Preferences.Default.Get("Widget_NextPrayerName", "الصلاة القادمة");
-            string nextPrayerTime = Preferences.Default.Get("Widget_NextPrayerTime", "--:--");
+            var nextPrayer = GetNextPrayer();
 
             foreach (int widgetId in appWidgetIds)
             {
                 RemoteViews views = new RemoteViews(context.PackageName, Resource.Layout.unified_widget);
 
-                views.SetTextViewText(Resource.Id.widget_prayer_name, nextPrayerName);
-                views.SetTextViewText(Resource.Id.widget_prayer_time, nextPrayerTime);
+                views.SetTextViewText(Resource.Id.widget_prayer_name, nextPrayer.Name);
+                views.SetTextViewText(Resource.Id.widget_prayer_time, nextPrayer.Time);
                 views.SetTextViewText(Resource.Id.widget_athkar_content, selectedThikr);
 
                 Intent intent = new Intent(context, typeof(MainActivity));
@@ -47,6 +46,48 @@ namespace AthkarApp.Platforms.Android
 
                 appWidgetManager.UpdateAppWidget(widgetId, views);
             }
+        }
+
+        private (string Name, string Time) GetNextPrayer()
+        {
+            var prayers = new (string Name, string Key)[]
+            {
+                ("الفجر", "PrayerTime_Fajr"),
+                ("الظهر", "PrayerTime_Dhuhr"),
+                ("العصر", "PrayerTime_Asr"),
+                ("المغرب", "PrayerTime_Maghrib"),
+                ("العشاء", "PrayerTime_Isha")
+            };
+
+            DateTime now = DateTime.Now;
+            var parsedTimes = new System.Collections.Generic.List<(string Name, DateTime Time, string TimeStr)>();
+
+            foreach (var p in prayers)
+            {
+                string timeStr = Preferences.Default.Get(p.Key, "");
+                if (!string.IsNullOrEmpty(timeStr))
+                {
+                    string cleanTime = timeStr.Split(' ')[0].Trim();
+                    if (DateTime.TryParseExact(cleanTime, "HH:mm", null, System.Globalization.DateTimeStyles.None, out var time))
+                    {
+                        var target = DateTime.Today.AddHours(time.Hour).AddMinutes(time.Minute);
+                        parsedTimes.Add((p.Name, target, cleanTime));
+                    }
+                }
+            }
+
+            if (parsedTimes.Count == 0)
+            {
+                return (Preferences.Default.Get("Widget_NextPrayerName", "الصلاة"), Preferences.Default.Get("Widget_NextPrayerTime", "--:--"));
+            }
+
+            var next = System.Linq.Enumerable.FirstOrDefault(System.Linq.Enumerable.OrderBy(parsedTimes, t => t.Time), t => t.Time > now);
+            if (next.Name == null)
+            {
+                next = System.Linq.Enumerable.First(System.Linq.Enumerable.OrderBy(parsedTimes, t => t.Time));
+            }
+
+            return (next.Name, next.TimeStr);
         }
     }
 }

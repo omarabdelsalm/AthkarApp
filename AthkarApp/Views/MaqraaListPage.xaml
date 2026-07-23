@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AthkarApp.Views.MaqraaListPage"
+             Title="المقاريء الحية"
+             FlowDirection="RightToLeft">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Frame Grid.Row="0" BackgroundColor="#143214" CornerRadius="0" Padding="20">
+            <Label Text="المقاريء الحية المتاحة للتسميع والمراجعة" 
+                   TextColor="White" 
+                   FontSize="18" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center"/>
+        </Frame>
+
+        <!-- Sessions List -->
+        <RefreshView Grid.Row="1" x:Name="SessionsRefreshView" Refreshing="OnRefreshing">
+            <CollectionView x:Name="SessionsList" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="10" Padding="15" CornerRadius="10" BorderColor="#4CAF50" HasShadow="True">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnSessionTapped" CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                <Label Grid.Row="0" Grid.Column="0" Text="{Binding SheikhName, StringFormat='الشيخ: {0}'}" FontAttributes="Bold" FontSize="16" />
+                                <Label Grid.Row="1" Grid.Column="0" Text="{Binding StartTime, StringFormat='الموعد: {0:dd/MM hh:mm tt}'}" FontSize="12" TextColor="Gray" />
+                                
+                                <Frame Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BackgroundColor="#E8F5E9" CornerRadius="5" Padding="10">
+                                    <Label Text="{Binding CurrentStudentsCount, StringFormat='{0} طالب'}" TextColor="#2E7D32" FontAttributes="Bold" VerticalOptions="Center"/>
+                                </Frame>
+
+                                <Button Grid.Row="2" Grid.ColumnSpan="2" 
+                                        Text="دخول المقرأة" 
+                                        BackgroundColor="#2E7D32" 
+                                        TextColor="White" 
+                                        CornerRadius="10" 
+                                        Margin="0,15,0,0" 
+                                        Clicked="OnJoinButtonClicked" 
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Create Button for Sheikh -->
+        <Button Grid.Row="2" 
+                Text="إنشاء مقرأة (للشيوخ فقط)" 
+                BackgroundColor="#2E7D32" 
+                TextColor="White" 
+                Margin="20" 
+                CornerRadius="25" 
+                Clicked="OnCreateClicked"/>
+    </Grid>
+</ContentPage>

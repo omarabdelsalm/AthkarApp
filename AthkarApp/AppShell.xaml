@@ -3,56 +3,64 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:views="clr-namespace:AthkarApp.Views"
        x:Class="AthkarApp.AppShell"
-       FlowDirection="RightToLeft">
+       FlowDirection="RightToLeft"
+       FlyoutBehavior="Flyout">
 
-    <TabBar>
-        <Tab Title="الأذكار" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:AthkarPage}"/>
-        </Tab>
+    <FlyoutItem Title="الأذكار" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:AthkarPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="مواقييت الصلاة" Icon="prayer_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:PrayerPage}"/>
-        </Tab>
+    <FlyoutItem Title="مواقييت الصلاة" Icon="prayer_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:PrayerPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="المسبحة" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:TasbeehPage}"/>
-        </Tab>
+    <FlyoutItem Title="المسبحة" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:TasbeehPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="الإنجازات" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:AchievementsPage}"/>
-        </Tab>
+    <FlyoutItem Title="الإنجازات" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:AchievementsPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="المصحف" Icon="quran_tab_icon">
-            <ShellContent Route="MushafPage" ContentTemplate="{DataTemplate views:MushafPage}"/>
-        </Tab>
+    <FlyoutItem Title="المصحف" Icon="quran_tab_icon">
+        <ShellContent Route="MushafPage" ContentTemplate="{DataTemplate views:MushafPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="الختمة" Icon="quran_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:KhatmahPage}"/>
-        </Tab>
 
-        <Tab Title="الختمة المشتركة" Icon="quran_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:SharedKhatmahListPage}"/>
-        </Tab>
+    <FlyoutItem Title="الختمة" Icon="quran_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:KhatmahPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="السيرة" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:SiraPage}"/>
-        </Tab>
+    <FlyoutItem Title="الختمة المشتركة" Icon="quran_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:SharedKhatmahListPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="الفقه" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:FiqhPage}"/>
-        </Tab>
+    <FlyoutItem Title="المقرأة الحية" Icon="quran_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:MaqraaListPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="قصص الأنبياء" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:ProphetsPage}"/>
-        </Tab>
+    <FlyoutItem Title="السيرة" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:SiraPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="الأحاديث" Icon="athkar_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:HadithPage}"/>
-        </Tab>
+    <FlyoutItem Title="الفقه" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:FiqhPage}"/>
+    </FlyoutItem>
 
-        <Tab Title="الفهرس" Icon="quran_tab_icon">
-            <ShellContent ContentTemplate="{DataTemplate views:QuranPage}"/>
-        </Tab>
-    </TabBar>
+    <FlyoutItem Title="قصص الأنبياء" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:ProphetsPage}"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="الأحاديث" Icon="athkar_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:HadithPage}"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="الفهرس" Icon="quran_tab_icon">
+        <ShellContent ContentTemplate="{DataTemplate views:QuranPage}"/>
+    </FlyoutItem>
+
+    <MenuItem Text="دليل الاستخدام" IconImageSource="athkar_tab_icon" Clicked="OnUserGuideClicked"/>
+    <MenuItem Text="الإعدادات" IconImageSource="settings_icon" Clicked="OnSettingsClicked"/>
+    <MenuItem Text="سياسة الخصوصية" IconImageSource="quran_tab_icon" Clicked="OnPrivacyPolicyClicked"/>
 
 </Shell>

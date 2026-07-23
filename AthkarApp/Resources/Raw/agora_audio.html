@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Agora Audio Room</title>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+</head>
+<body>
+    <script>
+        var client;
+        var localAudioTrack;
+        var isJoined = false;
+
+        async function initAgora(appId, token, channel, uid) {
+            try {
+                client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+                
+                // Subscribe to remote users
+                client.on("user-published", async (user, mediaType) => {
+                    await client.subscribe(user, mediaType);
+                    if (mediaType === "audio") {
+                        user.audioTrack.play();
+                    }
+                });
+
+                client.on("user-unpublished", user => {
+                    // Audio stops automatically
+                });
+
+                // Join the channel
+                await client.join(appId, channel, token || null, uid);
+                
+                // Create local audio track
+                localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                await client.publish([localAudioTrack]);
+                
+                isJoined = true;
+                return "SUCCESS";
+            } catch (error) {
+                return "ERROR: " + error;
+            }
+        }
+
+        async function muteLocalAudio() {
+            if (localAudioTrack) {
+                await localAudioTrack.setMuted(true);
+                return "MUTED";
+            }
+            return "NOT_FOUND";
+        }
+
+        async function unmuteLocalAudio() {
+            if (localAudioTrack) {
+                await localAudioTrack.setMuted(false);
+                return "UNMUTED";
+            }
+            return "NOT_FOUND";
+        }
+
+        async function leaveChannel() {
+            if (!isJoined) return;
+            localAudioTrack.close();
+            await client.leave();
+            isJoined = false;
+            return "LEFT";
+        }
+    </script>
+</body>
+</html>

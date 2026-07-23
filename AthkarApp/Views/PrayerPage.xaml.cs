@@ -9,16 +9,18 @@ namespace AthkarApp.Views;
 public partial class PrayerPage : ContentPage
 {
     private readonly IPrayerService _prayerService;
+    private readonly AthkarDatabase _database;
     private IDispatcherTimer _timer;
     private PrayerData _currentData;
     private double _qiblaAngle = 0;
     private bool _isCompassInitialized = false;
     private bool _isARMode = false;
 
-    public PrayerPage(IPrayerService prayerService)
+    public PrayerPage(IPrayerService prayerService, AthkarDatabase database)
     {
         InitializeComponent();
         _prayerService = prayerService;
+        _database = database;
 
         _timer = Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromSeconds(1);
@@ -29,7 +31,7 @@ public partial class PrayerPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        LoadTrackerData();
+        await LoadTrackerDataAsync();
         await CheckAndEnableLocationServices();
     }
 
@@ -246,6 +248,13 @@ public partial class PrayerPage : ContentPage
         {
             TimingsList.Add(CreatePrayerRow(p));
         }
+
+        // Save prayer times for the widgets to calculate the next prayer dynamically
+        Preferences.Default.Set("PrayerTime_Fajr", data.Timings.Fajr);
+        Preferences.Default.Set("PrayerTime_Dhuhr", data.Timings.Dhuhr);
+        Preferences.Default.Set("PrayerTime_Asr", data.Timings.Asr);
+        Preferences.Default.Set("PrayerTime_Maghrib", data.Timings.Maghrib);
+        Preferences.Default.Set("PrayerTime_Isha", data.Timings.Isha);
 
         UpdateCountdown();
     }
@@ -553,58 +562,66 @@ public partial class PrayerPage : ContentPage
 
     private bool _isTrackerLoading = false;
 
-    private void LoadTrackerData()
+    private async Task LoadTrackerDataAsync()
     {
         _isTrackerLoading = true;
         
         string dateStr = DateTime.Today.ToString("yyyyMMdd");
         TrackerDateLabel.Text = $"صلوات اليوم: {DateTime.Today.ToString("dd MMMM yyyy", new CultureInfo("ar-EG"))}";
 
+        var tracker = await _database.GetDailyTrackerAsync(dateStr);
+
         // تحميل حالة الصلوات المفروضة
-        FajrStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Fajr", 0);
-        DhuhrStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Dhuhr", 0);
-        AsrStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Asr", 0);
-        MaghribStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Maghrib", 0);
-        IshaStatusPicker.SelectedIndex = Preferences.Default.Get($"Tracker_{dateStr}_Isha", 0);
+        FajrStatusPicker.SelectedIndex = tracker.FajrStatus;
+        DhuhrStatusPicker.SelectedIndex = tracker.DhuhrStatus;
+        AsrStatusPicker.SelectedIndex = tracker.AsrStatus;
+        MaghribStatusPicker.SelectedIndex = tracker.MaghribStatus;
+        IshaStatusPicker.SelectedIndex = tracker.IshaStatus;
 
         // تحميل حالة السنن الرواتب
-        FajrSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Fajr", false);
-        DhuhrSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Dhuhr", false);
-        AsrSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Asr", false);
-        MaghribSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Maghrib", false);
-        IshaSunnahCheck.IsChecked = Preferences.Default.Get($"TrackerSunnah_{dateStr}_Isha", false);
+        FajrSunnahCheck.IsChecked = tracker.FajrSunnah;
+        DhuhrSunnahCheck.IsChecked = tracker.DhuhrSunnah;
+        AsrSunnahCheck.IsChecked = tracker.AsrSunnah;
+        MaghribSunnahCheck.IsChecked = tracker.MaghribSunnah;
+        IshaSunnahCheck.IsChecked = tracker.IshaSunnah;
 
         _isTrackerLoading = false;
         
         UpdateTrackerStatsUI();
     }
 
-    private void OnTrackerStatusChanged(object sender, EventArgs e)
+    private async void OnTrackerStatusChanged(object sender, EventArgs e)
     {
         if (_isTrackerLoading) return;
         
         string dateStr = DateTime.Today.ToString("yyyyMMdd");
         
-        Preferences.Default.Set($"Tracker_{dateStr}_Fajr", FajrStatusPicker.SelectedIndex);
-        Preferences.Default.Set($"Tracker_{dateStr}_Dhuhr", DhuhrStatusPicker.SelectedIndex);
-        Preferences.Default.Set($"Tracker_{dateStr}_Asr", AsrStatusPicker.SelectedIndex);
-        Preferences.Default.Set($"Tracker_{dateStr}_Maghrib", MaghribStatusPicker.SelectedIndex);
-        Preferences.Default.Set($"Tracker_{dateStr}_Isha", IshaStatusPicker.SelectedIndex);
+        var tracker = await _database.GetDailyTrackerAsync(dateStr);
+        tracker.FajrStatus = FajrStatusPicker.SelectedIndex;
+        tracker.DhuhrStatus = DhuhrStatusPicker.SelectedIndex;
+        tracker.AsrStatus = AsrStatusPicker.SelectedIndex;
+        tracker.MaghribStatus = MaghribStatusPicker.SelectedIndex;
+        tracker.IshaStatus = IshaStatusPicker.SelectedIndex;
+
+        await _database.SaveDailyTrackerAsync(tracker);
 
         UpdateTrackerStatsUI();
     }
 
-    private void OnTrackerSunnahChanged(object sender, CheckedChangedEventArgs e)
+    private async void OnTrackerSunnahChanged(object sender, CheckedChangedEventArgs e)
     {
         if (_isTrackerLoading) return;
         
         string dateStr = DateTime.Today.ToString("yyyyMMdd");
         
-        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Fajr", FajrSunnahCheck.IsChecked);
-        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Dhuhr", DhuhrSunnahCheck.IsChecked);
-        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Asr", AsrSunnahCheck.IsChecked);
-        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Maghrib", MaghribSunnahCheck.IsChecked);
-        Preferences.Default.Set($"TrackerSunnah_{dateStr}_Isha", IshaSunnahCheck.IsChecked);
+        var tracker = await _database.GetDailyTrackerAsync(dateStr);
+        tracker.FajrSunnah = FajrSunnahCheck.IsChecked;
+        tracker.DhuhrSunnah = DhuhrSunnahCheck.IsChecked;
+        tracker.AsrSunnah = AsrSunnahCheck.IsChecked;
+        tracker.MaghribSunnah = MaghribSunnahCheck.IsChecked;
+        tracker.IshaSunnah = IshaSunnahCheck.IsChecked;
+
+        await _database.SaveDailyTrackerAsync(tracker);
 
         UpdateTrackerStatsUI();
     }

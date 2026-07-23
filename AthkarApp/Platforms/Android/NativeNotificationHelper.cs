@@ -245,8 +245,8 @@ public static class NativeNotificationHelper
     {
         try
         {
-            int resId = context.Resources!.GetIdentifier("appicon_round", "mipmap", context.PackageName);
-            if (resId == 0) resId = context.Resources.GetIdentifier("appicon", "mipmap", context.PackageName);
+            int resId = context.Resources!.GetIdentifier("omr_round", "mipmap", context.PackageName);
+            if (resId == 0) resId = context.Resources.GetIdentifier("omr", "mipmap", context.PackageName);
             if (resId == 0) return null;
 
             return BitmapFactory.DecodeResource(context.Resources, resId);
@@ -256,8 +256,8 @@ public static class NativeNotificationHelper
 
     private static int GetSafeIcon(Context context)
     {
-        int resId = context.Resources!.GetIdentifier("appicon_round", "mipmap", context.PackageName);
-        if (resId == 0) resId = context.Resources.GetIdentifier("appicon", "mipmap", context.PackageName);
+        int resId = context.Resources!.GetIdentifier("omr_round", "mipmap", context.PackageName);
+        if (resId == 0) resId = context.Resources.GetIdentifier("omr", "mipmap", context.PackageName);
         if (resId == 0 && context.ApplicationInfo != null) resId = context.ApplicationInfo.Icon;
         if (resId == 0) resId = global::Android.Resource.Drawable.IcDialogInfo;
         return resId;
